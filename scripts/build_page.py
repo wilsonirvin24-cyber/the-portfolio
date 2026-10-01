@@ -38,6 +38,7 @@ HEAD = """<!doctype html>
     onSnapshot(next){ load().then(d => { const n = c.split("/").length + 1;
       const docs = Object.keys(d.docs).filter(k => k.startsWith(c + "/") && k.split("/").length === n).sort().map(k => snap(d.docs, k));
       next({ docs, size: docs.length, empty: !docs.length }); }); return () => {}; } }; return q; };
+  window.PORTFOLIO_PUBLIC = true;
   window.claude = { use: async name => name === "db" ? { doc, collection: coll } : name === "user" ? { can: async () => false } : null };
   window.addEventListener("DOMContentLoaded", () => load().then(d => {
     const p = document.createElement("p"); p.className = "pubnote";
