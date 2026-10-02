@@ -7,7 +7,9 @@
 --   league_invites  the invite code for each league; only its commissioner can read it
 --   functions       the only way league data changes: create, edit, delete, join, leave, pick
 --   pf_teams        every team in each sport with a default rank, used when the pick timer runs out
---   alerts_outbox   text alerts waiting to be sent ("you're on the clock")
+--   alerts_outbox   text alerts waiting to be sent ("you're on the clock"); unused unless a text provider is connected
+--   draft_queues    each manager's private wish list, used first when their pick timer runs out
+--   league_messages league chat, readable only by that league's managers
 
 -- ---------------------------------------------------------------- profiles
 create table if not exists public.profiles (
@@ -68,7 +70,41 @@ create table if not exists public.pf_teams (
   primary key (sport, pool, team)
 );
 alter table public.pf_teams enable row level security;
+drop policy if exists "anyone can read teams" on public.pf_teams;
+create policy "anyone can read teams" on public.pf_teams for select to anon, authenticated using (true);
 revoke all on public.pf_teams from anon, authenticated;
+grant select on public.pf_teams to anon, authenticated;
+
+-- Scheduled draft: when set, managers can't pick before this time and the clock starts by itself when it arrives.
+alter table public.leagues add column if not exists draft_at timestamptz;
+
+-- Each manager's private draft queue for a league: team names in the order they want them.
+create table if not exists public.draft_queues (
+  league_id   text not null references public.leagues(id) on delete cascade,
+  user_id     uuid not null references auth.users(id) on delete cascade,
+  teams       jsonb not null default '[]'::jsonb,
+  updated_at  timestamptz not null default now(),
+  primary key (league_id, user_id)
+);
+alter table public.draft_queues enable row level security;
+drop policy if exists "read own queue" on public.draft_queues;
+create policy "read own queue" on public.draft_queues for select to authenticated using (auth.uid() = user_id);
+revoke all on public.draft_queues from anon, authenticated;
+grant select on public.draft_queues to authenticated;
+
+-- League chat.
+create table if not exists public.league_messages (
+  id          bigint generated always as identity primary key,
+  league_id   text not null references public.leagues(id) on delete cascade,
+  user_id     uuid references auth.users(id) on delete set null,
+  name        text not null,
+  body        text not null,
+  created_at  timestamptz not null default now()
+);
+create index if not exists league_messages_by_league on public.league_messages (league_id, id desc);
+alter table public.league_messages enable row level security;
+revoke all on public.league_messages from anon, authenticated;
+grant select on public.league_messages to authenticated;
 
 -- Text alerts waiting to be sent. Filled by the functions below; read only by the sender.
 create table if not exists public.alerts_outbox (
@@ -94,6 +130,18 @@ create or replace function public.pf_can_run(l public.leagues) returns boolean
 language sql stable security definer set search_path = public as $$
   select auth.uid() is not null and (l.commissioner = auth.uid() or public.pf_is_admin());
 $$;
+
+-- Is the signed-in account part of this league (a manager, its commissioner, or the site admin)?
+create or replace function public.pf_is_member(p_league text) returns boolean
+language sql stable security definer set search_path = public as $$
+  select auth.uid() is not null and exists (
+    select 1 from public.leagues l
+     where l.id = p_league
+       and (l.commissioner = auth.uid() or public.pf_is_admin()
+            or exists (select 1 from jsonb_each_text(l.members) m where m.value = auth.uid()::text)));
+$$;
+drop policy if exists "members read chat" on public.league_messages;
+create policy "members read chat" on public.league_messages for select to authenticated using (public.pf_is_member(league_id));
 
 -- Which manager is on the clock, or null when the draft is not open or is finished.
 create or replace function public.pf_on_clock(d jsonb) returns text
@@ -305,9 +353,12 @@ begin
 end $$;
 
 -- One draft pick. Allowed for the manager on the clock, or the commissioner on their behalf.
+-- The database decides which spot the team fills, so a pick can't put a team in the wrong pool or an extra spot.
 create or replace function public.make_pick(p_id text, p_team text, p_pool text, p_slot text) returns integer
 language plpgsql security definer set search_path = public as $$
-declare l public.leagues; seat text;
+declare
+  l public.leagues; seat text; boss boolean; v_sport text; v_pro text; v_team text; v_pool text; v_slot text;
+  slots jsonb; picks jsonb; have int; flex int; used int;
 begin
   if auth.uid() is null then raise exception 'Sign in to make a pick.'; end if;
   select * into l from public.leagues where id = p_id for update;
@@ -315,10 +366,39 @@ begin
   if l.doc->>'status' <> 'drafting' then raise exception 'This draft is not open.'; end if;
   seat := public.pf_on_clock(l.doc);
   if seat is null then raise exception 'The draft is complete.'; end if;
-  if not public.pf_can_run(l) and coalesce(l.members->>seat, '') <> auth.uid()::text then
+  boss := public.pf_can_run(l);
+  if not boss and coalesce(l.members->>seat, '') <> auth.uid()::text then
     raise exception 'It is %''s pick.', seat;
   end if;
-  return public.pf_apply_pick(p_id, p_team, p_pool, p_slot, false, auth.uid());
+  if not boss and l.draft_at is not null and now() < l.draft_at then
+    raise exception 'The draft hasn''t started yet.';
+  end if;
+  v_sport := coalesce(l.doc->>'sport', 'football');
+  v_pro := case v_sport when 'basketball' then 'NBA' else 'NFL' end;
+  slots := coalesce(l.doc->'slots', '{}'::jsonb);
+  picks := coalesce(l.doc->'picks', '[]'::jsonb);
+  select t.team, t.pool into v_team, v_pool from public.pf_teams t
+   where t.sport = v_sport and lower(t.team) = lower(trim(p_team)) and t.pool = p_pool;
+  if v_team is null then
+    if exists (select 1 from public.pf_teams t where t.sport = v_sport and lower(t.team) = lower(trim(p_team))) then
+      raise exception '% is not in the % pool.', trim(p_team), p_pool;
+    end if;
+    if not boss then raise exception 'Only the commissioner can add a team that isn''t on the list.'; end if;
+    v_team := trim(p_team); v_pool := p_pool;
+  end if;
+  select count(*) into have from jsonb_array_elements(picks) e where e->>'owner' = seat and e->>'pool' = v_pool and e->>'slot' not like 'Any%';
+  if coalesce((slots->>v_pool)::int, 0) > have then
+    v_slot := case when (slots->>v_pool)::int > 1 then v_pool || ' #' || (have + 1) else v_pool end;
+  else
+    flex := coalesce((l.doc->>'flex')::int, 0);
+    select count(*) into used from jsonb_array_elements(picks) e where e->>'owner' = seat and e->>'slot' like 'Any%';
+    if v_pool <> v_pro and flex > used then
+      v_slot := case when flex > 1 then 'Any #' || (used + 1) else 'Any' end;
+    else
+      raise exception '% has no open % spot.', seat, v_pool;
+    end if;
+  end if;
+  return public.pf_apply_pick(p_id, v_team, v_pool, v_slot, false, auth.uid());
 end $$;
 
 -- ------------------------------------------------ pick timer and auto-pick
@@ -332,7 +412,8 @@ begin
   if not public.pf_can_run(l) then raise exception 'Only the commissioner can change the pick timer.'; end if;
   s := greatest(0, least(coalesce(p_seconds, l.pick_seconds), 604800));
   run := coalesce(p_running, false) and s > 0 and public.pf_on_clock(l.doc) is not null;
-  update public.leagues set pick_seconds = s, clock_at = case when run then now() else null end, updated_at = now() where id = p_id;
+  update public.leagues set pick_seconds = s, clock_at = case when run then now() else null end,
+         draft_at = case when run then null else draft_at end, updated_at = now() where id = p_id;
   if run and l.clock_at is null then perform public.pf_alert_on_clock(p_id, auth.uid()); end if;
 end $$;
 
@@ -355,14 +436,28 @@ begin
   v_pro := case v_sport when 'basketball' then 'NBA' else 'NFL' end;
   slots := coalesce(l.doc->'slots', '{}'::jsonb);
   picks := coalesce(l.doc->'picks', '[]'::jsonb);
-  -- Best-ranked team still on the board in a pool where this manager has an open required spot.
-  select t.team, t.pool into v_team, v_pool
-    from public.pf_teams t
-   where t.sport = v_sport
-     and coalesce((slots->>t.pool)::int, 0) >
-         (select count(*) from jsonb_array_elements(picks) e where e->>'owner' = seat and e->>'pool' = t.pool and e->>'slot' not like 'Any%')
-     and not exists (select 1 from jsonb_array_elements(picks) e where lower(e->>'team') = lower(t.team))
-   order by t.rank limit 1;
+  -- First choice: the manager's own queue, in their order, skipping teams that are gone or don't fit an open spot.
+  if coalesce(l.members->>seat, '') <> '' then
+    select t.team, t.pool into v_team, v_pool
+      from public.draft_queues dq
+      cross join lateral jsonb_array_elements_text(dq.teams) with ordinality q(name, ord)
+      join public.pf_teams t on t.sport = v_sport and lower(t.team) = lower(q.name)
+     where dq.league_id = p_id and dq.user_id = (l.members->>seat)::uuid
+       and coalesce((slots->>t.pool)::int, 0) >
+           (select count(*) from jsonb_array_elements(picks) e where e->>'owner' = seat and e->>'pool' = t.pool and e->>'slot' not like 'Any%')
+       and not exists (select 1 from jsonb_array_elements(picks) e where lower(e->>'team') = lower(t.team))
+     order by q.ord limit 1;
+  end if;
+  -- Otherwise: the best-ranked team still on the board in a pool where this manager has an open required spot.
+  if v_team is null then
+    select t.team, t.pool into v_team, v_pool
+      from public.pf_teams t
+     where t.sport = v_sport
+       and coalesce((slots->>t.pool)::int, 0) >
+           (select count(*) from jsonb_array_elements(picks) e where e->>'owner' = seat and e->>'pool' = t.pool and e->>'slot' not like 'Any%')
+       and not exists (select 1 from jsonb_array_elements(picks) e where lower(e->>'team') = lower(t.team))
+     order by t.rank limit 1;
+  end if;
   if v_team is not null then
     select count(*) into have from jsonb_array_elements(picks) e where e->>'owner' = seat and e->>'pool' = v_pool and e->>'slot' not like 'Any%';
     v_slot := case when (slots->>v_pool)::int > 1 then v_pool || ' #' || (have + 1) else v_pool end;
@@ -395,11 +490,119 @@ begin
   return public.pf_auto_pick_now(p_id);
 end $$;
 
+-- ------------------------------------------------------- scheduled draft
+-- Commissioner sets (or clears, with null) the date and time the draft opens.
+create or replace function public.set_draft_time(p_id text, p_at timestamptz) returns void
+language plpgsql security definer set search_path = public as $$
+declare l public.leagues;
+begin
+  select * into l from public.leagues where id = p_id for update;
+  if not found then raise exception 'League not found.'; end if;
+  if not public.pf_can_run(l) then raise exception 'Only the commissioner can schedule the draft.'; end if;
+  if p_at is not null and p_at < now() then raise exception 'Choose a time in the future.'; end if;
+  if p_at is not null and public.pf_on_clock(l.doc) is null then raise exception 'This draft is not open.'; end if;
+  update public.leagues set draft_at = p_at, clock_at = case when p_at is null then clock_at else null end, updated_at = now() where id = p_id;
+end $$;
+
+-- Opens a scheduled draft once its time has come: picks unlock and the pick timer (if any) starts.
+create or replace function public.pf_start_draft_now(p_id text) returns boolean
+language plpgsql security definer set search_path = public as $$
+declare l public.leagues;
+begin
+  select * into l from public.leagues where id = p_id for update;
+  if not found or l.draft_at is null or now() < l.draft_at then return false; end if;
+  update public.leagues
+     set draft_at = null,
+         clock_at = case when l.pick_seconds > 0 and public.pf_on_clock(l.doc) is not null then now() else null end,
+         updated_at = now()
+   where id = p_id;
+  perform public.pf_alert_on_clock(p_id, null);
+  return true;
+end $$;
+
+-- Any signed-in person on the page can report that the start time has arrived; the check above decides.
+create or replace function public.start_draft_if_due(p_id text) returns boolean
+language plpgsql security definer set search_path = public as $$
+begin
+  if auth.uid() is null then raise exception 'Sign in first.'; end if;
+  return public.pf_start_draft_now(p_id);
+end $$;
+
+-- ------------------------------------------------------------ draft queue
+-- A manager saves their wish list for a league. Only people with a seat in the league can keep one.
+create or replace function public.set_queue(p_id text, p_teams jsonb) returns void
+language plpgsql security definer set search_path = public as $$
+declare l public.leagues;
+begin
+  if auth.uid() is null then raise exception 'Sign in first.'; end if;
+  select * into l from public.leagues where id = p_id;
+  if not found then raise exception 'League not found.'; end if;
+  if not exists (select 1 from jsonb_each_text(l.members) m where m.value = auth.uid()::text) then
+    raise exception 'Take your spot in this league before building a queue.';
+  end if;
+  if jsonb_typeof(p_teams) <> 'array' or jsonb_array_length(p_teams) > 300
+     or exists (select 1 from jsonb_array_elements(p_teams) e where jsonb_typeof(e) <> 'string' or length(e #>> '{}') > 60) then
+    raise exception 'That queue is not valid.';
+  end if;
+  insert into public.draft_queues (league_id, user_id, teams) values (p_id, auth.uid(), p_teams)
+  on conflict (league_id, user_id) do update set teams = excluded.teams, updated_at = now();
+end $$;
+
+-- ------------------------------------------------------------ league chat
+create or replace function public.post_message(p_id text, p_body text) returns bigint
+language plpgsql security definer set search_path = public as $$
+declare l public.leagues; b text := trim(coalesce(p_body, '')); who text; new_id bigint;
+begin
+  if auth.uid() is null then raise exception 'Sign in to chat.'; end if;
+  if not public.pf_is_member(p_id) then raise exception 'Chat is for this league''s managers.'; end if;
+  if b = '' then raise exception 'Write a message first.'; end if;
+  if length(b) > 500 then raise exception 'Keep messages under 500 characters.'; end if;
+  if (select count(*) from public.league_messages where user_id = auth.uid() and created_at > now() - interval '20 seconds') >= 6 then
+    raise exception 'Slow down a little and try again.';
+  end if;
+  select * into l from public.leagues where id = p_id;
+  select m.key into who from jsonb_each_text(l.members) m where m.value = auth.uid()::text limit 1;
+  if who is null then select username into who from public.profiles where id = auth.uid(); end if;
+  insert into public.league_messages (league_id, user_id, name, body) values (p_id, auth.uid(), coalesce(who, 'Manager'), b)
+  returning id into new_id;
+  return new_id;
+end $$;
+
+-- The author can delete their own message; the commissioner can delete any in their league.
+create or replace function public.delete_message(p_msg bigint) returns void
+language plpgsql security definer set search_path = public as $$
+declare m public.league_messages; l public.leagues;
+begin
+  if auth.uid() is null then raise exception 'Sign in first.'; end if;
+  select * into m from public.league_messages where id = p_msg;
+  if not found then return; end if;
+  select * into l from public.leagues where id = m.league_id;
+  if m.user_id is distinct from auth.uid() and not public.pf_can_run(l) then
+    raise exception 'Only the commissioner can delete someone else''s message.';
+  end if;
+  delete from public.league_messages where id = p_msg;
+end $$;
+
+-- What this database has switched on. Lets the website (and support) check the setup without any private data.
+create or replace function public.pf_status() returns jsonb
+language plpgsql stable security definer set search_path = public as $$
+declare s boolean := false;
+begin
+  begin
+    execute 'select exists (select 1 from cron.job where jobname = ''portfolio-autopick'')' into s;
+  exception when others then s := false;
+  end;
+  return jsonb_build_object('version', 3, 'scheduler', s);
+end $$;
+
 -- Run by the scheduler every minute, so picks still happen when nobody has the draft room open.
 create or replace function public.pf_autopick_due() returns integer
 language plpgsql security definer set search_path = public as $$
 declare r record; made int := 0;
 begin
+  for r in select id from public.leagues where draft_at is not null and now() >= draft_at loop
+    perform public.pf_start_draft_now(r.id);
+  end loop;
   for r in select id from public.leagues
             where clock_at is not null and pick_seconds > 0 and now() >= clock_at + make_interval(secs => pick_seconds) loop
     if public.pf_auto_pick_now(r.id) > 0 then made := made + 1; end if;
@@ -444,6 +647,12 @@ grant execute on function public.username_available(text), public.pf_is_admin() 
 revoke execute on function public.set_clock(text, integer, boolean), public.auto_pick(text) from public, anon;
 grant execute on function public.set_clock(text, integer, boolean), public.auto_pick(text) to authenticated;
 grant execute on function public.pf_now(), public.pf_on_clock(jsonb) to anon, authenticated;
+revoke execute on function public.set_draft_time(text, timestamptz), public.start_draft_if_due(text), public.set_queue(text, jsonb),
+  public.post_message(text, text), public.delete_message(bigint) from public, anon;
+grant execute on function public.set_draft_time(text, timestamptz), public.start_draft_if_due(text), public.set_queue(text, jsonb),
+  public.post_message(text, text), public.delete_message(bigint) to authenticated;
+grant execute on function public.pf_status(), public.pf_is_member(text) to anon, authenticated;
+revoke execute on function public.pf_start_draft_now(text) from public, anon, authenticated;
 -- Internal pieces: never callable from the website.
 revoke execute on function public.pf_apply_pick(text, text, text, text, boolean, uuid), public.pf_auto_pick_now(text),
   public.pf_autopick_due(), public.pf_alert_on_clock(text, uuid), public.pf_alerts_claim(integer), public.pf_alerts_done(bigint, text)
@@ -455,11 +664,15 @@ do $$ begin
 end $$;
 revoke execute on function public.pf_new_user() from public, anon, authenticated;
 
--- Live updates during drafts.
+-- Live updates during drafts and in chat.
 do $$ begin
   if exists (select 1 from pg_publication where pubname = 'supabase_realtime')
      and not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'leagues') then
     alter publication supabase_realtime add table public.leagues;
+  end if;
+  if exists (select 1 from pg_publication where pubname = 'supabase_realtime')
+     and not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'league_messages') then
+    alter publication supabase_realtime add table public.league_messages;
   end if;
 end $$;
 

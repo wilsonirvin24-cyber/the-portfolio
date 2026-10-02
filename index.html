@@ -299,6 +299,48 @@ details.how[open]>summary{margin-bottom:14px}
 .seats li{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);font-size:14px}
 .seats .who{flex:1;min-width:0;font-weight:600}
 .banner{padding:10px 14px;border-radius:8px;background:var(--accent-soft);border:1px solid var(--accent);font-weight:600}
+/* v9: league home, chat, queue, practice draft */
+input[type=datetime-local]{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%;min-width:0;color:var(--fg)}
+.wk{padding:16px;display:flex;flex-direction:column;gap:10px}
+.wk-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.wk-nav{display:flex;gap:4px}
+.wk-title{font-family:var(--display);font-weight:800;font-size:clamp(22px,4.6vw,30px);line-height:1.05;text-transform:uppercase;letter-spacing:.02em;color:var(--fg);margin:0;text-wrap:balance}
+.wk-lede{margin:0;font-size:14.5px}
+.st.mini td{padding-block:7px}
+.st.mini tr:last-child td{border-bottom:0}
+.st.mini .tot{font-size:16px}
+.mv-dn{color:var(--down)}
+.wk-notes{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.wk-notes .k{display:inline-block;min-width:108px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.wk-games{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.wk-games li{padding:10px 0;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:2px}
+.wk-games .why{font-size:13.5px}
+.you{appearance:none;font:inherit;color:inherit;text-align:left;cursor:pointer;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;width:100%}
+.you:hover{border-color:var(--accent)}
+.you:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.you .who{display:block;font-family:var(--display);font-weight:900;font-size:26px;text-transform:uppercase;line-height:1;margin-top:2px}
+.you .kv{font-size:13.5px;color:var(--muted)}
+.you .kv b{color:var(--fg)}
+.chat{display:flex;flex-direction:column}
+.chat-list{height:min(60vh,520px);overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+.chat-day{align-self:center;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:6px 0 2px}
+.cm{max-width:82%;align-self:flex-start;background:var(--sunk);border:1px solid var(--line);border-radius:10px;padding:7px 10px}
+.cm.me{align-self:flex-end;background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
+.cm-h{display:flex;gap:8px;align-items:baseline;font-size:12px;color:var(--muted)}
+.cm-h b{color:var(--fg);font-size:12.5px}
+.cm-h .x{margin-left:auto;padding:0 4px;font-size:11px}
+.cm-b{font-size:14.5px;overflow-wrap:anywhere;white-space:pre-wrap}
+.chat-form{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line)}
+.avrow{display:flex;gap:4px;min-width:0}
+.avrow .av{flex:1;min-width:0}
+.qb{appearance:none;border:1px solid var(--line);background:var(--surface);border-radius:6px;width:34px;flex-shrink:0;cursor:pointer;font-weight:700;color:var(--muted)}
+.qb.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.qb:hover{border-color:var(--accent)}
+.qb:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.qcard summary{cursor:pointer;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px;font-weight:700}
+.mgr-list li.full .who{color:var(--muted);text-decoration:line-through}
+.mockbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.gbtn{width:100%;padding:11px 14px}
 .check{display:flex;align-items:center;gap:8px;font-size:14px}
 .check input{width:18px;height:18px;accent-color:var(--accent)}
 input[type=email],input[type=password],input[type=tel]{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:9px 10px;width:100%;min-width:0;color:var(--fg)}
@@ -323,11 +365,13 @@ input[type=email],input[type=password],input[type=tel]{background:var(--bg);bord
 <div class="ticker" id="ticker" aria-label="Latest results for drafted teams"><div class="ticker-track" id="tickerTrack"><span class="tk o">Loading the latest results…</span></div></div>
 <nav class="tabs" id="tabsNav" aria-label="League sections" hidden>
   <div class="wrap" role="tablist">
+    <button class="tab" role="tab" aria-selected="false" data-tab="league">League</button>
     <button class="tab" role="tab" aria-selected="false" data-tab="team">My Team</button>
     <button class="tab" role="tab" aria-selected="false" data-tab="standings">Standings</button>
     <button class="tab" role="tab" aria-selected="false" data-tab="board">Board</button>
     <button class="tab" role="tab" aria-selected="false" data-tab="results">Results</button>
     <button class="tab" role="tab" aria-selected="false" data-tab="draft">Draft</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="chat" id="chatTab" hidden>Chat</button>
   </div>
 </nav>
 <main class="wrap" id="main">
@@ -371,7 +415,8 @@ const ALIAS = {"miami (fla.)":"Miami","miami (fl)":"Miami","miami fl":"Miami","m
 const S = { db:null, canWrite:false, leagues:[], leaguesLoaded:false, leagueId:null, gameDocs:[], sync:null,
   view:"home", tab:"standings", wantLeague:null, wantTab:null, open:new Set(), onlyMine:true, weeksShown:2, draftPool:"all", draftQ:"",
   confirmDel:null, confirmLg:null, newMgrs:[], newSport:"football", sportFilter:"all", me:{}, theme:"system", reset:new Set(),
-  auth:{user:null, profile:null, live:true, timer:false}, authMode:"in", authNote:"", join:null, invites:{} };
+  auth:{user:null, profile:null, live:true, timer:false, level:1, google:false}, authMode:"in", authNote:"", join:null, invites:{},
+  schedDocs:[], recapWeek:null, chat:null, chatConn:null, queue:null, queueShut:false, mock:null, dAtDirty:false, leagueSig:"" };
 
 /* Accounts exist on the website (window.portfolioAuth). Inside Claude there are none, and the owner manages everything. */
 const A = window.portfolioAuth || null;
@@ -381,10 +426,12 @@ const canAdmin = L => A ? !!meId() && S.auth.live && (L.commissioner===meId() ||
 const canEditGames = () => !A && S.canWrite;
 /* Pick timer (website only): seconds per pick, counted on the database's clock. */
 const hasTimer = () => !!(A && S.auth.live && S.auth.timer);
+/* Queue, chat, scheduled drafts and practice drafts need the latest database update. */
+const hasV3 = () => !!(A && S.auth.live && S.auth.level>=3);
 const TIMERS = [[0,"No timer"],[30,"30 seconds"],[60,"1 minute"],[90,"90 seconds"],[120,"2 minutes"],[300,"5 minutes"],[3600,"1 hour"],[14400,"4 hours"],[43200,"12 hours"],[86400,"24 hours"]];
 const timerOpts = cur => (TIMERS.some(t=>t[0]===cur) ? TIMERS : [...TIMERS,[cur,spanText(cur)]]).map(([v,t])=>`<option value="${v}" ${v===cur?"selected":""}>${t}</option>`).join("");
 function spanText(s){ return s<120 ? `${s} seconds` : s<7200 ? `${Math.round(s/60)} minutes` : `${Math.round(s/3600)} hours`; }
-function leftText(s){ if (s<=0) return "0:00"; if (s>=3600){ const h=Math.floor(s/3600), m=Math.floor((s%3600)/60); return `${h}h ${String(m).padStart(2,"0")}m`; } return `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`; }
+function leftText(s){ if (s<=0) return "0:00"; if (s>=86400) return `${Math.floor(s/86400)}d ${Math.floor((s%86400)/3600)}h`; if (s>=3600){ const h=Math.floor(s/3600), m=Math.floor((s%3600)/60); return `${h}h ${String(m).padStart(2,"0")}m`; } return `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`; }
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -424,7 +471,7 @@ const seasonLabel = y => `${y}–${String(y+1).slice(2)}`;
 const thisSeason = () => { const n = new Date(); return n.getMonth()>=2 ? n.getFullYear() : n.getFullYear()-1; };
 
 /* ---------- league helpers ---------- */
-const league = () => S.leagues.find(l=>l.id===S.leagueId) || null;
+const league = () => S.view==="mock" ? ((S.mock && S.mock.L) || null) : (S.leagues.find(l=>l.id===S.leagueId) || null);
 const sportOf = L => SPORTS[L.sport] ? L.sport : "football";
 const SP = L => SPORTS[sportOf(L)];
 const slotsOf = L => L.slots || SP(L).slots;
@@ -507,21 +554,23 @@ function compute(L){
 /* ---------- routing: #home, #settings, #<league>, #<league>.<tab> ---------- */
 const PUBLIC_BASE = window.PORTFOLIO_PUBLIC ? location.origin + location.pathname : "https://wilsonirvin24-cyber.github.io/the-portfolio/";
 const leagueURL = id => PUBLIC_BASE + "#" + id;
-const TABS = ["team","standings","board","results","draft"];
+const TABS = ["league","team","standings","board","results","draft","chat"];
 function applyHash(){
   const h = (location.hash||"").slice(1);
   if (!h || h==="home"){ S.view = "home"; return; }
   if (h==="settings"){ S.view = "settings"; return; }
   if (h==="signin"){ S.view = "auth"; return; }
   if (/access_token=|error=|type=recovery/.test(h)){ S.view = "home"; return; }   // a sign-in link from an email; the account code reads it
-  if (h.startsWith("join.")){ const [, jid, code] = h.split("."); S.join = {id:jid, code:code||""}; S.view = "join"; return; }
+  if (h.startsWith("join.")){ const [, jid, code] = h.split("."); S.join = {id:jid, code:code||""}; S.view = "join";
+    try{ localStorage.setItem("pf-join", JSON.stringify({id:jid, code:code||"", t:Date.now()})); }catch(_){}   // survives the trip out to an email link or Google
+    return; }
   const [lid, tab] = h.split(".");
   S.view = "league"; S.wantLeague = lid; S.wantTab = TABS.includes(tab) ? tab : null;
 }
 function settleLeague(){
   if (S.wantLeague && S.leaguesLoaded){
     const L = S.leagues.find(l=>l.id===S.wantLeague);
-    if (L){ S.leagueId = L.id; S.tab = S.wantTab || (mine(L) ? "team" : "standings"); } else S.view = "home";
+    if (L){ S.leagueId = L.id; S.tab = S.wantTab || "league"; } else S.view = "home";
     S.wantLeague = S.wantTab = null;
   }
   if (!S.leagues.some(l=>l.id===S.leagueId)) S.leagueId = (S.leagues.find(l=>mine(l)) || S.leagues[0])?.id || null;
@@ -537,10 +586,11 @@ function syncHash(){
 function go(view, id, tab){
   S.view = view; S.confirmDel = S.confirmLg = null;
   if (view==="league"){
-    if (id && id!==S.leagueId){ S.leagueId = id; S.open.clear(); S.weeksShown = 2; S.draftQ = ""; S.draftPool = "all"; }
-    const L = league(); S.tab = tab || (L && mine(L) ? "team" : "standings");
+    if (id && id!==S.leagueId){ S.leagueId = id; S.open.clear(); S.weeksShown = 2; S.draftQ = ""; S.draftPool = "all"; S.recapWeek = null; S.dAtDirty = false; S.reset.add("dAt"); }
+    S.tab = tab || "league";
   }
   render(); try{ window.scrollTo(0,0); }catch(_){}
+  if (A && view==="league") A.refresh();      // make sure the league is current when it's opened
 }
 
 /* ---------- this device: who I am, theme ---------- */
@@ -560,12 +610,15 @@ function render(){
   _games = null;
   const main = $("#main");
   const keep = {}; main.querySelectorAll("input[id],select[id],textarea[id]").forEach(e=> keep[e.id]=e.value);
+  const scrolls = {}; main.querySelectorAll("[data-keep]").forEach(e=> scrolls[e.dataset.keep]=e.scrollTop);
   const ae = document.activeElement, fid = ae && main.contains(ae) ? ae.id : null;
   let sel = null; try{ if (fid && ae.selectionStart!=null) sel=[ae.selectionStart, ae.selectionEnd]; }catch(_){}
 
   const L = league();
   const view = S.view==="league" && !L ? "home" : S.view;
   $("#tabsNav").hidden = view!=="league";
+  $("#chatTab").hidden = !hasV3();
+  if (S.chatConn && !(view==="league" && S.tab==="chat" && L && S.chat && S.chat.id===L.id)) stopChat();
   $("#signBtn").hidden = !(A && S.auth.live && !meId()) || view==="auth";
   document.querySelectorAll(".tab").forEach(b=> b.setAttribute("aria-selected", String(view==="league" && b.dataset.tab===S.tab)));
   renderLeagueSel(view);
@@ -574,15 +627,19 @@ function render(){
   else if (view==="settings"){ $("#tagline").textContent = "Settings"; renderTickerAll(); main.innerHTML = settingsHTML(); }
   else if (view==="auth"){ $("#tagline").textContent = "Your account"; renderTickerAll(); main.innerHTML = authHTML(); }
   else if (view==="join"){ $("#tagline").textContent = "Join a league"; renderTickerAll(); main.innerHTML = joinHTML(); }
+  else if (view==="mock"){ $("#tagline").textContent = "Practice draft"; renderTickerAll(); main.innerHTML = mockHTML(); }
   else if (view==="home"){ $("#tagline").textContent = "Draft teams, not players. Most wins takes the table."; renderTickerAll(); main.innerHTML = homeHTML(); }
   else {
     const C = compute(L);
     renderTicker(L, C);
     $("#tagline").textContent = `${L.name} · ${SP(L).label} ${seasonLabel(L.year)} · ${L.owners.length} managers`;
-    main.innerHTML = {team:teamHTML, standings:standingsHTML, board:boardHTML, results:resultsHTML, draft:draftHTML}[S.tab](L, C);
+    if (S.tab==="chat" && !hasV3() && S.leaguesLoaded && !A) S.tab = "league";
+    main.innerHTML = ({league:leagueHTML, team:teamHTML, standings:standingsHTML, board:boardHTML, results:resultsHTML, draft:draftHTML, chat:chatHTML}[S.tab] || leagueHTML)(L, C);
   }
   for (const id in keep){ if (S.reset.has(id)) continue; const el = document.getElementById(id); if (el && el.value!==keep[id]) el.value = keep[id]; }
   S.reset.clear();
+  main.querySelectorAll("[data-keep]").forEach(e=>{ if (scrolls[e.dataset.keep]) e.scrollTop = scrolls[e.dataset.keep]; });
+  const cl = $("#chatList"); if (cl) cl.scrollTop = cl.scrollHeight;
   if (fid){ const el = document.getElementById(fid); if (el){ el.focus(); if (sel) try{ el.setSelectionRange(sel[0],sel[1]); }catch(_){} } }
   bind();
   if (S.leaguesLoaded) syncHash();
@@ -630,7 +687,7 @@ function homeHTML(){
     const tied = C.rows.filter(x=>x.rank===r.rank).length>1;
     const drafting = l.status==="drafting";
     return `<button type="button" class="pf" data-go="${esc(l.id)}">
-      <div class="top"><span class="sport-tag">${SP(l).label} · ${seasonLabel(l.year)}</span>${drafting?`<span class="status live">Drafting</span>`:""}</div>
+      <div class="top"><span class="sport-tag">${SP(l).label} · ${seasonLabel(l.year)}</span>${drafting?`<span class="status live">${draftPending(l)?"Draft "+esc(fmtWhen(l.draftAt)):"Drafting"}</span>`:""}</div>
       <div class="nm">${esc(l.name)}</div>
       <div class="big"><span class="bn">${fmt(r.total)}</span><span class="kv">wins · <b>${tied?"T-":""}${ordinal(r.rank)}</b> of ${l.owners.length}${r.wk?` · <span class="delta up">+${fmt(r.wk)} this week</span>`:""}</span></div>
       <div class="kv">${best ? `Top performer: <b>${esc(best.team)}</b> ${best.w}-${best.l}${best.t?"-"+best.t:""}` : "No teams drafted yet"}</div>
@@ -669,10 +726,10 @@ function homeHTML(){
     </div>`;
 
   return `<section class="panel">
-    ${A ? (meId() ? "" : hero + `<div class="btns"><button class="btn primary" data-auth="up">Create an account</button><button class="btn" data-auth="in">Sign in</button></div>`) : (my.length || Object.keys(S.me).length ? "" : hero)}
+    ${A ? (meId() ? "" : hero + `<div class="btns"><button class="btn primary" data-auth="up">Create an account</button><button class="btn" data-auth="in">Sign in</button>${hasV3()?`<button class="btn" data-mock="new">Try a practice draft</button>`:""}</div>`) : (my.length || Object.keys(S.me).length ? "" : hero)}
     ${A && meId() && !my.length ? `<div class="card empty"><strong>Welcome${S.auth.profile?", "+esc(S.auth.profile.username):""}.</strong>You don't have a portfolio yet. Open an invite link from a commissioner to join a league, or create your own below.</div>` : ""}
     ${S.leagues.length ? sports : ""}
-    ${my.length ? `<div class="head-row"><h2>My Portfolios</h2><p class="sub">Tap one to open your team.</p></div><div class="pf-grid">${myCards}</div>` : ""}
+    ${my.length ? `<div class="head-row"><h2>My Portfolios</h2><p class="sub">Tap one to open its league home.</p></div><div class="pf-grid">${myCards}</div>` : ""}
     ${rest.length ? `<div class="head-row"><h2>${my.length?"Other leagues":"Leagues"}</h2><p class="sub">${A?"Anyone can view a league. Joining one takes an invite link from its commissioner.":"Pick your name in a league to add it to My Portfolios on this device."}</p></div><div class="lg-grid">${restCards}</div>` : ""}
     ${!show.length ? `<div class="card empty"><strong>No ${S.sportFilter==="all"?"":SPORTS[S.sportFilter].label.toLowerCase()+" "}leagues yet.</strong>${canCreate()?"Create one below.":"Leagues appear here once someone creates one."}</div>` : ""}
     ${my.length ? `<details class="how"><summary>How The Portfolio works</summary>${how}</details>` : `<div class="head-row"><h2>How it works</h2></div>${how}`}
@@ -722,7 +779,7 @@ function teamHTML(L, C){
   if (!o) return `<section class="panel"><div class="head-row"><h2>My Team</h2></div>
     <div class="card empty"><strong>Which manager are you?</strong>Pick your name to see your team here. The choice is saved on this device only.<div style="display:flex;justify-content:center;margin-top:12px">${picker}</div></div></section>`;
   const r = C.rows.find(x=>x.owner===o), tied = C.rows.filter(x=>x.rank===r.rank).length>1;
-  const wtNote = weightText(L);
+  const wtNote = weightText(L), P = C.games.length && C.picks.length ? projection(L, C).find(x=>x.owner===o) : null;
   const rows = r.holdings.map(h=>{
     const wk = h.wkG.map(g=>{ const w=winnerKey(g), m=g.hk===h.k?g.hs:g.as, t=g.hk===h.k?g.as:g.hs; return `${w===h.k?"W":w===null?"T":"L"} ${m}–${t}`; }).join(", ");
     return `<tr><td>${chip(h.slot.startsWith("Any")?"Any":h.pool)}</td><td><b>${esc(h.team)}</b>${h.slot.startsWith("Any")?` <span class="lg">${esc(h.pool)}</span>`:""}</td>
@@ -731,7 +788,7 @@ function teamHTML(L, C){
   return `<section class="panel">
     <div class="card me-head">
       <div><div class="sport-tag">${esc(L.name)} · ${SP(L).label} ${seasonLabel(L.year)}</div><div class="who">${esc(o)}</div>
-        <div class="sub" style="margin-top:6px"><b>${tied?"T-":""}${ordinal(r.rank)}</b> of ${L.owners.length}${r.gb?` · ${fmt(r.gb)} back`:" · leading"} · ${r.pro} ${C.sp.pro} + ${r.col} college wins${r.wk?` · +${fmt(r.wk)} this week`:""}</div></div>
+        <div class="sub" style="margin-top:6px"><b>${tied?"T-":""}${ordinal(r.rank)}</b> of ${L.owners.length}${r.gb?` · ${fmt(r.gb)} back`:" · leading"} · ${r.pro} ${C.sp.pro} + ${r.col} college wins${r.wk?` · +${fmt(r.wk)} this week`:""}${P?` · projected ${P.proj.toFixed(1)} (${ordinal(P.projRank)})`:""}</div></div>
       <div><div class="n">${fmt(r.total)}</div><div class="lbl">Wins</div></div>
     </div>
     ${r.holdings.length ? `<div class="card scroll"><table class="team">
@@ -885,11 +942,15 @@ function draftHTML(L){
     return `<section class="panel">
       <div class="head-row"><h2>Draft Results</h2><p class="sub">${type} draft · ${D.N} managers · ${rounds} rounds · ${D.i} picks</p></div>
       <div class="card scroll"><table class="board rounds"><thead><tr><th>Round</th>${D.owners.map((o,i)=>`<th>${i+1}. ${esc(o)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div>
-      ${canAdmin(L)?`<div class="btns"><button class="btn" id="reopen">Reopen the draft</button><span class="sub">Lets you undo or change the last picks.</span><span class="msg" id="dMsg" role="status"></span></div>`:""}
+      ${!L.mock && canAdmin(L)?`<div class="btns"><button class="btn" id="reopen">Reopen the draft</button><span class="sub">Lets you undo or change the last picks.</span><span class="msg" id="dMsg" role="status"></span></div>`:""}
+      ${!L.mock && hasV3()?`<div class="btns"><button type="button" class="btn" data-mock="1">Practice draft</button><span class="sub">Try a draft against auto-pick. Nothing is saved.</span></div>`:""}
       ${seatsHTML(L)}
     </section>`;
   }
-  const admin = canAdmin(L), myPick = !!(A && meId() && D.onClock && (L.members||{})[D.onClock]===meId()), canP = admin || myPick;
+  const admin = !L.mock && canAdmin(L), pending = !L.mock && draftPending(L);
+  const myPick = L.mock ? D.onClock===L.me : !!(A && meId() && D.onClock && (L.members||{})[D.onClock]===meId());
+  const canP = admin || (myPick && !pending);
+  const qOn = canQueue(L), qset = qOn && S.queue ? new Set(S.queue.teams.map(t=>String(t).toLowerCase())) : new Set();
   const taken = new Set((L.picks||[]).map(p=>pk(L,p)));
   const need = D.onClock ? needsFor(L, D.onClock) : {req:{},flex:0};
   const q = S.draftQ.trim().toLowerCase();
@@ -897,27 +958,35 @@ function draftHTML(L){
   const all = pools.filter(p=>S.draftPool==="all"||S.draftPool===p).flatMap(p=>sp.teams[p].map(t=>({t,p})))
     .filter(x=>!taken.has(tk(x.t, lgOfPool(L,x.p))) && (!q || x.t.toLowerCase().includes(q)));
   const list = all.slice(0,150);
-  const avail = list.map(x=>`<button class="av" data-pick="${esc(x.t)}" data-pool="${esc(x.p)}" ${(!canP||!canTake(L,need,x.p))?"disabled":""}><span>${esc(x.t)}</span>${chip(x.p)}</button>`).join("");
+  const avail = list.map(x=>{ const inQ = qset.has(x.t.toLowerCase());
+    return `<div class="avrow"><button class="av" data-pick="${esc(x.t)}" data-pool="${esc(x.p)}" ${(!canP||!canTake(L,need,x.p))?"disabled":""}><span>${esc(x.t)}</span>${chip(x.p)}</button>${qOn?`<button type="button" class="qb ${inQ?"on":""}" data-q="${esc(x.t)}" aria-label="${inQ?"Remove":"Add"} ${esc(x.t)} ${inQ?"from":"to"} my queue" title="${inQ?"In your queue":"Add to my queue"}">${inQ?"✓":"+"}</button>`:""}</div>`; }).join("");
   const needChips = pools.filter(p=>slotsOf(L)[p]).map(p=>`<span class="need ${need.req[p]>0?"":"done"}">${chip(p)}${need.req[p]>1?` <span class="num" style="font-size:12px">×${need.req[p]}</span>`:""}</span>`).join("")
     + (flexOf(L) ? `<span class="need ${need.flex>0?"":"done"}">${chip("Any")}${need.flex>1?` <span class="num" style="font-size:12px">×${need.flex}</span>`:""}</span>` : "");
   const feed = [...D.ordered].reverse().map(p=>`<div><span class="pk">${Math.ceil(p.n/D.N)}.${String(((p.n-1)%D.N)+1).padStart(2,"0")}</span>${chip(p.pool)}<span style="flex:1"><b>${esc(p.team)}</b>${p.auto?`<span class="tag-auto" title="Picked automatically when time ran out">auto</span>`:""}</span><span class="sub">${esc(p.owner)}</span></div>`).join("");
   const secs = hasTimer() ? (L.pickSeconds||0) : 0, running = !!(secs && L.clockAt && D.onClock);
   const end = running ? new Date(L.clockAt).getTime() + secs*1000 : 0, left = running ? Math.ceil((end - A.now())/1000) : 0;
-  const tm = !secs || !D.onClock ? "" : running
+  const startMs = pending ? new Date(L.draftAt).getTime() : 0;
+  const tm = pending ? `<div class="tm" id="draftCountdown" data-at="${startMs}" data-lg="${esc(L.id)}" role="timer" aria-label="Time until the draft"><div class="t">${leftText(Math.ceil((startMs-A.now())/1000))}</div><div class="lab">until the draft opens</div></div>`
+    : !secs || !D.onClock ? "" : running
     ? `<div class="tm ${left<=10?"low":""}" id="pickClock" data-end="${end}" data-lg="${esc(L.id)}" role="timer" aria-label="Time left to pick"><div class="t">${leftText(left)}</div><div class="lab">${left>0?"left to pick":"Time's up. Auto-picking…"}</div></div>`
     : `<div class="tm paused"><div class="t">Clock stopped</div><div class="lab">${spanText(secs)} per pick</div></div>`;
-  S.reset.add("tmSec");
-  const timerCtl = !(admin && hasTimer() && D.onClock) ? "" : `<div class="card form"><div class="head-row"><h3>Pick timer</h3><span class="sub">${!secs?"Off":running?"Running":"Stopped"}</span></div>
-      <div class="form-grid"><label class="f" for="tmSec">Time for each pick<select id="tmSec">${timerOpts(secs)}</select></label></div>
-      <div class="btns">${running?`<button type="button" class="btn" id="tmPause">Pause the clock</button>`:`<button type="button" class="btn primary" id="tmStart">Start the clock</button>`}<span class="msg" id="tmMsg" role="status"></span></div>
-      <p class="sub">When a manager's time runs out, the best team still available for one of their open spots is picked for them and marked "auto". The clock restarts after every pick. Start it once everyone is ready.</p></div>`;
+  S.reset.add("tmSec"); if (!S.dAtDirty) S.reset.add("dAt");
+  const sched = hasV3();
+  const timerCtl = !(admin && hasTimer() && D.onClock) ? "" : `<div class="card form"><div class="head-row"><h3>Draft clock</h3><span class="sub">${pending?"Scheduled":!secs?"No timer":running?"Running":"Stopped"}</span></div>
+      <div class="form-grid"><label class="f" for="tmSec">Time for each pick<select id="tmSec">${timerOpts(secs)}</select></label>
+        ${sched?`<label class="f" for="dAt">Draft date and time (optional)<input type="datetime-local" id="dAt" value="${L.draftAt?toLocalInput(L.draftAt):""}"></label>`:""}</div>
+      <div class="btns">${running?`<button type="button" class="btn" id="tmPause">Pause the clock</button>`:`<button type="button" class="btn primary" id="tmStart">${pending?"Start now instead":"Start the clock"}</button>`}
+        ${sched?`<button type="button" class="btn" id="dSave">${L.draftAt?"Change the start time":"Schedule the draft"}</button>${L.draftAt?`<button type="button" class="btn" id="dClear">Remove the start time</button>`:""}`:""}<span class="msg" id="tmMsg" role="status"></span></div>
+      <p class="sub">When a manager's time runs out, their queue is used first, then the best team still available for one of their open spots. Those picks are marked "auto". The clock restarts after every pick.${sched?" If you schedule the draft, managers can't pick before that time, and the clock starts by itself when it arrives.":""}</p></div>`;
   const order = D.owners.map((o,ix)=>`<span class="pill" style="${o===D.onClock?"border-color:var(--accent);font-weight:700":""}">${ix+1}. ${esc(o)}</span>`).join("");
   return `<section class="panel">
     <div class="head-row"><h2>Draft Room</h2><p class="sub">${type} draft · ${D.N} managers · ${roundsOf(L)} rounds · ${esc(slotText(L))}</p></div>
+    ${!L.mock && hasV3()?`<div class="btns"><button type="button" class="btn" data-mock="1">Practice draft</button><span class="sub">Try a draft against auto-pick first. Nothing is saved.</span></div>`:""}
     <div class="card clock"><div><div class="meta">On the clock · Round ${D.round}, pick ${D.inRound} · Overall ${Math.min(D.i+1,D.total)} of ${D.total}</div><div class="who">${esc(D.onClock||"Done")}</div><div class="needs">${needChips}</div></div>
       ${(tm||admin)?`<div class="clock-side">${tm}${admin?`<div class="btns"><button class="btn danger" id="undoPick" ${D.i?"":"disabled"}>Undo last pick</button></div>`:""}</div>`:""}</div>
-    ${myPick?`<div class="banner">You're on the clock. Pick a team below.</div>`:""}
+    ${pending?`<div class="banner">The draft opens ${esc(fmtWhen(L.draftAt))}.${qOn?" Build your queue while you wait.":""}</div>`:myPick?`<div class="banner">You're on the clock. Pick a team below.</div>`:""}
     ${timerCtl}
+    ${queueHTML(L)}
     <div class="pend-list">${order}</div>
     <div class="two">
       <div class="card">
@@ -929,15 +998,337 @@ function draftHTML(L){
           ${admin?`<details><summary class="sub" style="cursor:pointer">Team not listed? Add it</summary>
             <div class="form-grid" style="margin-top:8px"><label class="f" for="cT">Team<input type="text" id="cT"></label>
             <label class="f" for="cP">Pool<select id="cP">${pools.map(p=>`<option>${p}</option>`).join("")}</select></label></div>
-            <div class="btns" style="margin-top:8px"><button type="button" class="btn" id="cAdd">Draft this team</button></div></details>`:(A?(myPick?"":`<p class="ro">${D.onClock?esc(D.onClock)+" is on the clock. ":""}Each manager picks on their own turn; the commissioner can pick for anyone.</p>`):`<p class="ro">The commissioner enters each pick as it's called.</p>`)}
+            <div class="btns" style="margin-top:8px"><button type="button" class="btn" id="cAdd">Draft this team</button></div></details>`:L.mock?(myPick?"":`<p class="ro">${esc(D.onClock||"")} is picking…</p>`):(A?(myPick?"":`<p class="ro">${D.onClock?esc(D.onClock)+" is on the clock. ":""}Each manager picks on their own turn; the commissioner can pick for anyone.</p>`):`<p class="ro">The commissioner enters each pick as it's called.</p>`)}
           <span class="msg" id="dMsg" role="status"></span>
         </div>
-        <div class="avail">${avail||`<span class="sub">No available teams match.</span>`}${all.length>list.length?`<span class="sub">Showing the first ${list.length}. Search to narrow the list.</span>`:""}</div>
+        <div class="avail" data-keep="avail">${avail||`<span class="sub">No available teams match.</span>`}${all.length>list.length?`<span class="sub">Showing the first ${list.length}. Search to narrow the list.</span>`:""}</div>
       </div>
       <div class="card feed"><div class="day-h"><span>Picks</span><span class="sub">${D.i} made</span></div>${feed||`<div class="sub">First pick is ${esc(D.onClock)}'s.</div>`}</div>
     </div>
     ${seatsHTML(L)}
   </section>`;
+}
+
+/* ---------- league home: recap, preview, projection, history ---------- */
+/* Recaps and previews come out on Central time: the recap Tuesday at 8:00 AM, the preview Wednesday at 8:00 AM. */
+function centralNow(){
+  if (window.PF_TEST_NOW) return window.PF_TEST_NOW;
+  try{
+    const p = Object.fromEntries(new Intl.DateTimeFormat("en-CA",{timeZone:"America/Chicago",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",hour12:false}).formatToParts(new Date()).map(x=>[x.type,x.value]));
+    return {date:`${p.year}-${p.month}-${p.day}`, hour:(+p.hour)%24};
+  }catch(_){ return {date:todayISO(), hour:new Date().getHours()}; }
+}
+const addDays = (s, n) => iso(new Date(toD(s).getTime() + n*864e5));
+const listNames = a => a.length<=1 ? (a[0]||"") : a.length===2 ? a.join(" and ") : a.slice(0,-1).join(", ")+" and "+a[a.length-1];
+function latestRecapWeek(){ const n = centralNow(), ws = weekStart(n.date); return addDays(ws, (n.date===ws && n.hour<8) ? -14 : -7); }
+function previewReady(){ const n = centralNow(), ws = weekStart(n.date), wed = addDays(ws,1); return n.date>wed || (n.date===wed && n.hour>=8); }
+const weekNoOf = (C, ws) => C.games.length ? Math.round((toD(ws)-toD(weekStart(C.games[0].date)))/(7*864e5))+1 : 1;
+
+/* Totals and ranks counting only games through endDate. */
+function tableAt(L, C, endDate){
+  const tot = {}; for (const o of L.owners) tot[o] = 0;
+  for (const g of C.games){
+    if (g.date > endDate) break;
+    const k = winnerKey(g), p = k && C.owner[k];
+    if (p) tot[p.owner] += weightOf(L, p.pool);
+  }
+  const order = [...L.owners].sort((a,b)=> tot[b]-tot[a]), rank = {};
+  order.forEach((o,i)=>{ rank[o] = (i>0 && tot[o]===tot[order[i-1]]) ? rank[order[i-1]] : i+1; });
+  return {tot, rank, order};
+}
+
+function recapData(L, C, ws){
+  const we = weekEnd(ws);
+  const games = C.games.filter(g=> g.date>=ws && g.date<=we && (C.owner[g.hk] || C.owner[g.ak]));
+  if (!games.length) return null;
+  const before = tableAt(L, C, addDays(ws,-1)), after = tableAt(L, C, we);
+  const started = L.owners.some(o=>before.tot[o]>0);
+  const wk = {}; for (const o of L.owners) wk[o] = {w:0, l:0};
+  for (const g of games){
+    const win = winnerKey(g);
+    for (const k of [g.hk, g.ak]){ const p = C.owner[k]; if (!p || win===null) continue; if (win===k) wk[p.owner].w += weightOf(L,p.pool); else wk[p.owner].l++; }
+  }
+  const rows = after.order.map(o=>({owner:o, wk:wk[o].w, lost:wk[o].l, total:after.tot[o], rank:after.rank[o], move: started ? before.rank[o]-after.rank[o] : 0}));
+  const lead = rows.filter(r=>r.rank===1).map(r=>r.owner), prevLead = L.owners.filter(o=>before.rank[o]===1);
+  const best = Math.max(...rows.map(r=>r.wk)), worst = Math.min(...rows.map(r=>r.wk));
+  const winners = rows.filter(r=>r.wk===best).map(r=>r.owner), losers = rows.filter(r=>r.wk===worst).map(r=>r.owner);
+  const gap = t => { const v = [...new Set(Object.values(t.tot))].sort((a,b)=>b-a); return v.length>1 ? v[0]-v[1] : 0; };
+  const sameSet = (a,b) => a.length===b.length && a.every(x=>b.includes(x));
+  const climber = [...rows].sort((a,b)=>b.move-a.move)[0];
+  let head;
+  if (!started) head = lead.length===1 ? `${lead[0]} jumps out in front` : `${listNames(lead)} share the early lead`;
+  else if (lead.length===1 && !sameSet(lead, prevLead)) head = prevLead.includes(lead[0]) ? `${lead[0]} takes sole possession of first` : `${lead[0]} takes over first place`;
+  else if (lead.length>1 && !sameSet(lead, prevLead)) head = `${listNames(lead)} tied at the top`;
+  else if (climber && climber.move>=2) head = `${climber.owner} climbs to ${ordinal(climber.rank)}`;
+  else if (lead.length===1 && gap(after)>gap(before)) head = `${lead[0]} stretches the lead to ${fmt(gap(after))}`;
+  else if (lead.length===1 && gap(after)<gap(before)) head = `The pack closes to within ${fmt(gap(after))} of ${lead[0]}`;
+  else head = `${listNames(winners)} win${winners.length===1?"s":""} the week with ${fmt(best)}`;
+  const label = (g, k) => { const p = C.owner[k]; return (p ? p.owner+"'s " : "") + (k===g.hk ? g.home : g.away); };
+  const line = g => { const hw = g.hs>g.as, wkk = hw?g.hk:g.ak, lk = hw?g.ak:g.hk; return `${label(g,wkk)} beat ${label(g,lk)}, ${Math.max(g.hs,g.as)}–${Math.min(g.hs,g.as)}`; };
+  const decided = games.filter(g=>g.hs!==g.as);
+  const h2h = decided.filter(g=> C.owner[g.hk] && C.owner[g.ak] && C.owner[g.hk].owner!==C.owner[g.ak].owner);
+  const byMargin = [...decided].sort((a,b)=> Math.abs(a.hs-a.as)-Math.abs(b.hs-b.as));
+  const notes = [];
+  for (const g of h2h.slice(0,4)) notes.push(["Head to head", line(g)]);
+  if (byMargin.length){ notes.push(["Closest game", line(byMargin[0])]); if (byMargin.length>1) notes.push(["Biggest win", line(byMargin[byMargin.length-1])]); }
+  return {ws, we, weekNo:weekNoOf(C, ws), head, rows, winners, losers, best, worst, notes, count:games.length};
+}
+
+function recapHTML(L, C){
+  const latest = latestRecapWeek();
+  const weeks = [...new Set(C.games.filter(g=>C.owner[g.hk]||C.owner[g.ak]).map(g=>weekStart(g.date)))].filter(w=>w<=latest).sort();
+  if (!weeks.length) return `<article class="card wk"><div class="sport-tag">Weekly recap</div><p class="sub">The first recap arrives the Tuesday morning after this league's teams play.</p></article>`;
+  const ws = weeks.includes(S.recapWeek) ? S.recapWeek : weeks[weeks.length-1], ix = weeks.indexOf(ws);
+  const R = recapData(L, C, ws), me = mine(L);
+  const mv = r => r.move>0 ? `<span class="delta up">▲${r.move}</span>` : r.move<0 ? `<span class="mv-dn">▼${-r.move}</span>` : `<span class="delta zero">–</span>`;
+  return `<article class="card wk">
+    <div class="wk-top"><span class="sport-tag">Weekly recap · ${fmtShort(R.ws)}–${fmtShort(R.we)}</span>
+      <span class="wk-nav"><button type="button" class="ib" data-recap="${ix>0?weeks[ix-1]:""}" ${ix>0?"":"disabled"} aria-label="Earlier recap">‹</button><button type="button" class="ib" data-recap="${ix<weeks.length-1?weeks[ix+1]:""}" ${ix<weeks.length-1?"":"disabled"} aria-label="Later recap">›</button></span></div>
+    <h3 class="wk-title">Week ${R.weekNo} Recap: ${esc(R.head)}</h3>
+    <p class="wk-lede">Best week: <b>${esc(listNames(R.winners))}</b> with ${fmt(R.best)}.${R.worst<R.best?` Toughest: <b>${esc(listNames(R.losers))}</b> with ${fmt(R.worst)}.`:""} ${R.count} game${R.count===1?"":"s"} involved this league's teams.</p>
+    <div class="scroll"><table class="st mini"><thead><tr><th>#</th><th>Manager</th><th class="r">Week</th><th class="r">Total</th><th class="r">Move</th></tr></thead>
+      <tbody>${R.rows.map(r=>`<tr><td class="rk num">${r.rank}</td><td><span class="mgr">${esc(r.owner)}</span>${r.owner===me?` <span class="tag">you</span>`:""}</td><td class="r num delta ${r.wk?"up":"zero"}">${r.wk?"+"+fmt(r.wk):"–"}</td><td class="r num">${fmt(r.total)}</td><td class="r num">${mv(r)}</td></tr>`).join("")}</tbody></table></div>
+    ${R.notes.length?`<ul class="wk-notes">${R.notes.map(([k,v])=>`<li><span class="k">${k}</span>${esc(v)}</li>`).join("")}</ul>`:""}
+  </article>`;
+}
+
+/* Upcoming games come from the schedule feed. Games that already have a final are left out. */
+function upcoming(L, C, ws){
+  const sp = SP(L), we = weekEnd(ws), done = new Set(C.games.filter(g=>g.date>=ws&&g.date<=we).map(g=> g.hk<g.ak ? g.hk+"|"+g.ak : g.ak+"|"+g.hk));
+  const out = [], seen = new Set();
+  for (const d of S.schedDocs) for (const g of (d.games||[])){
+    const lg = normLg(g.lg || d.lg), date = g.date || d.date;
+    if (!/^\d{4}-\d\d-\d\d$/.test(date||"") || date<ws || date>we || !g.home || !g.away || (lg!==sp.pro && lg!==sp.col)) continue;
+    const home = canonName(g.home,lg), away = canonName(g.away,lg), hk = tk(home,lg), ak = tk(away,lg), k = hk<ak ? hk+"|"+ak : ak+"|"+hk;
+    if (done.has(k) || seen.has(date+k)) continue; seen.add(date+k);
+    out.push({date, time:g.time||"", lg, home, away, hk, ak});
+  }
+  return out.sort((a,b)=> a.date<b.date?-1:a.date>b.date?1:(a.time<b.time?-1:1));
+}
+function previewHTML(L, C){
+  const ws = weekStart(centralNow().date), weekNo = weekNoOf(C, ws);
+  const tag = `<span class="sport-tag">Weekly preview · ${fmtShort(ws)}–${fmtShort(weekEnd(ws))}</span>`;
+  if (!S.schedDocs.length) return `<article class="card wk"><div class="wk-top">${tag}</div><p class="sub">The preview needs the upcoming schedule, which arrives with the live score feed. Once that's connected, each Wednesday morning this card lists the games that matter most for the table.</p></article>`;
+  if (!previewReady()) return `<article class="card wk"><div class="wk-top">${tag}</div><p class="sub">This week's preview arrives Wednesday morning.</p></article>`;
+  const games = upcoming(L, C, ws).filter(g=> C.owner[g.hk] || C.owner[g.ak]);
+  if (!games.length) return `<article class="card wk"><div class="wk-top">${tag}</div><p class="sub">No upcoming games for this league's teams are on the schedule this week.</p></article>`;
+  const row = o => C.rows.find(r=>r.owner===o), top = C.rows[0] ? C.rows[0].total : 0;
+  const heat = o => Math.max(0, 6 - (top - row(o).total));          // managers near the top make a game matter more
+  const scored = games.map(g=>{
+    const ho = C.owner[g.hk], ao = C.owner[g.ak], h2h = !!(ho && ao && ho.owner!==ao.owner);
+    return {...g, ho, ao, h2h, score: (h2h?100:0) + (ho?heat(ho.owner):0) + (ao?heat(ao.owner):0)};
+  }).sort((a,b)=> b.score-a.score || (a.date<b.date?-1:1));
+  const watch = scored.slice(0,6), h2hAll = scored.filter(g=>g.h2h), lead = C.rows.filter(r=>r.rank===1).map(r=>r.owner);
+  const count = {}; for (const o of L.owners) count[o] = 0;
+  for (const g of scored){ if (g.ho) count[g.ho.owner]++; if (g.ao) count[g.ao.owner]++; }
+  let head;
+  if (h2hAll.length) head = `${h2hAll[0].ao.owner} and ${h2hAll[0].ho.owner} go head to head in ${h2hAll[0].away} at ${h2hAll[0].home}`;
+  else if (lead.length===1) head = `${lead[0]} puts the lead on the line with ${count[lead[0]]} team${count[lead[0]]===1?"":"s"} in action`;
+  else head = `${listNames(lead)} share first with everything to play for`;
+  const why = g => (g.ho && g.ao && !g.h2h) ? `${esc(g.ho.owner)} has both teams, so one win is certain.` : g.h2h ? `Head to head: ${esc(g.ao.owner)} against ${esc(g.ho.owner)}. One of them picks up a win.`
+    : (()=>{ const p = g.ho || g.ao, r = row(p.owner); return `${esc(p.owner)} (${r.rank===1?"1st":ordinal(r.rank)}, ${fmt(r.total)} wins) has ${esc(p.team)}.`; })();
+  const fmtT = t => { const m = /^(\d{1,2}):(\d\d)/.exec(t||""); if (!m) return ""; const h = +m[1]; return ` · ${((h+11)%12)+1}:${m[2]} ${h<12?"AM":"PM"}`; };
+  return `<article class="card wk">
+    <div class="wk-top">${tag}</div>
+    <h3 class="wk-title">Week ${weekNo} Preview: ${esc(head)}</h3>
+    <ul class="wk-games">${watch.map(g=>`<li><div class="mt"><b>${esc(g.away)}</b> at <b>${esc(g.home)}</b> <span class="lg">${g.lg}</span></div><div class="sub">${fmtDay(g.date)}${fmtT(g.time)}</div><div class="why">${why(g)}</div></li>`).join("")}</ul>
+    <p class="sub">Teams in action this week: ${C.rows.map(r=>`${esc(r.owner)} ${count[r.owner]}`).join(" · ")}</p>
+  </article>`;
+}
+
+/* Projection: each team keeps winning at its current pace for the rest of its regular season. */
+const SEASON_GAMES = {NFL:17, CFB:12, NBA:82, CBB:31};
+function projection(L, C){
+  const rows = C.rows.map(r=>{
+    let proj = 0;
+    for (const h of r.holdings){ const gp = h.w+h.l+h.t, left = Math.max(0, SEASON_GAMES[lgOfPool(L,h.pool)] - gp); proj += (h.w + left*(h.w+2)/(gp+4)) * h.wt; }
+    return {owner:r.owner, total:r.total, rank:r.rank, proj};
+  }).sort((a,b)=> b.proj-a.proj);
+  rows.forEach((r,i)=>{ r.projRank = (i>0 && Math.abs(r.proj-rows[i-1].proj)<0.05) ? rows[i-1].projRank : i+1; });
+  return rows;
+}
+function projectionHTML(L, C){
+  if (!C.picks.length || !C.games.length) return "";
+  const P = projection(L, C), me = mine(L), max = Math.max(1, ...P.map(r=>r.proj)), sp = C.sp;
+  return `<div class="head-row"><h2>Projected finish</h2><p class="sub">Where the table ends up if every team keeps its current pace.</p></div>
+    <div class="card scroll"><table class="st mini"><thead><tr><th>#</th><th>Manager</th><th class="r">Now</th><th class="r">Projected</th><th class="r hide-sm">Now ranked</th></tr></thead>
+    <tbody>${P.map(r=>`<tr><td class="rk num">${r.projRank}</td><td><span class="mgr">${esc(r.owner)}</span>${r.owner===me?` <span class="tag">you</span>`:""}<div class="bar"><i style="width:${(r.proj/max*100).toFixed(1)}%"></i></div></td><td class="r num">${fmt(r.total)}</td><td class="r num tot">${r.proj.toFixed(1)}</td><td class="r num hide-sm">${ordinal(r.rank)}${r.projRank<r.rank?` <span class="delta up">▲${r.rank-r.projRank}</span>`:r.projRank>r.rank?` <span class="mv-dn">▼${r.projRank-r.rank}</span>`:""}</td></tr>`).join("")}</tbody></table></div>
+    <p class="sub">Each team's pace over the rest of its regular season (${SEASON_GAMES[sp.pro]} ${sp.pro} games, ${SEASON_GAMES[sp.col]} college), leaning slightly toward .500 early on. Postseason games aren't projected.</p>`;
+}
+
+function seasonRecords(L, C){
+  const out = [], weeks = [...new Set(C.games.map(g=>weekStart(g.date)))].sort();
+  let bw = null;
+  for (const ws of weeks){ const R = recapData(L, C, ws); if (R && (!bw || R.best>bw.best)) bw = R; }
+  if (bw && bw.best>0) out.push(["Best week", `${listNames(bw.winners)}, ${fmt(bw.best)} wins in Week ${bw.weekNo}`]);
+  const teams = C.rows.flatMap(r=>r.holdings.map(h=>({...h, owner:r.owner}))).filter(h=>h.w+h.l+h.t>0).sort((a,b)=> b.w-a.w || a.l-b.l);
+  if (teams.length) out.push(["Top team", `${teams[0].team} (${teams[0].owner}), ${teams[0].w}-${teams[0].l}${teams[0].t?"-"+teams[0].t:""}`]);
+  const un = teams.filter(h=>h.l===0 && h.t===0 && h.w>=3);
+  if (un.length) out.push(["Still unbeaten", un.length<=5 ? un.map(h=>`${h.team} (${h.owner})`).join(", ") : `${un.length} drafted teams`]);
+  return out;
+}
+function historyHTML(L, C){
+  const H = Array.isArray(L.history) ? L.history : [], admin = canAdmin(L), rec = C.picks.length ? seasonRecords(L, C) : [];
+  const rows = H.map((h,i)=>`<tr><td class="num">${esc(h.season)}</td><td><span class="mgr">${esc(h.champion)}</span></td><td class="r num">${h.wins===""||h.wins==null?"–":esc(h.wins)}</td><td class="hide-sm">${esc(h.note||"")}</td>${admin?`<td class="r"><button type="button" class="x" data-hdel="${i}" aria-label="Remove ${esc(h.season)}">✕</button></td>`:""}</tr>`).join("");
+  return `<div class="head-row"><h2>League history</h2><p class="sub">Past champions and this season's marks.</p></div>
+    ${rec.length?`<ul class="wk-notes card" style="padding:12px 14px">${rec.map(([k,v])=>`<li><span class="k">${k}</span>${esc(v)}</li>`).join("")}</ul>`:""}
+    ${H.length?`<div class="card scroll"><table class="st mini"><thead><tr><th>Season</th><th>Champion</th><th class="r">Wins</th><th class="hide-sm">Note</th>${admin?"<th></th>":""}</tr></thead><tbody>${rows}</tbody></table></div>`
+      : `<div class="card empty" style="padding:20px 16px"><strong>No past seasons recorded.</strong>${admin?"Add earlier champions below so the league's history starts on day one.":"The commissioner can add earlier champions here."}</div>`}
+    ${admin?`<form class="card form" id="histForm" autocomplete="off"><h3>Add a past season</h3>
+      <div class="form-grid"><label class="f" for="hSeason">Season<input type="text" id="hSeason" placeholder="2025–26" maxlength="20" required></label>
+      <label class="f" for="hChamp">Champion<input type="text" id="hChamp" maxlength="40" required list="hOwners"></label>
+      <label class="f" for="hWins">Wins<input type="number" id="hWins" min="0" step="0.5" inputmode="decimal"></label>
+      <label class="f" for="hNote">Note (optional)<input type="text" id="hNote" maxlength="80"></label></div>
+      <datalist id="hOwners">${L.owners.map(o=>`<option value="${esc(o)}">`).join("")}</datalist>
+      <div class="btns"><button class="btn" type="submit">Add to history</button><span class="msg" id="hMsg" role="status"></span></div></form>`:""}`;
+}
+
+const fmtWhen = s => new Date(s).toLocaleString("en-US",{weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});
+const toLocalInput = s => { const d = new Date(s), z = n=>String(n).padStart(2,"0"); return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}T${z(d.getHours())}:${z(d.getMinutes())}`; };
+const draftPending = L => !!(L.draftAt && L.status==="drafting" && new Date(L.draftAt).getTime() > (A ? A.now() : Date.now()));
+
+function leagueHTML(L, C){
+  const D = draftState(L), me = mine(L), r = me && C.rows.find(x=>x.owner===me);
+  let draftCard = "";
+  if (L.status==="drafting"){
+    const myTurn = !!(A && meId() && D.onClock && (L.members||{})[D.onClock]===meId());
+    draftCard = L.draftAt
+      ? `<div class="card clock"><div><div class="meta">Draft scheduled</div><div class="who">${esc(fmtWhen(L.draftAt))}</div><div class="sub" style="margin-top:6px">Picks open then${L.pickSeconds?` and the ${spanText(L.pickSeconds)} pick timer starts on its own`:""}. ${D.onClock?esc(D.onClock)+" picks first.":""}</div></div>
+          <div class="clock-side"><div class="tm" id="draftCountdown" data-at="${new Date(L.draftAt).getTime()}" data-lg="${esc(L.id)}"><div class="t">${leftText(Math.ceil((new Date(L.draftAt).getTime()-(A?A.now():Date.now()))/1000))}</div><div class="lab">until the draft</div></div><button type="button" class="btn" data-tabgo="draft">Draft room</button></div></div>`
+      : `<div class="card clock"><div><div class="meta">Draft in progress · pick ${Math.min(D.i+1,D.total)} of ${D.total}</div><div class="who">${esc(D.onClock||"Done")}</div><div class="sub" style="margin-top:6px">${myTurn?"You're on the clock.":"is on the clock."}</div></div>
+          <div class="clock-side"><button type="button" class="btn primary" data-tabgo="draft">${myTurn?"Make your pick":"Open the draft"}</button></div></div>`;
+  }
+  const you = r && C.picks.length ? (()=>{ const P = C.games.length ? projection(L,C).find(x=>x.owner===me) : null, tied = C.rows.filter(x=>x.rank===r.rank).length>1;
+    return `<button type="button" class="card you" data-tabgo="team"><span><span class="sport-tag">Your portfolio</span><span class="who">${esc(me)}</span></span>
+      <span class="kv"><b>${fmt(r.total)}</b> wins · <b>${tied?"T-":""}${ordinal(r.rank)}</b> of ${L.owners.length}${P?` · projected <b>${P.proj.toFixed(1)}</b> (${ordinal(P.projRank)})`:""}</span></button>`; })() : "";
+  const body = C.picks.length && C.games.length
+    ? `${recapHTML(L, C)}${previewHTML(L, C)}${projectionHTML(L, C)}`
+    : (C.picks.length ? `<div class="card empty"><strong>Rosters are set.</strong>The first recap arrives the Tuesday morning after this league's teams play.</div>`
+      : (L.status==="drafting" ? "" : `<div class="card empty"><strong>No rosters yet.</strong>This league hasn't drafted.</div>`));
+  return `<section class="panel">
+    <div class="head-row"><h2>${esc(L.name)}</h2><p class="sub">${SP(L).label} ${seasonLabel(L.year)} · ${L.owners.length} managers · ${esc(slotText(L))}</p></div>
+    ${draftCard}${you}${body}
+    ${historyHTML(L, C)}
+  </section>`;
+}
+
+/* ---------- chat ---------- */
+function startChat(id){
+  if (S.chatConn) S.chatConn.close();
+  S.chat = {id, msgs:[], loaded:false, err:"", sig:""};
+  S.chatConn = A.openChat(id, res=>{
+    if (!S.chat || S.chat.id!==id) return;
+    const sig = (res.error||"") + "|" + res.messages.length + "|" + (res.messages.length ? res.messages[res.messages.length-1].id : 0);
+    const changed = sig!==S.chat.sig || !S.chat.loaded;
+    S.chat.msgs = res.messages; S.chat.err = res.error||""; S.chat.loaded = true; S.chat.sig = sig;
+    if (changed && S.view==="league" && S.tab==="chat" && S.leagueId===id){ S.chatStick = true; render(); }
+  });
+}
+function stopChat(){ if (S.chatConn){ S.chatConn.close(); S.chatConn = null; } S.chat = null; }
+function chatHTML(L){
+  const wrap = inner => `<section class="panel"><div class="head-row"><h2>League chat</h2><p class="sub">Only this league's managers can read and post here.</p></div>${inner}</section>`;
+  if (!hasV3()) return wrap(`<div class="card empty"><strong>Chat isn't available right now.</strong>${A?"It switches on once the site's database is updated.":"Chat is part of the website version of The Portfolio."}</div>`);
+  if (!meId()) return wrap(`<div class="card empty"><strong>Sign in to chat.</strong>Chat is for the managers in this league.<div class="btns" style="justify-content:center;margin-top:12px"><button class="btn primary" data-auth="in">Sign in</button></div></div>`);
+  if (!mine(L) && !canAdmin(L)) return wrap(`<div class="card empty"><strong>Chat is for this league's managers.</strong>Join with the commissioner's invite link to take part.</div>`);
+  if (!S.chat || S.chat.id!==L.id) startChat(L.id);
+  const c = S.chat, admin = canAdmin(L), uid = meId();
+  const day = s => new Date(s).toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});
+  let last = "";
+  const list = c.msgs.map(m=>{
+    const d = day(m.created_at), sep = d!==last ? `<div class="chat-day">${d}</div>` : ""; last = d;
+    const mineMsg = m.user_id===uid;
+    return `${sep}<div class="cm ${mineMsg?"me":""}"><div class="cm-h"><b>${esc(m.name)}</b><span>${new Date(m.created_at).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"})}</span>${(mineMsg||admin)?`<button type="button" class="x" data-mdel="${m.id}" aria-label="Delete message">✕</button>`:""}</div><div class="cm-b">${esc(m.body)}</div></div>`;
+  }).join("");
+  return wrap(`<div class="card chat">
+      <div class="chat-list" id="chatList" aria-live="polite">${!c.loaded ? `<p class="sub">Loading messages…</p>` : c.err ? `<p class="msg err">${esc(c.err)}</p>` : (list || `<p class="sub">No messages yet. Say something to get it started.</p>`)}</div>
+      <form class="chat-form" id="chatForm" autocomplete="off"><input type="text" id="chatBody" maxlength="500" placeholder="Message the league" aria-label="Message" required><button class="btn primary" type="submit">Send</button></form>
+      <span class="msg" id="chatMsg" role="status" style="padding:0 12px 8px"></span></div>`);
+}
+
+/* ---------- draft queue (website only) ---------- */
+const poolOfTeam = (L, team) => SP(L).pools.find(p=> SP(L).teams[p].some(t=>t.toLowerCase()===String(team).toLowerCase())) || null;
+const canQueue = L => !!(hasV3() && !L.mock && L.status==="drafting" && meId() && mine(L));
+function ensureQueue(L){
+  if (S.queue && S.queue.id===L.id) return;
+  const q = S.queue = {id:L.id, teams:[], loaded:false};
+  A.getQueue(L.id).then(t=>{ q.teams = Array.isArray(t)?t:[]; }).catch(()=>{}).then(()=>{ q.loaded = true; if (S.queue===q) render(); });
+}
+async function saveQueue(teams){
+  const q = S.queue; if (!q) return;
+  q.teams = teams; render();
+  try{ await A.setQueue(q.id, teams); }catch(err){ setMsg("#qMsg", failText(err)); }
+}
+function queueHTML(L){
+  if (!canQueue(L)) return "";
+  ensureQueue(L);
+  const q = S.queue, taken = new Set((L.picks||[]).map(p=>pk(L,p))), need = needsFor(L, mine(L));
+  const live = q.teams.map(t=>({t, p:poolOfTeam(L,t)})).filter(x=> x.p && !taken.has(tk(x.t, lgOfPool(L,x.p))));
+  const items = live.map((x,i)=>`<li class="${canTake(L,need,x.p)?"":"full"}"><span class="ord">${i+1}</span>${chip(x.p)}<span class="who">${esc(x.t)}</span>${canTake(L,need,x.p)?"":`<span class="sub">spot filled</span>`}
+      <button type="button" class="ib" data-qmv="${i}|-1" ${i?"":"disabled"} aria-label="Move ${esc(x.t)} up">↑</button>
+      <button type="button" class="ib" data-qmv="${i}|1" ${i<live.length-1?"":"disabled"} aria-label="Move ${esc(x.t)} down">↓</button>
+      <button type="button" class="ib" data-qrm="${esc(x.t)}" aria-label="Remove ${esc(x.t)} from queue">✕</button></li>`).join("");
+  return `<details class="card qcard" ${S.queueShut?"":"open"} id="qCard"><summary><span>My queue</span><span class="sub">${q.loaded ? `${live.length} team${live.length===1?"":"s"}` : "Loading…"}</span></summary>
+    <div class="form" style="padding-top:0"><p class="sub">Add teams with the + next to each name. If your time runs out, auto-pick takes the first one here that is still on the board and fits an open spot. Only you can see your queue.</p>
+    <ol class="mgr-list">${items || `<li><span class="sub">Nothing queued yet.</span></li>`}</ol><span class="msg" id="qMsg" role="status"></span></div></details>`;
+}
+
+/* ---------- practice draft: you against auto-pick, nothing saved ---------- */
+function slotFor(L, need, pool){
+  if (need.req[pool]>0){ const n = slotsOf(L)[pool]; return n>1 ? `${pool} #${n-need.req[pool]+1}` : pool; }
+  const f = flexOf(L); return f>1 ? `Any #${f-need.flex+1}` : "Any";
+}
+function openMock(base){
+  S.mock = {L:null, busy:false, err:"", sport: base ? sportOf(base) : "football", n: base ? base.owners.length : 10, pos:"r", slots: base && base.slots ? {...base.slots} : null, flex: base ? flexOf(base) : 0, from: base ? base.name : ""};
+  S.view = "mock"; S.draftQ = ""; S.draftPool = "all"; render(); try{ window.scrollTo(0,0); }catch(_){}
+}
+async function startMock(){
+  const M = S.mock, sp = SPORTS[M.sport];
+  M.busy = true; M.err = ""; render();
+  try{
+    const ranks = await A.ranks(M.sport);
+    const n = Math.max(2, Math.min(16, M.n|0)), pos = M.pos==="r" ? 1+Math.floor(Math.random()*n) : Math.min(n, +M.pos);
+    const owners = Array.from({length:n}, (_,i)=> i+1===pos ? "You" : "Auto "+(i+1));
+    M.ranks = ranks;
+    M.L = {id:"practice", mock:true, me:"You", name:"Practice draft", sport:M.sport, year:thisSeason(), owners, slots: M.slots || {...sp.slots}, flex: M.slots ? M.flex : sp.flex, weights:{...sp.weights}, draftType:"snake", status:"drafting", picks:[]};
+  }catch(err){ M.err = failText(err); }
+  M.busy = false; render(); botLoop();
+}
+function botLoop(){
+  const M = S.mock; if (!M || !M.L || S.view!=="mock") return;
+  const L = M.L, D = draftState(L);
+  if (L.status!=="drafting" || !D.onClock || D.onClock===L.me) return;
+  clearTimeout(M.timer);
+  M.timer = setTimeout(()=>{
+    if (S.mock!==M || S.view!=="mock") return;
+    const D2 = draftState(L), bot = D2.onClock; if (!bot || bot===L.me) return;
+    const need = needsFor(L, bot), taken = new Set(L.picks.map(p=>pk(L,p)));
+    const opts = M.ranks.filter(t=> canTake(L, need, t.pool) && !taken.has(tk(t.team, lgOfPool(L,t.pool)))).slice(0,3);
+    if (!opts.length){ L.status = "complete"; render(); return; }
+    const roll = Math.random(), c = opts[roll<0.6 ? 0 : roll<0.9 ? Math.min(1,opts.length-1) : opts.length-1];
+    L.picks.push({n:D2.i+1, owner:bot, team:c.team, pool:c.pool, slot:slotFor(L, need, c.pool), auto:true});
+    if (L.picks.length>=D2.total) L.status = "complete";
+    render(); botLoop();
+  }, 420);
+}
+function mockHTML(){
+  const M = S.mock;
+  if (!M) return "";
+  if (!M.L){
+    const sp = SPORTS[M.sport];
+    return `<section class="panel auth"><div class="head-row"><h2>Practice draft</h2></div>
+      <form class="card form" id="mockForm" autocomplete="off">
+        <p class="sub">Draft against auto-pick to learn how it works. Nothing here is saved, and nobody else sees it.</p>
+        <label class="f" for="mkSport">Sport<select id="mkSport">${SPORT_KEYS.map(k=>`<option value="${k}" ${k===M.sport?"selected":""}>${SPORTS[k].label}</option>`).join("")}</select></label>
+        <label class="f" for="mkN">Managers<select id="mkN">${[2,4,6,8,10,12,14,16].concat([2,4,6,8,10,12,14,16].includes(M.n)?[]:[M.n]).sort((a,b)=>a-b).map(v=>`<option ${v===M.n?"selected":""}>${v}</option>`).join("")}</select></label>
+        <label class="f" for="mkPos">Your draft position<select id="mkPos"><option value="r">Random</option>${Array.from({length:M.n},(_,i)=>`<option value="${i+1}" ${String(M.pos)===String(i+1)?"selected":""}>${i+1}</option>`).join("")}</select></label>
+        <p class="sub">Each manager drafts ${esc(slotText({sport:M.sport, slots:M.slots||sp.slots, flex:M.slots?M.flex:sp.flex}))}${M.slots&&M.from?`, the same as ${esc(M.from)}`:""}.</p>
+        <div class="btns"><button class="btn primary" type="submit" ${M.busy?"disabled":""}>${M.busy?"Setting up…":"Start practice draft"}</button><button type="button" class="btn" id="mockExit">Cancel</button><span class="msg err" role="status">${esc(M.err)}</span></div>
+      </form></section>`;
+  }
+  const L = M.L, done = L.status!=="drafting", mineP = L.picks.filter(p=>p.owner===L.me);
+  return `<div class="banner mockbar"><span>Practice draft. Nothing here is saved.</span><span class="btns"><button type="button" class="btn" id="mockAgain">Start over</button><button type="button" class="btn" id="mockExit">Exit</button></span></div>
+    ${done?`<section class="panel" style="margin-bottom:20px"><div class="head-row"><h2>Your practice team</h2><p class="sub">${mineP.length} teams</p></div><div class="card pend-list" style="padding:12px;margin:0">${mineP.map(p=>`<span class="pill">${chip(p.pool)} ${esc(p.team)}</span>`).join("")}</div></section>`:""}
+    ${draftHTML(L)}`;
 }
 
 /* ---------- settings ---------- */
@@ -960,13 +1351,16 @@ function settingsHTML(){
       <details><summary>How do I see my team?</summary><p>${A?"Join a league with the invite link from its commissioner. It then appears under My Portfolios on Home, and you can switch between portfolios from the menu at the top.":"Open a league and pick your name on the My Team tab. That league then appears under My Portfolios on Home, and you can switch between portfolios from the menu at the top."}</p></details>
       <details><summary>A score looks wrong. What now?</summary><p>Tell your commissioner. They can enter a correction, and a corrected result always replaces the automatic one.</p></details>
       <details><summary>How do I start a league?</summary><p>${A?"Sign in and use Create a league on Home. You become its commissioner: you set the managers and draft order, share the invite link, and can make or undo picks for anyone.":"New leagues are set up by the commissioner, who also runs the draft."}</p></details>
-      ${A?`<details><summary>How does the draft work?</summary><p>Managers pick on their own phones when it's their turn, and everyone sees each pick as it happens. The commissioner can pick on behalf of a manager who isn't there.</p><p>The commissioner can also set a pick timer. If your time runs out, the best team still available for one of your open spots is picked for you, and the draft moves on.</p></details>`:""}</div>
+      ${A?`<details><summary>How does the draft work?</summary><p>Managers pick on their own phones when it's their turn, and everyone sees each pick as it happens. The commissioner can pick on behalf of a manager who isn't there.</p><p>The commissioner can also set a pick timer. If your time runs out, the first available team in your queue is picked for you, or the best team left for one of your open spots, and the draft moves on.</p><p>Build your queue in the Draft tab with the + next to each team. Only you can see it. Use Practice draft to try the format against auto-pick; nothing there is saved.</p></details>
+      <details><summary>What are the weekly recap and preview?</summary><p>Each league's League tab gets a recap on Tuesday morning covering the week just finished: who won the week, who moved in the table and the results that decided it. On Wednesday morning the preview lists the upcoming games that matter most. The preview needs the game schedule, which arrives with the live score feed.</p></details>
+      <details><summary>How is the projected finish worked out?</summary><p>Each team is assumed to keep winning at its current pace for the rest of its regular season, leaning slightly toward .500 early in the year. It's a pace, not a prediction: postseason games aren't included until they're played.</p></details>`:""}</div>
     <div class="card set"><h3>Legal notices</h3>
       <p>The Portfolio is an independent game and is not affiliated with, endorsed by or sponsored by the NFL, the NBA, the NCAA, or any team, school or conference. Team and school names are used only to identify the teams being followed.</p>
       <p>The Portfolio does not take entry fees or pay prizes, and is for entertainment.</p></div>
     <div class="card set"><h3>Privacy</h3>
       ${A?`<p>An account stores your email address, full name, username and, if you give one, a phone number. They are kept in the site's database (hosted by Supabase) and are visible only to you. They are used to sign you in and, later, to send the alerts you choose.</p>
       <p>League pages are public: anyone with the link can see the manager names a commissioner entered, their teams and results. Your account details are never shown there.</p>
+      <p>Chat messages can be read only by the managers in that league and its commissioner. Your draft queue is visible only to you. If you sign in with Google, Google passes the site your name and email address.</p>
       <p>Your display theme is saved in this browser only.</p>`:`<p>This version does not ask for or store personal information. Your display theme and the name you pick in each league are saved in this browser only and are never sent anywhere.</p>
       <p>League pages show each manager's first name, their teams and results to anyone who has the link.</p>`}</div>
   </section>`;
@@ -994,9 +1388,7 @@ function accountHTML(){
     <form class="card set" id="alertForm"><h3>Alert preferences</h3>
       <label class="check" for="alDraft"><input type="checkbox" id="alDraft" ${al.draft!==false?"checked":""}> When it's my turn in a draft</label>
       <label class="check" for="alWeekly"><input type="checkbox" id="alWeekly" ${al.weekly!==false?"checked":""}> Weekly results for my portfolios</label>
-      <label class="check" for="alSms"><input type="checkbox" id="alSms" ${al.sms===true?"checked":""}> Text these alerts to my phone number</label>
-      <p class="sub">By turning on texts you agree to receive text messages from The Portfolio about your leagues at the phone number on your account. Message frequency varies. Message and data rates may apply. Reply STOP to stop or HELP for help.</p>
-      <p class="sub">Texts aren't switched on yet. Your choices are saved and will apply when they start.</p>
+      <p class="sub">Alerts aren't being sent yet. Your choices are saved and will apply when they start.</p>
       <div class="btns"><button class="btn" type="submit">Save alert preferences</button><span class="msg" id="alMsg" role="status"></span></div>
     </form>
     <div class="card set"><h3>Log out</h3><div class="btns"><button type="button" class="btn danger" id="logout">Log out</button><span class="sub">Signed in as ${esc(u.email||"")}</span></div></div>`;
@@ -1017,7 +1409,7 @@ function authHTML(){
       <div class="btns"><button class="btn primary" type="submit">Email me a reset link</button><span class="msg" id="auMsg" role="status"></span></div>
       <p class="sub"><button type="button" class="linkbtn" data-auth="in">Back to sign in</button></p>
     </form></section>`;
-  if (m==="up") return `<section class="panel auth"><div class="head-row"><h2>Create your account</h2></div>${note}
+  if (m==="up") return `<section class="panel auth"><div class="head-row"><h2>Create your account</h2></div>${note}${S.auth.google?`<div class="card form"><button type="button" class="btn gbtn" id="googleBtn">Continue with Google</button><p class="sub" style="text-align:center">or use your email below</p></div>`:""}
     <form class="card form" id="signUpForm" autocomplete="on">
       <label class="f" for="suName">Full name<input type="text" id="suName" autocomplete="name" maxlength="80" required></label>
       <label class="f" for="suUser">Username<input type="text" id="suUser" autocomplete="username" minlength="3" maxlength="24" pattern="[A-Za-z0-9_.\\-]+" required></label>
@@ -1027,7 +1419,7 @@ function authHTML(){
       <div class="btns"><button class="btn primary" type="submit">Create account</button><span class="msg" id="auMsg" role="status"></span></div>
       <p class="sub">Already have an account? <button type="button" class="linkbtn" data-auth="in">Sign in</button></p>
     </form></section>`;
-  return `<section class="panel auth"><div class="head-row"><h2>Sign in</h2></div>${note}
+  return `<section class="panel auth"><div class="head-row"><h2>Sign in</h2></div>${note}${S.auth.google?`<div class="card form"><button type="button" class="btn gbtn" id="googleBtn">Continue with Google</button><p class="sub" style="text-align:center">or use your email below</p></div>`:""}
     <form class="card form" id="signInForm" autocomplete="on">
       <label class="f" for="siEmail">Email<input type="email" id="siEmail" autocomplete="email" required></label>
       <label class="f" for="siPw">Password<input type="password" id="siPw" autocomplete="current-password" required></label>
@@ -1057,7 +1449,7 @@ function joinHTML(){
 
 /* Commissioner's panel on the Draft tab: the invite link and who has joined. */
 function seatsHTML(L){
-  if (!A || !canAdmin(L)) return "";
+  if (!A || L.mock || !canAdmin(L)) return "";
   const code = S.invites[L.id], m = L.members || {};
   if (code===undefined){ S.invites[L.id] = null; A.invite(L.id).then(c=>{ S.invites[L.id]=c; render(); }).catch(()=>{ S.invites[L.id]=""; render(); }); }
   const link = code ? `${PUBLIC_BASE}#join.${L.id}.${code}` : "";
@@ -1097,12 +1489,10 @@ function bindAccounts(){
   const pw=$("#pwForm"); if(pw) pw.onsubmit=async e=>{ e.preventDefault();
     try{ await A.updatePassword($("#pwNew").value); S.reset.add("pwNew"); render(); setMsg("#pwMsg","Password changed.",true); }catch(err){ setMsg("#pwMsg",failText(err)); } };
   const al=$("#alertForm"); if(al) al.onsubmit=async e=>{ e.preventDefault();
-    const sms = $("#alSms").checked;
-    if (sms && !(S.auth.profile && S.auth.profile.phone)) return setMsg("#alMsg","Add your phone number under Account information first, then save it.");
-    try{ await A.updateProfile({alerts:{draft:$("#alDraft").checked, weekly:$("#alWeekly").checked, sms}}); setMsg("#alMsg","Saved.",true); }catch(err){ setMsg("#alMsg",failText(err)); } };
+    try{ await A.updateProfile({alerts:{draft:$("#alDraft").checked, weekly:$("#alWeekly").checked}}); setMsg("#alMsg","Saved.",true); }catch(err){ setMsg("#alMsg",failText(err)); } };
   const lo=$("#logout"); if(lo) lo.onclick=async()=>{ await A.signOut(); S.view="home"; render(); };
   document.querySelectorAll("[data-seat]").forEach(b=> b.onclick=async()=>{
-    const j=S.join; try{ await A.join(j.id, j.code, b.dataset.seat); S.join=null; go("league", j.id, "team"); }catch(err){ setMsg("#jnMsg",failText(err)); } });
+    const j=S.join; try{ await A.join(j.id, j.code, b.dataset.seat); S.join=null; try{ localStorage.removeItem("pf-join"); }catch(_){} go("league", j.id, "team"); }catch(err){ setMsg("#jnMsg",failText(err)); } });
   document.querySelectorAll("[data-take]").forEach(b=> b.onclick=async()=>{
     const L=league(); try{ await A.join(L.id, S.invites[L.id], b.dataset.take); }catch(err){ setMsg("#stMsg",failText(err)); } });
   document.querySelectorAll("[data-release]").forEach(b=> b.onclick=async()=>{
@@ -1119,7 +1509,20 @@ async function askAutoPick(id){
   try{ if (meId()){ const n = await A.autoPick(id); if (!n) await A.refresh(); } else await A.refresh(); }catch(_){}
   finally{ autoBusy = false; }
 }
+let startBusy = false, startNext = 0;
+async function askStart(id){
+  if (startBusy || Date.now() < startNext) return;
+  startBusy = true; startNext = Date.now() + 3000 + Math.random()*1500;
+  try{ if (meId()) await A.startIfDue(id); else await A.refresh(); }catch(_){}
+  finally{ startBusy = false; }
+}
 function tickClock(){
+  const dc = $("#draftCountdown");
+  if (dc && A){
+    const left = Math.ceil((+dc.dataset.at - A.now())/1000), t = dc.querySelector(".t"), txt = left>0 ? leftText(left) : "0:00";
+    if (t.textContent !== txt) t.textContent = txt;
+    if (left <= 0 && S.auth.live) askStart(dc.dataset.lg);
+  }
   const el = $("#pickClock"); if (!el || !A) return;
   const left = Math.ceil((+el.dataset.end - A.now())/1000);
   const t = el.querySelector(".t"), lab = el.querySelector(".lab"), txt = leftText(left);
@@ -1159,6 +1562,39 @@ function bind(){
   document.querySelectorAll("[data-pick]").forEach(b=> b.onclick=()=> makePick(b.dataset.pick, b.dataset.pool));
   const cAdd=$("#cAdd"); if(cAdd) cAdd.onclick=()=>{ const t=$("#cT").value.trim(); if(t) makePick(t, $("#cP").value); };
   const u=$("#undoPick"); if(u) u.onclick=undoPick;
+  document.querySelectorAll("[data-tabgo]").forEach(b=> b.onclick=()=>{ S.tab=b.dataset.tabgo; render(); try{ window.scrollTo(0,0); }catch(_){} });
+  document.querySelectorAll("[data-recap]").forEach(b=> b.onclick=()=>{ if (b.dataset.recap){ S.recapWeek=b.dataset.recap; render(); } });
+  // league history
+  const saveHist = async h => { const L=league(); try{ await S.db.doc(`leagues/${L.id}`).update({history:h}); ["hSeason","hChamp","hWins","hNote"].forEach(id=>S.reset.add(id)); if (!A) render(); }catch(err){ setMsg("#hMsg",failText(err)); } };
+  const hf=$("#histForm"); if(hf) hf.onsubmit=e=>{ e.preventDefault(); const L=league(), season=$("#hSeason").value.trim(), champion=$("#hChamp").value.trim(); if(!season||!champion) return;
+    const w=$("#hWins").value; saveHist([...(Array.isArray(L.history)?L.history:[]), {season, champion, wins: w===""?"":+w, note:$("#hNote").value.trim()}].slice(-60)); };
+  document.querySelectorAll("[data-hdel]").forEach(b=> b.onclick=()=>{ const L=league(); saveHist((L.history||[]).filter((_,i)=>i!==+b.dataset.hdel)); });
+  // chat
+  const cf=$("#chatForm"); if(cf) cf.onsubmit=async e=>{ e.preventDefault(); const L=league(), el=$("#chatBody"), body=el.value.trim(); if(!body) return;
+    el.value=""; try{ await A.sendMessage(L.id, body); }catch(err){ el.value=body; setMsg("#chatMsg",failText(err)); } };
+  document.querySelectorAll("[data-mdel]").forEach(b=> b.onclick=async()=>{ try{ await A.deleteMessage(+b.dataset.mdel); }catch(err){ setMsg("#chatMsg",failText(err)); } });
+  // draft queue
+  const qc=$("#qCard"); if(qc) qc.ontoggle=()=>{ S.queueShut = !qc.open; };
+  document.querySelectorAll("[data-q]").forEach(b=> b.onclick=()=>{ const q=S.queue; if(!q||!q.loaded) return; const t=b.dataset.q, has=q.teams.some(x=>x.toLowerCase()===t.toLowerCase());
+    saveQueue(has ? q.teams.filter(x=>x.toLowerCase()!==t.toLowerCase()) : [...q.teams, t]); });
+  const liveQueue = () => { const L=league(), taken=new Set((L.picks||[]).map(p=>pk(L,p))); return S.queue.teams.filter(t=>{ const p=poolOfTeam(L,t); return p && !taken.has(tk(t,lgOfPool(L,p))); }); };
+  document.querySelectorAll("[data-qmv]").forEach(b=> b.onclick=()=>{ const [i,d]=b.dataset.qmv.split("|").map(Number), a=liveQueue(); [a[i],a[i+d]]=[a[i+d],a[i]]; saveQueue(a); });
+  document.querySelectorAll("[data-qrm]").forEach(b=> b.onclick=()=> saveQueue(liveQueue().filter(x=>x!==b.dataset.qrm)));
+  // scheduled draft
+  const da=$("#dAt"); if(da) da.oninput=()=>{ S.dAtDirty=true; };
+  const ds=$("#dSave"); if(ds) ds.onclick=async()=>{ const L=league(), v=$("#dAt").value; if(!v) return setMsg("#tmMsg","Choose a date and time first.");
+    const when=new Date(v); if(isNaN(when)) return setMsg("#tmMsg","That date and time isn't valid.");
+    try{ await A.setDraftTime(L.id, when.toISOString()); S.dAtDirty=false; }catch(err){ setMsg("#tmMsg",failText(err)); } };
+  const dc=$("#dClear"); if(dc) dc.onclick=async()=>{ try{ await A.setDraftTime(league().id, null); S.dAtDirty=false; S.reset.add("dAt"); render(); }catch(err){ setMsg("#tmMsg",failText(err)); } };
+  // practice draft
+  document.querySelectorAll("[data-mock]").forEach(b=> b.onclick=()=> openMock(b.dataset.mock==="new" ? null : league()));
+  const mf=$("#mockForm"); if(mf) mf.onsubmit=e=>{ e.preventDefault(); startMock(); };
+  const mks=$("#mkSport"); if(mks) mks.onchange=()=>{ S.mock.sport=mks.value; S.mock.slots=null; S.mock.from=""; S.reset.add("mkSport"); render(); };
+  const mkn=$("#mkN"); if(mkn) mkn.onchange=()=>{ S.mock.n=+mkn.value; if (S.mock.pos!=="r" && +S.mock.pos>S.mock.n) S.mock.pos="r"; ["mkN","mkPos"].forEach(id=>S.reset.add(id)); render(); };
+  const mkp=$("#mkPos"); if(mkp) mkp.onchange=()=>{ S.mock.pos=mkp.value; };
+  const mx=$("#mockExit"); if(mx) mx.onclick=()=>{ if (S.mock) clearTimeout(S.mock.timer); S.mock=null; go(S.leagueId && S.leagues.some(l=>l.id===S.leagueId) ? "league" : "home", S.leagueId, "draft"); };
+  const ma2=$("#mockAgain"); if(ma2) ma2.onclick=()=>{ clearTimeout(S.mock.timer); S.mock.L=null; S.draftQ=""; render(); };
+  const gb=$("#googleBtn"); if(gb) gb.onclick=async()=>{ try{ await A.signInWithGoogle(); }catch(err){ setMsg("#auMsg",failText(err)); } };
   const clk = async running => { const L=league(), el=$("#tmSec"); if(!L||!el) return; const secs=+el.value;
     if (running && !secs) return setMsg("#tmMsg","Choose a time for each pick first.");
     try{ await A.setClock(L.id, secs, running); }catch(err){ setMsg("#tmMsg",failText(err)); } };
@@ -1220,9 +1656,12 @@ async function makePick(team, pool){
   if ((L.picks||[]).some(p=>pk(L,p)===tk(team,lg))) return setMsg("#dMsg",`${team} is already drafted.`);
   const need = needsFor(L, D.onClock);
   if (!canTake(L, need, pool)) return setMsg("#dMsg",`${D.onClock} has no open slot for a ${pool} team.`);
-  let slot;
-  if (need.req[pool]>0){ const many = slotsOf(L)[pool]>1; slot = many ? `${pool} #${slotsOf(L)[pool]-need.req[pool]+1}` : pool; }
-  else { const f = flexOf(L); slot = f>1 ? `Any #${f-need.flex+1}` : "Any"; }
+  const slot = slotFor(L, need, pool);
+  if (L.mock){
+    if (D.onClock!==L.me) return;
+    L.picks.push({n:D.i+1, owner:D.onClock, team, pool, slot}); if (L.picks.length>=D.total) L.status = "complete";
+    S.draftQ = ""; S.reset.add("dq"); render(); botLoop(); return;
+  }
   const picks = [...(L.picks||[]), {n:D.i+1, owner:D.onClock, team, pool, slot}];
   try{
     if (A) await A.makePick(L.id, team, pool, slot);
@@ -1267,21 +1706,26 @@ async function delLeague(id){
 }
 
 /* ---------- boot ---------- */
-document.querySelectorAll(".tab").forEach(b=> b.onclick=()=>{ S.tab=b.dataset.tab; S.confirmDel=S.confirmLg=null; render(); });
+document.querySelectorAll(".tab").forEach(b=> b.onclick=()=>{ S.tab=b.dataset.tab; S.confirmDel=S.confirmLg=null; render(); if (A) A.refresh(); });
 $("#leagueSel").onchange=e=>{ e.target.value ? go("league", e.target.value) : go("home"); };
 $("#brandLink").onclick=e=>{ e.preventDefault(); go("home"); };
 $("#gearBtn").onclick=()=> go(S.view==="settings" ? "home" : "settings");
 $("#signBtn").onclick=()=>{ S.authMode="in"; go("auth"); };
 if (A) A.onChange(st=>{
   const was = meId();
-  S.auth = {user:st.user, profile:st.profile, live:st.live, timer:!!st.timer};
+  S.auth = {user:st.user, profile:st.profile, live:st.live, timer:!!st.timer, level:st.level||1, google:!!st.google};
   if (st.recovery){ S.view="auth"; S.authMode="newpw"; }
   else if (!was && meId() && (S.view==="auth")) return afterSignIn();
+  else if (!was && meId() && S.view==="home" && !S.join){
+    // Came back from a confirmation email or Google with an invite still pending: pick it up once.
+    try{ const j = JSON.parse(localStorage.getItem("pf-join")||"null"); localStorage.removeItem("pf-join");
+      if (j && j.id && Date.now()-j.t < 7*864e5){ S.join = {id:j.id, code:j.code||""}; S.view = "join"; } }catch(_){}
+  }
   if (!meId()) S.invites = {};
   render();
 });
 loadLocal(); applyTheme(); applyHash();
-window.addEventListener("hashchange", ()=>{ applyHash(); settleLeague(); render(); });
+window.addEventListener("hashchange", ()=>{ applyHash(); settleLeague(); render(); if (A && S.view==="league") A.refresh(); });
 
 (async function boot(){
   const db = await (window.claude?.use ? window.claude.use("db") : null);
@@ -1290,18 +1734,22 @@ window.addEventListener("hashchange", ()=>{ applyHash(); settleLeague(); render(
   const user = await window.claude.use("user");
   S.canWrite = (user ? await user.can("data.write") : null) !== false;
   db.collection("leagues").limit(200).onSnapshot(q=>{
+    const sig = JSON.stringify(q.docs.map(d=>[d.id, d.data()]));
+    if (S.leaguesLoaded && sig===S.leagueSig) return;      // routine re-check with nothing new: leave the page alone
+    S.leagueSig = sig;
     S.leagues = q.docs.map(d=>({id:d.id, ...d.data()})).filter(l=>l.name && Array.isArray(l.owners)).sort((a,b)=> (a.created||"")<(b.created||"")?-1:1);
     const first = !S.leaguesLoaded; S.leaguesLoaded = true;
     if (first){
       // opened with no address: go straight to your portfolio if you have exactly one
       const my = S.leagues.filter(l=>mine(l));
       let standalone=false; try{ standalone = navigator.standalone===true || matchMedia("(display-mode: standalone)").matches; }catch(_){}
-      if (!location.hash && standalone && my.length===1){ S.view="league"; S.wantLeague=my[0].id; S.wantTab="team"; }
+      if (!location.hash && standalone && my.length===1){ S.view="league"; S.wantLeague=my[0].id; S.wantTab="league"; }
     }
     settleLeague(); render();
   }, ()=>{});
   db.collection("games").limit(1000).onSnapshot(q=>{ S.gameDocs = q.docs.map(d=>({_id:d.id, ...d.data()})); render(); }, ()=>{});
   db.doc("meta/sync").onSnapshot(s=>{ S.sync = s.exists ? s.data() : null; render(); }, ()=>{});
+  db.collection("schedule").limit(200).onSnapshot(q=>{ S.schedDocs = q.docs.map(d=>({_id:d.id, ...d.data()})); if (S.schedDocs.length) render(); }, ()=>{});
 })();
 </script>
 

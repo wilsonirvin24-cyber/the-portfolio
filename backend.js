@@ -15,7 +15,9 @@
   const fail = (error, fallback) => ({ code: "backend", message: (error && error.message) || fallback || "Something went wrong. Try again." });
 
   const sb = window.supabase.createClient(CFG.url, CFG.key);
-  const state = { user: null, profile: null, live: true, recovery: false, timer: true, offset: 0 };
+  // level: which database update the project has had. 1 = accounts only, 2 = pick timer, 3 = queue, chat, scheduled drafts.
+  const state = { user: null, profile: null, live: true, recovery: false, timer: true, level: 3, offset: 0, google: false };
+  const SELECTS = { 3: ",pick_seconds,clock_at,draft_at", 2: ",pick_seconds,clock_at", 1: "" };
   const authSubs = new Set(), leagueSubs = new Set();
   const tellAuth = () => authSubs.forEach(f => { try { f(state); } catch (_) {} });
 
@@ -50,11 +52,11 @@
       await ready;
       let rows;
       const BASE = "id,doc,commissioner,members,created_at";
-      let { data, error } = await sb.from("leagues").select(state.timer ? BASE + ",pick_seconds,clock_at" : BASE).order("created_at");
-      if (error && state.timer && (error.code === "42703" || /pick_seconds|clock_at/.test(error.message || ""))){
-        // The database hasn't had the pick-timer update yet: carry on without the timer.
-        state.timer = false; tellAuth();
-        ({ data, error } = await sb.from("leagues").select(BASE).order("created_at"));
+      let { data, error } = await sb.from("leagues").select(BASE + SELECTS[state.level]).order("created_at");
+      while (error && state.level > 1 && (error.code === "42703" || /pick_seconds|clock_at|draft_at/.test(error.message || ""))){
+        // The database hasn't had the latest update yet: carry on with the features it does have.
+        state.level--; state.timer = state.level >= 2; tellAuth();
+        ({ data, error } = await sb.from("leagues").select(BASE + SELECTS[state.level]).order("created_at"));
       }
       if (error){
         // The database isn't set up or can't be reached: show the last published snapshot, read-only.
@@ -64,7 +66,7 @@
       } else {
         const was = state.live; state.live = true; if (!was) tellAuth();
         rows = data.map(r => ({ id: r.id, data: Object.assign({}, r.doc, { commissioner: r.commissioner, members: r.members || {}, created: r.doc.created || r.created_at,
-          pickSeconds: r.pick_seconds || 0, clockAt: r.clock_at || null }) }));
+          pickSeconds: r.pick_seconds || 0, clockAt: r.clock_at || null, draftAt: r.draft_at || null }) }));
       }
       const snap = { docs: rows.map(r => snapDoc(r.id, r.data)), size: rows.length, empty: !rows.length };
       leagueSubs.forEach(f => { try { f(snap); } catch (_) {} });
@@ -85,7 +87,7 @@
     if (error) throw fail(error, fallback);
     return data;
   }
-  const leagueFields = (d, keepTimer) => { const o = Object.assign({}, d); delete o.commissioner; delete o.members; delete o.id; delete o.clockAt; if (!keepTimer) delete o.pickSeconds; return o; };
+  const leagueFields = (d, keepTimer) => { const o = Object.assign({}, d); delete o.commissioner; delete o.members; delete o.id; delete o.clockAt; delete o.draftAt; if (!keepTimer) delete o.pickSeconds; return o; };
   // The pick clock runs on the database's time, so measure how far this device's clock is off.
   async function syncClock(){
     const t0 = Date.now(); const { data, error } = await sb.rpc("pf_now");
@@ -129,6 +131,29 @@
   }));
   window.claude = { use: async name => name === "db" ? { doc, collection } : name === "user" ? { can: async () => false } : null };
 
+  /* ---- chat: one open conversation at a time ---- */
+  let chatOpen = null;
+  function openChat(id, cb){
+    if (chatOpen) chatOpen.close();
+    let closed = false, busy = false;
+    const load = async () => {
+      if (closed || busy) return; busy = true;
+      try {
+        const { data, error } = await sb.from("league_messages").select("id,user_id,name,body,created_at").eq("league_id", id).order("id", { ascending: false }).limit(150);
+        if (!closed) cb(error ? { error: fail(error).message, messages: [] } : { messages: (data || []).reverse() });
+      } finally { busy = false; }
+    };
+    let ch = null;
+    try { ch = sb.channel("chat-" + id).on("postgres_changes", { event: "*", schema: "public", table: "league_messages", filter: "league_id=eq." + id }, load).subscribe(); } catch (_) {}
+    const timer = setInterval(() => { if (document.visibilityState === "visible") load(); }, 8000);   // in case the live feed is unavailable
+    load();
+    return chatOpen = { id, reload: load, close(){ closed = true; clearInterval(timer); try { if (ch) sb.removeChannel(ch); } catch (_) {} if (chatOpen === this) chatOpen = null; } };
+  }
+  const rankCache = {};
+  // Sign-in providers switched on for this project (decides whether "Continue with Google" is shown).
+  fetch(CFG.url + "/auth/v1/settings", { headers: { apikey: CFG.key } }).then(r => r.json())
+    .then(d => { if (d && d.external && d.external.google){ state.google = true; tellAuth(); } }).catch(() => {});
+
   /* ---- accounts ---- */
   window.portfolioAuth = {
     ready, state,
@@ -144,6 +169,10 @@
       if (error) throw fail(error, "That email and password don't match.");
     },
     async signOut(){ await sb.auth.signOut(); },
+    async signInWithGoogle(){
+      const { error } = await sb.auth.signInWithOAuth({ provider: "google", options: { redirectTo: HERE } });
+      if (error) throw fail(error);
+    },
     async resetPassword(email){
       const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: HERE });
       if (error) throw fail(error);
@@ -163,6 +192,22 @@
     async releaseSeat(id, seat){ await rpc("release_seat", { p_id: id, p_seat: seat }); await fetchLeagues(); },
     async invite(id){ return await rpc("league_invite", { p_id: id }); },
     now: () => Date.now() + state.offset,
+    async setDraftTime(id, when){ await rpc("set_draft_time", { p_id: id, p_at: when }); await fetchLeagues(); },
+    async startIfDue(id){ const ok = await rpc("start_draft_if_due", { p_id: id }); await fetchLeagues(); return ok; },
+    async getQueue(id){
+      const { data, error } = await sb.from("draft_queues").select("teams").eq("league_id", id).maybeSingle();
+      if (error) throw fail(error);
+      return (data && data.teams) || [];
+    },
+    async setQueue(id, teams){ await rpc("set_queue", { p_id: id, p_teams: teams }); },
+    // Default auto-pick order for a sport: [{team, pool, rank}], best first.
+    ranks(sport){
+      return rankCache[sport] || (rankCache[sport] = sb.from("pf_teams").select("team,pool,rank").eq("sport", sport).order("rank").limit(1000)
+        .then(({ data, error }) => { if (error){ delete rankCache[sport]; throw fail(error); } return data || []; }));
+    },
+    openChat,
+    async sendMessage(id, body){ await rpc("post_message", { p_id: id, p_body: body }); if (chatOpen && chatOpen.id === id) chatOpen.reload(); },
+    async deleteMessage(msgId){ await rpc("delete_message", { p_msg: msgId }); if (chatOpen) chatOpen.reload(); },
     async setClock(id, seconds, running){ await rpc("set_clock", { p_id: id, p_seconds: seconds, p_running: !!running }); await syncClock().catch(() => {}); await fetchLeagues(); },
     async autoPick(id){ const n = await rpc("auto_pick", { p_id: id }); if (n) await fetchLeagues(); return n; },
     async makePick(id, team, pool, slot){ await rpc("make_pick", { p_id: id, p_team: team, p_pool: pool, p_slot: slot }); await fetchLeagues(); },
