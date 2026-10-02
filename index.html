@@ -13,30 +13,8 @@
 <link rel="manifest" href="manifest.webmanifest">
 <style>:root{padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}
 .pubnote{max-width:1080px;margin:0 auto;padding:0 16px 28px;font-size:12.5px;color:var(--muted)}</style>
-<script>
-/* Read-only stand-in for the Claude page runtime: serves the daily snapshot in data.json. */
-(function(){
-  let data = null;
-  const load = () => data || (data = fetch("data.json?t=" + Date.now()).then(r => r.json()));
-  const snap = (docs, p) => ({ id: p.split("/").pop(), exists: p in docs, data: () => docs[p], metadata: {} });
-  const refuse = async () => { throw { code: "invalid_argument", message: "read-only" }; };
-  const doc = p => ({ id: p.split("/").pop(), path: p, get: async () => snap((await load()).docs, p), set: refuse, update: refuse, delete: refuse,
-    onSnapshot(next){ load().then(d => next(snap(d.docs, p))); return () => {}; } });
-  const coll = c => { const q = { path: c, limit: () => q, doc: id => doc(c + "/" + id),
-    onSnapshot(next){ load().then(d => { const n = c.split("/").length + 1;
-      const docs = Object.keys(d.docs).filter(k => k.startsWith(c + "/") && k.split("/").length === n).sort().map(k => snap(d.docs, k));
-      next({ docs, size: docs.length, empty: !docs.length }); }); return () => {}; } }; return q; };
-  window.PORTFOLIO_PUBLIC = true;
-  window.claude = { use: async name => name === "db" ? { doc, collection: coll } : name === "user" ? { can: async () => false } : null };
-  window.addEventListener("DOMContentLoaded", () => load().then(d => {
-    const p = document.createElement("p"); p.className = "pubnote";
-    const t = new Date(d.generated);
-    p.textContent = "Public scoreboard. Refreshed each morning during the season; last refresh " +
-      t.toLocaleString("en-US", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + ".";
-    document.body.appendChild(p);
-  }).catch(() => {}));
-})();
-</script>
+<script src="vendor/supabase.js"></script>
+<script src="backend.js"></script>
 </head>
 <body>
 <title>The Portfolio</title>
@@ -77,6 +55,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 
 /* masthead */
 header.mast{background:var(--surface);border-bottom:1px solid var(--line)}
+#signBtn{white-space:nowrap;padding:7px 12px;font-size:14px}
 .mast-row{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:18px 12px}
 .brand{display:flex;flex-direction:column;gap:2px}
 .brand h1{margin:0;font-family:var(--display);font-weight:900;font-size:clamp(34px,7vw,52px);line-height:.9;letter-spacing:.01em;text-transform:uppercase}
@@ -304,6 +283,17 @@ details.pend summary{cursor:pointer;font-weight:600;font-size:14px}
 .set details p{margin-top:6px;color:var(--muted)}
 details.how>summary{cursor:pointer;font-family:var(--display);font-weight:800;text-transform:uppercase;letter-spacing:.03em;font-size:20px}
 details.how[open]>summary{margin-bottom:14px}
+.auth{max-width:460px;margin:0 auto;width:100%}
+.auth .form{gap:14px}
+.linkbtn{appearance:none;border:0;background:none;color:var(--accent);font:inherit;font-weight:600;cursor:pointer;padding:0;text-decoration:underline}
+.linkbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.seats{display:flex;flex-direction:column;gap:4px;list-style:none;margin:0;padding:0}
+.seats li{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);font-size:14px}
+.seats .who{flex:1;min-width:0;font-weight:600}
+.banner{padding:10px 14px;border-radius:8px;background:var(--accent-soft);border:1px solid var(--accent);font-weight:600}
+.check{display:flex;align-items:center;gap:8px;font-size:14px}
+.check input{width:18px;height:18px;accent-color:var(--accent)}
+input[type=email],input[type=password],input[type=tel]{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:9px 10px;width:100%;min-width:0;color:var(--fg)}
 @media (max-width:520px){.me-head{grid-template-columns:1fr}.me-head .n,.me-head .lbl{text-align:left}}
 </style>
 
@@ -317,6 +307,7 @@ details.how[open]>summary{margin-bottom:14px}
       <label class="league-pick" for="leagueSel"><span class="hide-sm">Portfolio</span>
         <select id="leagueSel"><option>Loading…</option></select>
       </label>
+      <button class="btn" id="signBtn" type="button" hidden>Sign in</button>
       <button class="gear" id="gearBtn" type="button" aria-label="Settings" title="Settings">⚙</button>
     </div>
   </div>
@@ -371,7 +362,15 @@ const ALIAS = {"miami (fla.)":"Miami","miami (fl)":"Miami","miami fl":"Miami","m
 
 const S = { db:null, canWrite:false, leagues:[], leaguesLoaded:false, leagueId:null, gameDocs:[], sync:null,
   view:"home", tab:"standings", wantLeague:null, wantTab:null, open:new Set(), onlyMine:true, weeksShown:2, draftPool:"all", draftQ:"",
-  confirmDel:null, confirmLg:null, newMgrs:[], newSport:"football", sportFilter:"all", me:{}, theme:"system", reset:new Set() };
+  confirmDel:null, confirmLg:null, newMgrs:[], newSport:"football", sportFilter:"all", me:{}, theme:"system", reset:new Set(),
+  auth:{user:null, profile:null, live:true}, authMode:"in", authNote:"", join:null, invites:{} };
+
+/* Accounts exist on the website (window.portfolioAuth). Inside Claude there are none, and the owner manages everything. */
+const A = window.portfolioAuth || null;
+const meId = () => A && S.auth.user ? S.auth.user.id : null;
+const canCreate = () => A ? !!meId() && S.auth.live : S.canWrite;
+const canAdmin = L => A ? !!meId() && S.auth.live && (L.commissioner===meId() || !!(S.auth.profile && S.auth.profile.is_admin)) : S.canWrite;
+const canEditGames = () => !A && S.canWrite;
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -428,7 +427,10 @@ function slotRows(L){
 }
 const slotText = L => SP(L).pools.filter(p=>slotsOf(L)[p]).map(p=>`${slotsOf(L)[p]} ${p==="Other"?"other-conference":p}`).concat(flexOf(L)?[`${flexOf(L)} any college`]:[]).join(" · ");
 const weightText = L => SP(L).pools.filter(p=>weightOf(L,p)!==1).map(p=>`${p} wins count ${weightOf(L,p)}`).join(" · ");
-const mine = L => { const o = S.me[L.id]; return o && L.owners.includes(o) ? o : null; };
+const mine = L => {
+  if (A){ const id = meId(), m = L.members || {}; return id ? (L.owners.find(o=>m[o]===id) || null) : null; }
+  const o = S.me[L.id]; return o && L.owners.includes(o) ? o : null;
+};
 
 /* ---------- games: one list for every league, de-duplicated ---------- */
 let _games = null;
@@ -496,6 +498,9 @@ function applyHash(){
   const h = (location.hash||"").slice(1);
   if (!h || h==="home"){ S.view = "home"; return; }
   if (h==="settings"){ S.view = "settings"; return; }
+  if (h==="signin"){ S.view = "auth"; return; }
+  if (/access_token=|error=|type=recovery/.test(h)){ S.view = "home"; return; }   // a sign-in link from an email; the account code reads it
+  if (h.startsWith("join.")){ const [, jid, code] = h.split("."); S.join = {id:jid, code:code||""}; S.view = "join"; return; }
   const [lid, tab] = h.split(".");
   S.view = "league"; S.wantLeague = lid; S.wantTab = TABS.includes(tab) ? tab : null;
 }
@@ -509,9 +514,10 @@ function settleLeague(){
 }
 function syncHash(){
   const L = league();
-  const want = S.view==="settings" ? "settings" : (S.view==="league" && L) ? L.id + "." + S.tab : "";
+  const want = S.view==="settings" ? "settings" : S.view==="auth" ? "signin" : (S.view==="join" && S.join) ? `join.${S.join.id}.${S.join.code}` : (S.view==="league" && L) ? L.id + "." + S.tab : "";
   const have = (location.hash||"").slice(1);
   if (have===want || (want==="" && have==="home")) return;
+  if (/access_token=|error=|type=recovery/.test(have)) return;
   try{ history.replaceState(null, "", want ? "#"+want : location.pathname + location.search); }catch(_){}
 }
 function go(view, id, tab){
@@ -546,11 +552,14 @@ function render(){
   const L = league();
   const view = S.view==="league" && !L ? "home" : S.view;
   $("#tabsNav").hidden = view!=="league";
+  $("#signBtn").hidden = !(A && S.auth.live && !meId()) || view==="auth";
   document.querySelectorAll(".tab").forEach(b=> b.setAttribute("aria-selected", String(view==="league" && b.dataset.tab===S.tab)));
   renderLeagueSel(view);
   if (S.db===null) main.innerHTML = `<section class="card empty"><strong>League data isn't available here.</strong>Open this page in Claude while signed in to see your leagues.</section>`;
   else if (!S.leaguesLoaded) main.innerHTML = `<section class="card empty"><strong>Opening The Portfolio…</strong>Your leagues, standings and results load from the shared league file.</section>`;
   else if (view==="settings"){ $("#tagline").textContent = "Settings"; renderTickerAll(); main.innerHTML = settingsHTML(); }
+  else if (view==="auth"){ $("#tagline").textContent = "Your account"; renderTickerAll(); main.innerHTML = authHTML(); }
+  else if (view==="join"){ $("#tagline").textContent = "Join a league"; renderTickerAll(); main.innerHTML = joinHTML(); }
   else if (view==="home"){ $("#tagline").textContent = "Draft teams, not players. Most wins takes the table."; renderTickerAll(); main.innerHTML = homeHTML(); }
   else {
     const C = compute(L);
@@ -611,7 +620,7 @@ function homeHTML(){
       <div class="nm">${esc(l.name)}</div>
       <div class="big"><span class="bn">${fmt(r.total)}</span><span class="kv">wins · <b>${tied?"T-":""}${ordinal(r.rank)}</b> of ${l.owners.length}${r.wk?` · <span class="delta up">+${fmt(r.wk)} this week</span>`:""}</span></div>
       <div class="kv">${best ? `Top performer: <b>${esc(best.team)}</b> ${best.w}-${best.l}${best.t?"-"+best.t:""}` : "No teams drafted yet"}</div>
-      <div class="kv">Managing as <b>${esc(o)}</b></div>
+      <div class="kv">Managing as <b>${esc(o)}</b>${canAdmin(l)?" · you run this league":""}</div>
     </button>`;
   }).join("");
 
@@ -624,9 +633,9 @@ function homeHTML(){
       <div class="nm">${esc(l.name)}</div>
       <div class="kv">${l.owners.length} managers · ${esc(slotText(l))}</div>
       <div class="kv">${lead&&lead.total ? `Leader: <b>${esc(lead.owner)}</b>${tied>1?` (tied with ${tied-1})`:""}, ${fmt(lead.total)} wins` : "No wins on the board yet"}</div>
-      <div class="claim"><label for="cl-${esc(l.id)}">I manage</label><select id="cl-${esc(l.id)}" data-claim="${esc(l.id)}"><option value="">Choose your name</option>${l.owners.map(o=>`<option>${esc(o)}</option>`).join("")}</select></div>
+      ${A ? (canAdmin(l)?`<div class="kv"><b>You run this league.</b> Invite managers from its Draft tab.</div>`:"") : `<div class="claim"><label for="cl-${esc(l.id)}">I manage</label><select id="cl-${esc(l.id)}" data-claim="${esc(l.id)}"><option value="">Choose your name</option>${l.owners.map(o=>`<option>${esc(o)}</option>`).join("")}</select></div>`}
       <div class="btns"><button class="btn primary" data-go="${esc(l.id)}">Open league</button>
-      ${S.canWrite?`<button class="btn danger" data-dellg="${esc(l.id)}">${S.confirmLg===l.id?"Delete for everyone?":"Delete"}</button>`:""}</div>
+      ${canAdmin(l)?`<button class="btn danger" data-dellg="${esc(l.id)}">${S.confirmLg===l.id?"Delete for everyone?":"Delete"}</button>`:""}</div>
       <div class="share"><input type="text" readonly id="ln-${esc(l.id)}" value="${esc(leagueURL(l.id))}" aria-label="Link to ${esc(l.name)}"><button type="button" class="btn" data-copy="ln-${esc(l.id)}">Copy link</button></div>
     </div>`;
   }).join("");
@@ -646,18 +655,20 @@ function homeHTML(){
     </div>`;
 
   return `<section class="panel">
-    ${my.length || S.me && Object.keys(S.me).length ? "" : hero}
+    ${A ? (meId() ? "" : hero + `<div class="btns"><button class="btn primary" data-auth="up">Create an account</button><button class="btn" data-auth="in">Sign in</button></div>`) : (my.length || Object.keys(S.me).length ? "" : hero)}
+    ${A && meId() && !my.length ? `<div class="card empty"><strong>Welcome${S.auth.profile?", "+esc(S.auth.profile.username):""}.</strong>You don't have a portfolio yet. Open an invite link from a commissioner to join a league, or create your own below.</div>` : ""}
     ${S.leagues.length ? sports : ""}
     ${my.length ? `<div class="head-row"><h2>My Portfolios</h2><p class="sub">Tap one to open your team.</p></div><div class="pf-grid">${myCards}</div>` : ""}
-    ${rest.length ? `<div class="head-row"><h2>${my.length?"Other leagues":"Leagues"}</h2><p class="sub">Pick your name in a league to add it to My Portfolios on this device.</p></div><div class="lg-grid">${restCards}</div>` : ""}
-    ${!show.length ? `<div class="card empty"><strong>No ${S.sportFilter==="all"?"":SPORTS[S.sportFilter].label.toLowerCase()+" "}leagues yet.</strong>${S.canWrite?"Create one below.":"Leagues appear here once the commissioner creates one."}</div>` : ""}
+    ${rest.length ? `<div class="head-row"><h2>${my.length?"Other leagues":"Leagues"}</h2><p class="sub">${A?"Anyone can view a league. Joining one takes an invite link from its commissioner.":"Pick your name in a league to add it to My Portfolios on this device."}</p></div><div class="lg-grid">${restCards}</div>` : ""}
+    ${!show.length ? `<div class="card empty"><strong>No ${S.sportFilter==="all"?"":SPORTS[S.sportFilter].label.toLowerCase()+" "}leagues yet.</strong>${canCreate()?"Create one below.":"Leagues appear here once someone creates one."}</div>` : ""}
     ${my.length ? `<details class="how"><summary>How The Portfolio works</summary>${how}</details>` : `<div class="head-row"><h2>How it works</h2></div>${how}`}
     ${createFormHTML()}
   </section>`;
 }
 
 function createFormHTML(){
-  if (!S.canWrite) return `<p class="ro">New leagues are set up by the commissioner, who also runs each draft.</p>`;
+  if (!canCreate()) return A ? (meId() ? `<p class="ro">Leagues can't be created right now because the account service isn't reachable.</p>` : `<p class="ro">Sign in to create a league. You'll be its commissioner and get an invite link for your managers.</p>`)
+    : `<p class="ro">New leagues are set up by the commissioner, who also runs each draft.</p>`;
   const sp = SPORTS[S.newSport], cur = league(), y = thisSeason();
   const mgrs = S.newMgrs.map((m,i)=>`<li><span class="ord">${i+1}</span><span class="who">${esc(m)}</span>
       <button type="button" class="ib" data-mv="${i}|-1" ${i?"":"disabled"} aria-label="Move ${esc(m)} up">↑</button>
@@ -691,6 +702,8 @@ function createFormHTML(){
 function teamHTML(L, C){
   const o = mine(L);
   const picker = `<div class="claim"><label for="cl-${esc(L.id)}">${o?"Viewing as":"I manage"}</label><select id="cl-${esc(L.id)}" data-claim="${esc(L.id)}"><option value="">${o?"Not in this league":"Choose your name"}</option>${L.owners.map(x=>`<option ${x===o?"selected":""}>${esc(x)}</option>`).join("")}</select></div>`;
+  if (!o && A) return `<section class="panel"><div class="head-row"><h2>My Team</h2></div>
+    <div class="card empty"><strong>You don't manage a team in this league.</strong>To join, open the invite link from the commissioner${meId()?".":" and sign in."}${meId()?"":`<div class="btns" style="justify-content:center;margin-top:12px"><button class="btn primary" data-auth="in">Sign in</button></div>`}</div></section>`;
   if (!o) return `<section class="panel"><div class="head-row"><h2>My Team</h2></div>
     <div class="card empty"><strong>Which manager are you?</strong>Pick your name to see your team here. The choice is saved on this device only.<div style="display:flex;justify-content:center;margin-top:12px">${picker}</div></div></section>`;
   const r = C.rows.find(x=>x.owner===o), tied = C.rows.filter(x=>x.rank===r.rank).length>1;
@@ -710,7 +723,7 @@ function teamHTML(L, C){
       <thead><tr><th>Slot</th><th>Team</th><th class="r">Record</th><th class="r">Counts</th><th class="r hide-sm">This week</th><th class="r hide-sm">Pick</th></tr></thead>
       <tbody>${rows}</tbody></table></div>` : `<div class="card empty"><strong>No teams yet.</strong>${L.status==="drafting"?"Your picks appear here as the draft goes on.":"This league hasn't drafted."}</div>`}
     ${wtNote?`<p class="sub">${esc(wtNote)}.</p>`:""}
-    ${picker}
+    ${A ? "" : picker}
   </section>`;
 }
 
@@ -780,7 +793,7 @@ function syncHTML(){
 }
 
 function resultsHTML(L, C){
-  const form = S.canWrite ? `<form class="card form" id="gameForm" autocomplete="off">
+  const form = canEditGames() ? `<form class="card form" id="gameForm" autocomplete="off">
       <div class="head-row"><h3>Add or correct a final</h3><span class="sub">A result you enter by hand replaces the automatic one for that game.</span></div>
       <div class="form-grid">
         <label class="f" for="gDate">Date<input type="date" id="gDate" required value="${todayISO()}"></label>
@@ -794,7 +807,7 @@ function resultsHTML(L, C){
       </div>
       <datalist id="teamList">${teamOptions(L, C).map(t=>`<option value="${esc(t)}">`).join("")}</datalist>
       <div class="btns"><button class="btn primary" type="submit">Save game</button><span class="msg" id="gMsg" role="status"></span></div>
-    </form>` : `<p class="ro">Results come in automatically each morning, and the commissioner can correct them.</p>`;
+    </form>` : `<p class="ro">Results come in automatically each morning. If a score looks wrong, tell the site's commissioner.</p>`;
 
   const thisWeek = weekStart(todayISO());
   const missing = C.picks.filter(p=> !(C.rec[pk(L,p)]?.games||[]).some(g=>weekStart(g.date)===thisWeek));
@@ -815,7 +828,7 @@ function resultsHTML(L, C){
         <div class="side ${aw?"won":""}"><span class="nm">${esc(g.away)}</span>${ao?`<span class="own">${esc(ao.owner)}</span>`:""}</div>
         <div class="score">${g.as} – ${g.hs} <span class="lg">${g.lg}</span>${g.rank===3?` <span class="tag">manual</span>`:""}</div>
         <div class="side right ${hw?"won":""}"><span class="nm">@ ${esc(g.home)}</span>${ho?`<span class="own">${esc(ho.owner)}</span>`:""}</div>
-        ${S.canWrite?`<button class="x ${S.confirmDel===delId?"confirm":""}" data-del="${esc(delId)}" aria-label="Delete ${esc(g.away)} at ${esc(g.home)}">${S.confirmDel===delId?"Delete?":"✕"}</button>`:"<span></span>"}
+        ${canEditGames()?`<button class="x ${S.confirmDel===delId?"confirm":""}" data-del="${esc(delId)}" aria-label="Delete ${esc(g.away)} at ${esc(g.home)}">${S.confirmDel===delId?"Delete?":"✕"}</button>`:"<span></span>"}
       </div>`;}).join("")}</div>`;
   }).join("");
   const more = weeks.length>S.weeksShown ? `<div class="btns"><button class="btn" id="moreWeeks">Show earlier weeks</button><span class="sub">${weeks.length-S.weeksShown} more</span></div>` : "";
@@ -857,9 +870,11 @@ function draftHTML(L){
     return `<section class="panel">
       <div class="head-row"><h2>Draft Results</h2><p class="sub">${type} draft · ${D.N} managers · ${rounds} rounds · ${D.i} picks</p></div>
       <div class="card scroll"><table class="board rounds"><thead><tr><th>Round</th>${D.owners.map((o,i)=>`<th>${i+1}. ${esc(o)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div>
-      ${S.canWrite?`<div class="btns"><button class="btn" id="reopen">Reopen the draft</button><span class="sub">Lets you undo or change the last picks.</span><span class="msg" id="dMsg" role="status"></span></div>`:""}
+      ${canAdmin(L)?`<div class="btns"><button class="btn" id="reopen">Reopen the draft</button><span class="sub">Lets you undo or change the last picks.</span><span class="msg" id="dMsg" role="status"></span></div>`:""}
+      ${seatsHTML(L)}
     </section>`;
   }
+  const admin = canAdmin(L), myPick = !!(A && meId() && D.onClock && (L.members||{})[D.onClock]===meId()), canP = admin || myPick;
   const taken = new Set((L.picks||[]).map(p=>pk(L,p)));
   const need = D.onClock ? needsFor(L, D.onClock) : {req:{},flex:0};
   const q = S.draftQ.trim().toLowerCase();
@@ -867,7 +882,7 @@ function draftHTML(L){
   const all = pools.filter(p=>S.draftPool==="all"||S.draftPool===p).flatMap(p=>sp.teams[p].map(t=>({t,p})))
     .filter(x=>!taken.has(tk(x.t, lgOfPool(L,x.p))) && (!q || x.t.toLowerCase().includes(q)));
   const list = all.slice(0,150);
-  const avail = list.map(x=>`<button class="av" data-pick="${esc(x.t)}" data-pool="${esc(x.p)}" ${(!S.canWrite||!canTake(L,need,x.p))?"disabled":""}><span>${esc(x.t)}</span>${chip(x.p)}</button>`).join("");
+  const avail = list.map(x=>`<button class="av" data-pick="${esc(x.t)}" data-pool="${esc(x.p)}" ${(!canP||!canTake(L,need,x.p))?"disabled":""}><span>${esc(x.t)}</span>${chip(x.p)}</button>`).join("");
   const needChips = pools.filter(p=>slotsOf(L)[p]).map(p=>`<span class="need ${need.req[p]>0?"":"done"}">${chip(p)}${need.req[p]>1?` <span class="num" style="font-size:12px">×${need.req[p]}</span>`:""}</span>`).join("")
     + (flexOf(L) ? `<span class="need ${need.flex>0?"":"done"}">${chip("Any")}${need.flex>1?` <span class="num" style="font-size:12px">×${need.flex}</span>`:""}</span>` : "");
   const feed = [...D.ordered].reverse().map(p=>`<div><span class="pk">${Math.ceil(p.n/D.N)}.${String(((p.n-1)%D.N)+1).padStart(2,"0")}</span>${chip(p.pool)}<span style="flex:1"><b>${esc(p.team)}</b></span><span class="sub">${esc(p.owner)}</span></div>`).join("");
@@ -875,7 +890,8 @@ function draftHTML(L){
   return `<section class="panel">
     <div class="head-row"><h2>Draft Room</h2><p class="sub">${type} draft · ${D.N} managers · ${roundsOf(L)} rounds · ${esc(slotText(L))}</p></div>
     <div class="card clock"><div><div class="meta">On the clock · Round ${D.round}, pick ${D.inRound} · Overall ${Math.min(D.i+1,D.total)} of ${D.total}</div><div class="who">${esc(D.onClock||"Done")}</div><div class="needs">${needChips}</div></div>
-      ${S.canWrite?`<div class="btns"><button class="btn danger" id="undoPick" ${D.i?"":"disabled"}>Undo last pick</button></div>`:""}</div>
+      ${admin?`<div class="btns"><button class="btn danger" id="undoPick" ${D.i?"":"disabled"}>Undo last pick</button></div>`:""}</div>
+    ${myPick?`<div class="banner">You're on the clock. Pick a team below.</div>`:""}
     <div class="pend-list">${order}</div>
     <div class="two">
       <div class="card">
@@ -884,16 +900,17 @@ function draftHTML(L){
             <label class="f" for="dq">Search ${all.length} available teams<input type="text" id="dq" value="${esc(S.draftQ)}" placeholder="Type a team"></label>
             <label class="f" for="dp">Pool<select id="dp"><option value="all">All pools</option>${pools.map(p=>`<option ${S.draftPool===p?"selected":""}>${p}</option>`).join("")}</select></label>
           </div>
-          ${S.canWrite?`<details><summary class="sub" style="cursor:pointer">Team not listed? Add it</summary>
+          ${admin?`<details><summary class="sub" style="cursor:pointer">Team not listed? Add it</summary>
             <div class="form-grid" style="margin-top:8px"><label class="f" for="cT">Team<input type="text" id="cT"></label>
             <label class="f" for="cP">Pool<select id="cP">${pools.map(p=>`<option>${p}</option>`).join("")}</select></label></div>
-            <div class="btns" style="margin-top:8px"><button type="button" class="btn" id="cAdd">Draft this team</button></div></details>`:`<p class="ro">The commissioner enters each pick as it's called.</p>`}
+            <div class="btns" style="margin-top:8px"><button type="button" class="btn" id="cAdd">Draft this team</button></div></details>`:(A?(myPick?"":`<p class="ro">${D.onClock?esc(D.onClock)+" is on the clock. ":""}Each manager picks on their own turn; the commissioner can pick for anyone.</p>`):`<p class="ro">The commissioner enters each pick as it's called.</p>`)}
           <span class="msg" id="dMsg" role="status"></span>
         </div>
         <div class="avail">${avail||`<span class="sub">No available teams match.</span>`}${all.length>list.length?`<span class="sub">Showing the first ${list.length}. Search to narrow the list.</span>`:""}</div>
       </div>
       <div class="card feed"><div class="day-h"><span>Picks</span><span class="sub">${D.i} made</span></div>${feed||`<div class="sub">First pick is ${esc(D.onClock)}'s.</div>`}</div>
     </div>
+    ${seatsHTML(L)}
   </section>`;
 }
 
@@ -904,33 +921,170 @@ function settingsHTML(){
     <div class="head-row"><h2>Settings</h2><button type="button" class="btn" id="setBack">Back to Home</button></div>
     <div class="card set"><h3>Display theme</h3>
       <div class="seg" role="group" aria-label="Display theme">${[["system","Match device"],["light","Light"],["dark","Dark"]].map(([k,t])=>`<button type="button" data-theme-pick="${k}" aria-pressed="${S.theme===k}">${t}</button>`).join("")}</div></div>
-    <div class="card set"><h3>You on this device</h3>
+    ${A ? accountHTML() : `<div class="card set"><h3>You on this device</h3>
       ${claims || `<p>You haven't picked your name in any league yet. Do that on a league's My Team tab or from Home.</p>`}
       ${claims ? `<div class="btns"><button type="button" class="btn danger" id="forget">Sign out on this device</button><span class="sub">Clears your name from every league here. League data is not affected.</span></div>` : ""}</div>
     <div class="card set"><h3>Account</h3>
-      <p>Accounts with an email, username and password are not available yet. For now, your name in each league is remembered on this device only, and anyone can view any league.</p></div>
+      <p>Accounts with an email, username and password are on the website version of The Portfolio. Here, your name in each league is remembered on this device only.</p></div>
     <div class="card set"><h3>Alert preferences</h3>
-      <p>Alerts for draft turns and weekly results will arrive together with accounts, since they need a way to reach you.</p></div>
+      <p>Alert choices are part of your account on the website version.</p></div>`}
     <div class="card set"><h3>Help</h3>
       <details><summary>How does scoring work?</summary><p>Every win by a team in your portfolio adds to your total. Football: ${SPORTS.football.counts} Basketball: ${SPORTS.basketball.counts}</p></details>
       <details><summary>When do scores update?</summary><p>Scores are pulled once each morning. A game that ends tonight shows up tomorrow morning.</p></details>
-      <details><summary>How do I see my team?</summary><p>Open a league and pick your name on the My Team tab. That league then appears under My Portfolios on Home, and you can switch between portfolios from the menu at the top.</p></details>
+      <details><summary>How do I see my team?</summary><p>${A?"Join a league with the invite link from its commissioner. It then appears under My Portfolios on Home, and you can switch between portfolios from the menu at the top.":"Open a league and pick your name on the My Team tab. That league then appears under My Portfolios on Home, and you can switch between portfolios from the menu at the top."}</p></details>
       <details><summary>A score looks wrong. What now?</summary><p>Tell your commissioner. They can enter a correction, and a corrected result always replaces the automatic one.</p></details>
-      <details><summary>How do I start a league?</summary><p>New leagues are set up by the commissioner, who also runs the draft.</p></details></div>
+      <details><summary>How do I start a league?</summary><p>${A?"Sign in and use Create a league on Home. You become its commissioner: you set the managers and draft order, share the invite link, and can make or undo picks for anyone.":"New leagues are set up by the commissioner, who also runs the draft."}</p></details>
+      ${A?`<details><summary>How does the draft work?</summary><p>Managers pick on their own phones when it's their turn, and everyone sees each pick as it happens. The commissioner can pick on behalf of a manager who isn't there.</p></details>`:""}</div>
     <div class="card set"><h3>Legal notices</h3>
       <p>The Portfolio is an independent game and is not affiliated with, endorsed by or sponsored by the NFL, the NBA, the NCAA, or any team, school or conference. Team and school names are used only to identify the teams being followed.</p>
       <p>The Portfolio does not take entry fees or pay prizes, and is for entertainment.</p></div>
     <div class="card set"><h3>Privacy</h3>
-      <p>This site does not ask for or store personal information. Your display theme and the name you pick in each league are saved in this browser only and are never sent anywhere.</p>
-      <p>League pages show each manager's first name, their teams and results to anyone who has the link.</p></div>
+      ${A?`<p>An account stores your email address, full name, username and, if you give one, a phone number. They are kept in the site's database (hosted by Supabase) and are visible only to you. They are used to sign you in and, later, to send the alerts you choose.</p>
+      <p>League pages are public: anyone with the link can see the manager names a commissioner entered, their teams and results. Your account details are never shown there.</p>
+      <p>Your display theme is saved in this browser only.</p>`:`<p>This version does not ask for or store personal information. Your display theme and the name you pick in each league are saved in this browser only and are never sent anywhere.</p>
+      <p>League pages show each manager's first name, their teams and results to anyone who has the link.</p>`}</div>
   </section>`;
+}
+
+/* ---------- accounts (website only) ---------- */
+function accountHTML(){
+  const p = S.auth.profile, u = S.auth.user;
+  if (!u) return `<div class="card set"><h3>Account</h3><p>Sign in to see your portfolios, join leagues and create your own.</p>
+      <div class="btns"><button type="button" class="btn primary" data-auth="in">Sign in</button><button type="button" class="btn" data-auth="up">Create an account</button></div></div>`;
+  const al = (p && p.alerts) || {};
+  return `<form class="card set" id="acctForm" autocomplete="off"><h3>Account information</h3>
+      <div class="form-grid">
+        <label class="f" for="acEmail">Email<input type="email" id="acEmail" value="${esc(u.email||"")}" readonly></label>
+        <label class="f" for="acName">Full name<input type="text" id="acName" value="${esc(p?p.full_name:"")}" maxlength="80"></label>
+        <label class="f" for="acUser">Username<input type="text" id="acUser" value="${esc(p?p.username:"")}" maxlength="24" required></label>
+        <label class="f" for="acPhone">Phone (backup contact)<input type="tel" id="acPhone" value="${esc(p&&p.phone||"")}" maxlength="32"></label>
+      </div>
+      <div class="btns"><button class="btn primary" type="submit">Save changes</button><span class="msg" id="acMsg" role="status"></span></div>
+    </form>
+    <form class="card set" id="pwForm" autocomplete="off"><h3>Password</h3>
+      <div class="form-grid"><label class="f" for="pwNew">New password<input type="password" id="pwNew" minlength="8" autocomplete="new-password" required></label></div>
+      <div class="btns"><button class="btn" type="submit">Change password</button><span class="msg" id="pwMsg" role="status"></span></div>
+    </form>
+    <form class="card set" id="alertForm"><h3>Alert preferences</h3>
+      <label class="check" for="alDraft"><input type="checkbox" id="alDraft" ${al.draft!==false?"checked":""}> When it's my turn in a draft</label>
+      <label class="check" for="alWeekly"><input type="checkbox" id="alWeekly" ${al.weekly!==false?"checked":""}> Weekly results for my portfolios</label>
+      <p class="sub">Alerts aren't being sent yet. Your choices are saved and will apply when they start.</p>
+      <div class="btns"><button class="btn" type="submit">Save alert preferences</button><span class="msg" id="alMsg" role="status"></span></div>
+    </form>
+    <div class="card set"><h3>Log out</h3><div class="btns"><button type="button" class="btn danger" id="logout">Log out</button><span class="sub">Signed in as ${esc(u.email||"")}</span></div></div>`;
+}
+
+function authHTML(){
+  const m = S.authMode, note = S.authNote ? `<p class="banner">${esc(S.authNote)}</p>` : "";
+  if (meId() && m!=="newpw") return `<section class="panel auth"><div class="card empty"><strong>You're signed in${S.auth.profile?" as "+esc(S.auth.profile.username):""}.</strong><div class="btns" style="justify-content:center;margin-top:12px"><button class="btn primary" id="authHome">Go to Home</button></div></div></section>`;
+  if (m==="check") return `<section class="panel auth"><div class="card empty"><strong>Check your email.</strong>We sent a confirmation link to ${esc(S.authEmail||"your address")}. Open it, then come back and sign in.<div class="btns" style="justify-content:center;margin-top:12px"><button class="btn primary" data-auth="in">Sign in</button></div></div></section>`;
+  if (m==="newpw") return `<section class="panel auth"><div class="head-row"><h2>Set a new password</h2></div>
+    <form class="card form" id="newPwForm" autocomplete="off">
+      <label class="f" for="npPw">New password<input type="password" id="npPw" minlength="8" autocomplete="new-password" required></label>
+      <div class="btns"><button class="btn primary" type="submit">Save password</button><span class="msg" id="auMsg" role="status"></span></div>
+    </form></section>`;
+  if (m==="forgot") return `<section class="panel auth"><div class="head-row"><h2>Reset your password</h2></div>
+    <form class="card form" id="forgotForm" autocomplete="on">
+      <label class="f" for="fgEmail">Email<input type="email" id="fgEmail" autocomplete="email" required></label>
+      <div class="btns"><button class="btn primary" type="submit">Email me a reset link</button><span class="msg" id="auMsg" role="status"></span></div>
+      <p class="sub"><button type="button" class="linkbtn" data-auth="in">Back to sign in</button></p>
+    </form></section>`;
+  if (m==="up") return `<section class="panel auth"><div class="head-row"><h2>Create your account</h2></div>${note}
+    <form class="card form" id="signUpForm" autocomplete="on">
+      <label class="f" for="suName">Full name<input type="text" id="suName" autocomplete="name" maxlength="80" required></label>
+      <label class="f" for="suUser">Username<input type="text" id="suUser" autocomplete="username" minlength="3" maxlength="24" pattern="[A-Za-z0-9_.\\-]+" required></label>
+      <label class="f" for="suEmail">Email<input type="email" id="suEmail" autocomplete="email" required></label>
+      <label class="f" for="suPhone">Phone (optional, backup contact)<input type="tel" id="suPhone" autocomplete="tel" maxlength="32"></label>
+      <label class="f" for="suPw">Password (8 or more characters)<input type="password" id="suPw" minlength="8" autocomplete="new-password" required></label>
+      <div class="btns"><button class="btn primary" type="submit">Create account</button><span class="msg" id="auMsg" role="status"></span></div>
+      <p class="sub">Already have an account? <button type="button" class="linkbtn" data-auth="in">Sign in</button></p>
+    </form></section>`;
+  return `<section class="panel auth"><div class="head-row"><h2>Sign in</h2></div>${note}
+    <form class="card form" id="signInForm" autocomplete="on">
+      <label class="f" for="siEmail">Email<input type="email" id="siEmail" autocomplete="email" required></label>
+      <label class="f" for="siPw">Password<input type="password" id="siPw" autocomplete="current-password" required></label>
+      <div class="btns"><button class="btn primary" type="submit">Sign in</button><span class="msg" id="auMsg" role="status"></span></div>
+      <p class="sub">New here? <button type="button" class="linkbtn" data-auth="up">Create an account</button> · <button type="button" class="linkbtn" data-auth="forgot">Forgot password</button></p>
+    </form></section>`;
+}
+function afterSignIn(){ S.authNote=""; if (S.join) S.view="join"; else S.view="home"; render(); }
+
+function joinHTML(){
+  const j = S.join, L = j && S.leagues.find(l=>l.id===j.id);
+  if (!A) return `<section class="panel"><div class="card empty"><strong>Invite links work on the website.</strong></div></section>`;
+  if (!L) return `<section class="panel auth"><div class="card empty"><strong>That league wasn't found.</strong>The link may be old. Ask the commissioner for a new one.</div></section>`;
+  const head = `<div class="card lg-card"><span class="sport-tag">${SP(L).label} · ${seasonLabel(L.year)}</span><div class="nm">${esc(L.name)}</div><div class="kv">${L.owners.length} managers · ${esc(slotText(L))}</div></div>`;
+  if (!meId()) return `<section class="panel auth"><div class="head-row"><h2>You're invited</h2></div>${head}
+    <div class="card form"><p class="sub">Sign in or create an account to take your spot in this league.</p>
+    <div class="btns"><button class="btn primary" data-auth="up">Create an account</button><button class="btn" data-auth="in">Sign in</button></div></div></section>`;
+  const mineSeat = mine(L), m = L.members || {};
+  if (mineSeat) return `<section class="panel auth"><div class="head-row"><h2>You're in</h2></div>${head}
+    <div class="card form"><p>You manage <b>${esc(mineSeat)}</b> in this league.</p><div class="btns"><button class="btn primary" data-go="${esc(L.id)}">Open my team</button></div></div></section>`;
+  const open = L.owners.filter(o=>!m[o]);
+  return `<section class="panel auth"><div class="head-row"><h2>Join this league</h2></div>${head}
+    <div class="card form"><h3>Which manager are you?</h3>
+      ${open.length ? `<ul class="seats">${open.map(o=>`<li><span class="who">${esc(o)}</span><button type="button" class="btn primary" data-seat="${esc(o)}">That's me</button></li>`).join("")}</ul>` : `<p>Every spot in this league is taken. Ask the commissioner to free yours.</p>`}
+      <span class="msg" id="jnMsg" role="status"></span></div></section>`;
+}
+
+/* Commissioner's panel on the Draft tab: the invite link and who has joined. */
+function seatsHTML(L){
+  if (!A || !canAdmin(L)) return "";
+  const code = S.invites[L.id], m = L.members || {};
+  if (code===undefined){ S.invites[L.id] = null; A.invite(L.id).then(c=>{ S.invites[L.id]=c; render(); }).catch(()=>{ S.invites[L.id]=""; render(); }); }
+  const link = code ? `${PUBLIC_BASE}#join.${L.id}.${code}` : "";
+  const joined = L.owners.filter(o=>m[o]).length;
+  return `<div class="card form"><div class="head-row"><h3>Managers and invites</h3><span class="sub">${joined} of ${L.owners.length} joined</span></div>
+    <p class="sub">Send this link to your managers. Each one signs in and chooses their name. Until someone joins, you can pick for them. If you play in this league too, tap "That's me" next to your own name.</p>
+    ${link ? `<div class="share"><input type="text" readonly id="inv-${esc(L.id)}" value="${esc(link)}" aria-label="Invite link"><button type="button" class="btn" data-copy="inv-${esc(L.id)}">Copy invite link</button></div>` : `<p class="sub">${code===""?"The invite link couldn't be loaded.":"Loading the invite link…"}</p>`}
+    <ul class="seats">${L.owners.map(o=>`<li><span class="who">${esc(o)}</span><span class="sub">${m[o] ? (m[o]===meId()?"You":"Joined") : "Not joined yet"}</span>${m[o]?`<button type="button" class="btn" data-release="${esc(o)}" style="padding:4px 10px;font-size:12.5px">${m[o]===meId()?"Leave":"Free this spot"}</button>`:(!mine(L)&&code?`<button type="button" class="btn" data-take="${esc(o)}" style="padding:4px 10px;font-size:12.5px">That's me</button>`:"")}</li>`).join("")}</ul>
+    <span class="msg" id="stMsg" role="status"></span></div>`;
+}
+
+function bindAccounts(){
+  if (!A) return;
+  document.querySelectorAll("[data-auth]").forEach(b=> b.onclick=()=>{ S.authMode=b.dataset.auth; S.view="auth"; render(); try{ window.scrollTo(0,0); }catch(_){} });
+  const ah=$("#authHome"); if(ah) ah.onclick=()=> afterSignIn();
+  const si=$("#signInForm"); if(si) si.onsubmit=async e=>{ e.preventDefault(); setMsg("#auMsg","Signing in…",true);
+    try{ await A.signIn($("#siEmail").value.trim(), $("#siPw").value); S.reset.add("siPw"); }catch(err){ setMsg("#auMsg",failText(err)); } };
+  const su=$("#signUpForm"); if(su) su.onsubmit=async e=>{ e.preventDefault();
+    const username=$("#suUser").value.trim(), email=$("#suEmail").value.trim(), password=$("#suPw").value, full_name=$("#suName").value.trim(), phone=$("#suPhone").value.trim();
+    if(!/^[A-Za-z0-9_.-]{3,24}$/.test(username)) return setMsg("#auMsg","Usernames are 3 to 24 letters, numbers, dots, dashes or underscores.");
+    if(password.length<8) return setMsg("#auMsg","Use a password of at least 8 characters.");
+    setMsg("#auMsg","Creating your account…",true);
+    try{
+      if(!(await A.usernameAvailable(username))) return setMsg("#auMsg","That username is taken. Try another.");
+      const r = await A.signUp({email, password, username, full_name, phone});
+      ["suPw"].forEach(id=>S.reset.add(id));
+      if (r.needsConfirm){ S.authEmail=email; S.authMode="check"; render(); }
+    }catch(err){ setMsg("#auMsg",failText(err)); } };
+  const fg=$("#forgotForm"); if(fg) fg.onsubmit=async e=>{ e.preventDefault();
+    try{ await A.resetPassword($("#fgEmail").value.trim()); setMsg("#auMsg","If that email has an account, a reset link is on its way.",true); }catch(err){ setMsg("#auMsg",failText(err)); } };
+  const np=$("#newPwForm"); if(np) np.onsubmit=async e=>{ e.preventDefault();
+    try{ await A.updatePassword($("#npPw").value); S.authMode="in"; afterSignIn(); }catch(err){ setMsg("#auMsg",failText(err)); } };
+  const ac=$("#acctForm"); if(ac) ac.onsubmit=async e=>{ e.preventDefault();
+    const username=$("#acUser").value.trim();
+    if(!/^[A-Za-z0-9_.-]{3,24}$/.test(username)) return setMsg("#acMsg","Usernames are 3 to 24 letters, numbers, dots, dashes or underscores.");
+    try{ await A.updateProfile({username, full_name:$("#acName").value.trim(), phone:$("#acPhone").value.trim()||null}); setMsg("#acMsg","Saved.",true); }catch(err){ setMsg("#acMsg",failText(err)); } };
+  const pw=$("#pwForm"); if(pw) pw.onsubmit=async e=>{ e.preventDefault();
+    try{ await A.updatePassword($("#pwNew").value); S.reset.add("pwNew"); render(); setMsg("#pwMsg","Password changed.",true); }catch(err){ setMsg("#pwMsg",failText(err)); } };
+  const al=$("#alertForm"); if(al) al.onsubmit=async e=>{ e.preventDefault();
+    try{ await A.updateProfile({alerts:{draft:$("#alDraft").checked, weekly:$("#alWeekly").checked}}); setMsg("#alMsg","Saved.",true); }catch(err){ setMsg("#alMsg",failText(err)); } };
+  const lo=$("#logout"); if(lo) lo.onclick=async()=>{ await A.signOut(); S.view="home"; render(); };
+  document.querySelectorAll("[data-seat]").forEach(b=> b.onclick=async()=>{
+    const j=S.join; try{ await A.join(j.id, j.code, b.dataset.seat); S.join=null; go("league", j.id, "team"); }catch(err){ setMsg("#jnMsg",failText(err)); } });
+  document.querySelectorAll("[data-take]").forEach(b=> b.onclick=async()=>{
+    const L=league(); try{ await A.join(L.id, S.invites[L.id], b.dataset.take); }catch(err){ setMsg("#stMsg",failText(err)); } });
+  document.querySelectorAll("[data-release]").forEach(b=> b.onclick=async()=>{
+    try{ await A.releaseSeat(league().id, b.dataset.release); }catch(err){ setMsg("#stMsg",failText(err)); } });
 }
 
 /* ---------- events ---------- */
 function setMsg(id, text, ok){ const m=$(id); if(m){ m.textContent=text; m.className="msg "+(ok?"ok":"err"); } }
-function failText(e){ return e?.code==="invalid_argument" ? "You don't have permission to change league data." : e?.code==="quota_exceeded" ? "The league file is full." : "That didn't save. Check your connection and try again."; }
+function failText(e){ return e?.code==="backend" ? e.message : e?.code==="invalid_argument" ? "You don't have permission to change league data." : e?.code==="quota_exceeded" ? "The league file is full." : "That didn't save. Check your connection and try again."; }
 
 function bind(){
+  bindAccounts();
   document.querySelectorAll("tr.row").forEach(tr=>{
     const tog = ()=>{ const o=tr.dataset.owner; S.open.has(o)?S.open.delete(o):S.open.add(o); render(); };
     tr.onclick = tog; tr.onkeydown = e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); tog(); } };
@@ -1013,7 +1167,11 @@ async function makePick(team, pool){
   if (need.req[pool]>0){ const many = slotsOf(L)[pool]>1; slot = many ? `${pool} #${slotsOf(L)[pool]-need.req[pool]+1}` : pool; }
   else { const f = flexOf(L); slot = f>1 ? `Any #${f-need.flex+1}` : "Any"; }
   const picks = [...(L.picks||[]), {n:D.i+1, owner:D.onClock, team, pool, slot}];
-  try{ await S.db.doc(`leagues/${L.id}`).update({picks, status: picks.length>=D.total?"complete":"drafting"}); S.draftQ=""; S.reset.add("dq"); S.reset.add("cT"); render(); }
+  try{
+    if (A) await A.makePick(L.id, team, pool, slot);
+    else await S.db.doc(`leagues/${L.id}`).update({picks, status: picks.length>=D.total?"complete":"drafting"});
+    S.draftQ=""; S.reset.add("dq"); S.reset.add("cT"); render();
+  }
   catch(err){ setMsg("#dMsg",failText(err)); }
 }
 async function undoPick(){
@@ -1054,6 +1212,15 @@ document.querySelectorAll(".tab").forEach(b=> b.onclick=()=>{ S.tab=b.dataset.ta
 $("#leagueSel").onchange=e=>{ e.target.value ? go("league", e.target.value) : go("home"); };
 $("#brandLink").onclick=e=>{ e.preventDefault(); go("home"); };
 $("#gearBtn").onclick=()=> go(S.view==="settings" ? "home" : "settings");
+$("#signBtn").onclick=()=>{ S.authMode="in"; go("auth"); };
+if (A) A.onChange(st=>{
+  const was = meId();
+  S.auth = {user:st.user, profile:st.profile, live:st.live};
+  if (st.recovery){ S.view="auth"; S.authMode="newpw"; }
+  else if (!was && meId() && (S.view==="auth")) return afterSignIn();
+  if (!meId()) S.invites = {};
+  render();
+});
 loadLocal(); applyTheme(); applyHash();
 window.addEventListener("hashchange", ()=>{ applyHash(); settleLeague(); render(); });
 
