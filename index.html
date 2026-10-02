@@ -360,7 +360,7 @@ const SPORTS = {
                 slots:{"NFL":3,"ACC":1,"Big Ten":1,"Big 12":1,"SEC":1,"Non-P4":1}, flex:0, weights:{},
                 counts:"NFL regular season, plus the full college season including bowls and the playoff." },
   basketball: { label:"Basketball", pro:"NBA", col:"CBB", pools:["NBA","SEC","Big Ten","Big 12","ACC","Big East","Other"], teams:BB_POOL,
-                slots:{"NBA":3,"SEC":1,"Big Ten":1,"Big 12":1,"ACC":1,"Big East":1,"Other":0}, flex:4, weights:{"NBA":0.5},
+                slots:{"NBA":3,"SEC":1,"Big Ten":1,"Big 12":1,"ACC":1,"Big East":1,"Other":4}, flex:0, weights:{"NBA":0.5},
                 counts:"NBA regular season at half a win each, plus every college game including March Madness." }
 };
 const SPORT_KEYS = Object.keys(SPORTS);
@@ -426,7 +426,7 @@ function slotRows(L){
   const f = flexOf(L); for (let i=1;i<=f;i++) out.push({slot: f>1?`Any #${i}`:"Any", pool:"Any", ix:i, many:f>1});
   return out;
 }
-const slotText = L => SP(L).pools.filter(p=>slotsOf(L)[p]).map(p=>`${slotsOf(L)[p]} ${p}`).concat(flexOf(L)?[`${flexOf(L)} any college`]:[]).join(" · ");
+const slotText = L => SP(L).pools.filter(p=>slotsOf(L)[p]).map(p=>`${slotsOf(L)[p]} ${p==="Other"?"other-conference":p}`).concat(flexOf(L)?[`${flexOf(L)} any college`]:[]).join(" · ");
 const weightText = L => SP(L).pools.filter(p=>weightOf(L,p)!==1).map(p=>`${p} wins count ${weightOf(L,p)}`).join(" · ");
 const mine = L => { const o = S.me[L.id]; return o && L.owners.includes(o) ? o : null; };
 
@@ -638,8 +638,8 @@ function homeHTML(){
     </ol>
     <div class="slots"><span><b>Football</b> portfolio, eight teams:</span>${["NFL","NFL","NFL","ACC","Big Ten","Big 12","SEC","Non-P4"].map(chip).join("")}</div>
     <p class="sub">${SPORTS.football.counts}</p>
-    <div class="slots"><span><b>Basketball</b> portfolio, twelve teams:</span>${["NBA","NBA","NBA","SEC","Big Ten","Big 12","ACC","Big East","Any","Any","Any","Any"].map(chip).join("")}</div>
-    <p class="sub">${SPORTS.basketball.counts}</p>`;
+    <div class="slots"><span><b>Basketball</b> portfolio, twelve teams:</span>${["NBA","NBA","NBA","SEC","Big Ten","Big 12","ACC","Big East","Other","Other","Other","Other"].map(chip).join("")}</div>
+    <p class="sub">"Other" means any Division I team outside those five conferences. ${SPORTS.basketball.counts}</p>`;
   const hero = `<div class="hero">
       <h2>Draft teams,<br><em>not players.</em></h2>
       <p>The Portfolio is a season-long league where every manager drafts a portfolio of pro and college teams. Each win by one of your teams counts toward your total. Whoever holds the most wins when the season ends takes the table.</p>
@@ -673,9 +673,8 @@ function createFormHTML(){
         <label class="f" for="lgType">Draft order<select id="lgType"><option value="snake">Snake (order reverses each round)</option><option value="straight">Straight (same order each round)</option></select></label>
       </div>
       <div><h3 style="margin-bottom:8px">Teams each manager drafts</h3>
-        <div class="slot-grid">${sp.pools.filter(p=>p!=="Other").map(p=>`<label class="f" for="sl-${poolCls(p)}">${p}<input type="number" id="sl-${poolCls(p)}" min="0" max="10" value="${sp.slots[p]}" inputmode="numeric"></label>`).join("")}
-          ${S.newSport==="basketball"?`<label class="f" for="lgFlex">Any conference<input type="number" id="lgFlex" min="0" max="12" value="${sp.flex}" inputmode="numeric"></label>
-          <label class="f" for="lgProW">${sp.pro} win counts<select id="lgProW"><option value="0.5" ${pw===0.5?"selected":""}>0.5</option><option value="1" ${pw===1?"selected":""}>1</option></select></label>`:""}</div></div>
+        <div class="slot-grid">${sp.pools.map(p=>`<label class="f" for="sl-${poolCls(p)}">${p==="Other"?"Other conferences":p}<input type="number" id="sl-${poolCls(p)}" min="0" max="10" value="${sp.slots[p]}" inputmode="numeric"></label>`).join("")}
+          ${S.newSport==="basketball"?`<label class="f" for="lgProW">${sp.pro} win counts<select id="lgProW"><option value="0.5" ${pw===0.5?"selected":""}>0.5</option><option value="1" ${pw===1?"selected":""}>1</option></select></label>`:""}</div></div>
       <div><h3 style="margin-bottom:8px">Managers, in draft order</h3>
         <ol class="mgr-list">${mgrs||`<li><span class="sub">Add each manager below. First on the list picks first.</span></li>`}</ol>
         <div class="btns" style="margin-top:8px">
