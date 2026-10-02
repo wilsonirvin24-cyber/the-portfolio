@@ -125,7 +125,7 @@
   window.addEventListener("DOMContentLoaded", () => loadStatic().then(d => {
     if (!d.generated) return;
     const p = document.createElement("p"); p.className = "pubnote";
-    p.textContent = "Scores refresh each morning during the season; last refresh " +
+    p.textContent = "Football scores are live during games. Results were last saved to the permanent record " +
       new Date(d.generated).toLocaleString("en-US", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + ".";
     document.body.appendChild(p);
   }));

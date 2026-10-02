@@ -341,6 +341,29 @@ input[type=datetime-local]{background:var(--bg);border:1px solid var(--line);bor
 .mgr-list li.full .who{color:var(--muted);text-decoration:line-through}
 .mockbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:20px}
 .gbtn{width:100%;padding:11px 14px}
+/* v11: live scoreboard */
+.sg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px}
+.sg{padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.sg.in{border-color:var(--accent)}
+.sg-top{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12.5px;color:var(--muted)}
+.sg-st{font-family:var(--mono);font-weight:600;color:var(--fg)}
+.sg.pre .sg-st,.sg.post .sg-st{color:var(--muted);font-weight:500}
+.live-pill{display:inline-flex;align-items:center;gap:5px;font-family:var(--body);font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--down);margin-right:4px}
+.live-pill::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--down);animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.live-pill::before{animation:none}}
+.sg-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center}
+.sg-row .tn{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sg-row .rk{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-right:5px;font-weight:500}
+.sg-row .own{font-size:11.5px;color:var(--accent);font-weight:600;white-space:nowrap}
+.sg-row .rec{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.sg-row .sc{font-size:20px;font-weight:600;min-width:28px;text-align:right}
+.sg-row.won .tn,.sg-row.won .sc{font-weight:700}
+.sg-row.lost .tn,.sg-row.lost .sc{color:var(--muted);font-weight:500}
+.ball{display:inline-block;width:11px;height:7px;border-radius:50%;background:var(--gold);margin-left:7px;vertical-align:middle}
+.sg-sit{font-size:13px;font-weight:600;padding-top:4px;border-top:1px solid var(--line)}
+.sg-sit.rz{color:var(--down)}
+.sg-last{font-size:12.5px;color:var(--muted)}
 .check{display:flex;align-items:center;gap:8px;font-size:14px}
 .check input{width:18px;height:18px;accent-color:var(--accent)}
 input[type=email],input[type=password],input[type=tel]{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:9px 10px;width:100%;min-width:0;color:var(--fg)}
@@ -366,6 +389,7 @@ input[type=email],input[type=password],input[type=tel]{background:var(--bg);bord
 <nav class="tabs" id="tabsNav" aria-label="League sections" hidden>
   <div class="wrap" role="tablist">
     <button class="tab" role="tab" aria-selected="false" data-tab="league">League</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="scores" id="scoresTab" hidden>Scoreboard</button>
     <button class="tab" role="tab" aria-selected="false" data-tab="team">My Team</button>
     <button class="tab" role="tab" aria-selected="false" data-tab="standings">Standings</button>
     <button class="tab" role="tab" aria-selected="false" data-tab="board">Board</button>
@@ -416,7 +440,7 @@ const S = { db:null, canWrite:false, leagues:[], leaguesLoaded:false, leagueId:n
   view:"home", tab:"standings", wantLeague:null, wantTab:null, open:new Set(), onlyMine:true, weeksShown:2, draftPool:"all", draftQ:"",
   confirmDel:null, confirmLg:null, newMgrs:[], newSport:"football", sportFilter:"all", me:{}, theme:"system", reset:new Set(),
   auth:{user:null, profile:null, live:true, timer:false, level:1, google:false}, authMode:"in", authNote:"", join:null, invites:{},
-  schedDocs:[], recapWeek:null, chat:null, chatConn:null, queue:null, queueShut:false, mock:null, dAtDirty:false, leagueSig:"" };
+  schedDocs:[], sbAll:false, sbLg:"all", recapWeek:null, chat:null, chatConn:null, queue:null, queueShut:false, mock:null, dAtDirty:false, leagueSig:"" };
 
 /* Accounts exist on the website (window.portfolioAuth). Inside Claude there are none, and the owner manages everything. */
 const A = window.portfolioAuth || null;
@@ -510,6 +534,18 @@ function allGames(){
     const prev = seen.get(k);
     if (!prev || G.rank>prev.rank) seen.set(k, G);   // a hand-entered result outranks an automatic one
   });
+  if (LIVE.on){
+    // Live finals fill in until the morning archive has the game. A football team plays once a week,
+    // so a live final is skipped when either team already has a stored result that week.
+    const have = new Set();
+    for (const G of seen.values()){ const w = weekStart(G.date); have.add(w+"|"+G.hk); have.add(w+"|"+G.ak); }
+    for (const g of liveWithPrev()){
+      if (!g.done) continue;
+      const w = weekStart(g.date); if (have.has(w+"|"+g.hk) || have.has(w+"|"+g.ak)) continue;
+      have.add(w+"|"+g.hk); have.add(w+"|"+g.ak);
+      seen.set("live|"+g.id, {doc:"live", lg:g.lg, date:g.date, home:g.home, away:g.away, rawHome:g.home, rawAway:g.away, rawLg:g.lg, hs:g.hs, as:g.as, rank:0, hk:g.hk, ak:g.ak});
+    }
+  }
   return _games = [...seen.values()].sort((x,y)=> x.date<y.date?-1:x.date>y.date?1:0);
 }
 const winnerKey = g => g.hs===g.as ? null : (g.hs>g.as ? g.hk : g.ak);
@@ -554,7 +590,7 @@ function compute(L){
 /* ---------- routing: #home, #settings, #<league>, #<league>.<tab> ---------- */
 const PUBLIC_BASE = window.PORTFOLIO_PUBLIC ? location.origin + location.pathname : "https://playtheportfolio.com/";
 const leagueURL = id => PUBLIC_BASE + "#" + id;
-const TABS = ["league","team","standings","board","results","draft","chat"];
+const TABS = ["league","scores","team","standings","board","results","draft","chat"];
 function applyHash(){
   const h = (location.hash||"").slice(1);
   if (!h || h==="home"){ S.view = "home"; return; }
@@ -618,6 +654,7 @@ function render(){
   const view = S.view==="league" && !L ? "home" : S.view;
   $("#tabsNav").hidden = view!=="league";
   $("#chatTab").hidden = !hasV3();
+  $("#scoresTab").hidden = !LIVE.on;
   if (S.chatConn && !(view==="league" && S.tab==="chat" && L && S.chat && S.chat.id===L.id)) stopChat();
   $("#signBtn").hidden = !(A && S.auth.live && !meId()) || view==="auth";
   document.querySelectorAll(".tab").forEach(b=> b.setAttribute("aria-selected", String(view==="league" && b.dataset.tab===S.tab)));
@@ -634,7 +671,7 @@ function render(){
     renderTicker(L, C);
     $("#tagline").textContent = `${L.name} · ${SP(L).label} ${seasonLabel(L.year)} · ${L.owners.length} managers`;
     if (S.tab==="chat" && !hasV3() && S.leaguesLoaded && !A) S.tab = "league";
-    main.innerHTML = ({league:leagueHTML, team:teamHTML, standings:standingsHTML, board:boardHTML, results:resultsHTML, draft:draftHTML, chat:chatHTML}[S.tab] || leagueHTML)(L, C);
+    main.innerHTML = ({league:leagueHTML, scores:scoresHTML, team:teamHTML, standings:standingsHTML, board:boardHTML, results:resultsHTML, draft:draftHTML, chat:chatHTML}[S.tab] || leagueHTML)(L, C);
   }
   for (const id in keep){ if (S.reset.has(id)) continue; const el = document.getElementById(id); if (el && el.value!==keep[id]) el.value = keep[id]; }
   S.reset.clear();
@@ -664,8 +701,12 @@ function paintTicker(games, label, emptyText){
     const res = m>t?"W":m<t?"L":"T";
     items.push(`<span class="tk"><b>${esc(g[side].toUpperCase())}</b> <span class="${res==="W"?"w":res==="L"?"l":"o"}">${res==="W"?"▲":res==="L"?"▼":"■"} ${res} ${m}–${t}</span>${who?` <span class="o">${esc(who)}</span>`:""}</span>`);
   }
+  const liveItems = LIVE.on ? liveAll().filter(g=> g.state==="in" && (label(g.hk)!==null || label(g.ak)!==null)).map(g=>
+    `<span class="tk"><span class="l">● LIVE</span> <b>${esc(g.away.toUpperCase())} ${g.as}</b> @ <b>${esc(g.home.toUpperCase())} ${g.hs}</b> <span class="o">${g.period>4?"OT":g.period?"Q"+g.period:""}</span></span>`) : [];
+  items.unshift(...liveItems);
   const html = items.length ? items.join("") : `<span class="tk o">${emptyText}</span>`;
-  $("#tickerTrack").innerHTML = items.length ? html+html : html;
+  const track = $("#tickerTrack"), full = items.length ? html+html : html;
+  if (track.dataset.sig !== full){ track.dataset.sig = full; track.innerHTML = full; }
 }
 function renderTicker(L, C){ paintTicker(C.games, k=> C.owner[k] ? C.owner[k].owner : null, "No results yet for this league's teams."); }
 function renderTickerAll(){
@@ -879,7 +920,7 @@ function resultsHTML(L, C){
       </div>
       <datalist id="teamList">${teamOptions(L, C).map(t=>`<option value="${esc(t)}">`).join("")}</datalist>
       <div class="btns"><button class="btn primary" type="submit">Save game</button><span class="msg" id="gMsg" role="status"></span></div>
-    </form>` : `<p class="ro">Results come in automatically each morning. If a score looks wrong, tell the site's commissioner.</p>`;
+    </form>` : `<p class="ro">${LIVE.on && !LIVE.err ? "Finals appear here as games end and are saved to the permanent record each morning." : "Results come in automatically each morning."} If a score looks wrong, tell the site's commissioner.</p>`;
 
   const thisWeek = weekStart(todayISO());
   const missing = C.picks.filter(p=> !(C.rec[pk(L,p)]?.games||[]).some(g=>weekStart(g.date)===thisWeek));
@@ -898,7 +939,7 @@ function resultsHTML(L, C){
       const delId = [g.doc,g.lg,g.rawHome,g.rawAway].join("|");
       return `<div class="game">
         <div class="side ${aw?"won":""}"><span class="nm">${esc(g.away)}</span>${ao?`<span class="own">${esc(ao.owner)}</span>`:""}</div>
-        <div class="score">${g.as} – ${g.hs} <span class="lg">${g.lg}</span>${g.rank===3?` <span class="tag">manual</span>`:""}</div>
+        <div class="score">${g.as} – ${g.hs} <span class="lg">${g.lg}</span>${g.rank===3?` <span class="tag">manual</span>`:g.rank===0?` <span class="tag">live</span>`:""}</div>
         <div class="side right ${hw?"won":""}"><span class="nm">@ ${esc(g.home)}</span>${ho?`<span class="own">${esc(ho.owner)}</span>`:""}</div>
         ${canEditGames()?`<button class="x ${S.confirmDel===delId?"confirm":""}" data-del="${esc(delId)}" aria-label="Delete ${esc(g.away)} at ${esc(g.home)}">${S.confirmDel===delId?"Delete?":"✕"}</button>`:"<span></span>"}
       </div>`;}).join("")}</div>`;
@@ -1096,7 +1137,7 @@ function recapHTML(L, C){
 function upcoming(L, C, ws){
   const sp = SP(L), we = weekEnd(ws), done = new Set(C.games.filter(g=>g.date>=ws&&g.date<=we).map(g=> g.hk<g.ak ? g.hk+"|"+g.ak : g.ak+"|"+g.hk));
   const out = [], seen = new Set();
-  for (const d of S.schedDocs) for (const g of (d.games||[])){
+  for (const d of schedAll()) for (const g of (d.games||[])){
     const lg = normLg(g.lg || d.lg), date = g.date || d.date;
     if (!/^\d{4}-\d\d-\d\d$/.test(date||"") || date<ws || date>we || !g.home || !g.away || (lg!==sp.pro && lg!==sp.col)) continue;
     const home = canonName(g.home,lg), away = canonName(g.away,lg), hk = tk(home,lg), ak = tk(away,lg), k = hk<ak ? hk+"|"+ak : ak+"|"+hk;
@@ -1108,7 +1149,7 @@ function upcoming(L, C, ws){
 function previewHTML(L, C){
   const ws = weekStart(centralNow().date), weekNo = weekNoOf(C, ws);
   const tag = `<span class="sport-tag">Weekly preview · ${fmtShort(ws)}–${fmtShort(weekEnd(ws))}</span>`;
-  if (!S.schedDocs.length) return `<article class="card wk"><div class="wk-top">${tag}</div><p class="sub">The preview needs the upcoming schedule, which arrives with the live score feed. Once that's connected, each Wednesday morning this card lists the games that matter most for the table.</p></article>`;
+  if (!schedAll().length) return `<article class="card wk"><div class="wk-top">${tag}</div><p class="sub">${LIVE.on ? (LIVE.tried ? "The preview needs the upcoming schedule, which isn't available right now." : "Loading this week's schedule…") : "The weekly preview is on the website, where the upcoming schedule is available."}</p></article>`;
   if (!previewReady()) return `<article class="card wk"><div class="wk-top">${tag}</div><p class="sub">This week's preview arrives Wednesday morning.</p></article>`;
   const games = upcoming(L, C, ws).filter(g=> C.owner[g.hk] || C.owner[g.ak]);
   if (!games.length) return `<article class="card wk"><div class="wk-top">${tag}</div><p class="sub">No upcoming games for this league's teams are on the schedule this week.</p></article>`;
@@ -1207,9 +1248,155 @@ function leagueHTML(L, C){
       : (L.status==="drafting" ? "" : `<div class="card empty"><strong>No rosters yet.</strong>This league hasn't drafted.</div>`));
   return `<section class="panel">
     <div class="head-row"><h2>${esc(L.name)}</h2><p class="sub">${SP(L).label} ${seasonLabel(L.year)} · ${L.owners.length} managers · ${esc(slotText(L))}</p></div>
-    ${draftCard}${you}${body}
+    ${draftCard}${you}${liveStrip(L, C)}${body}
     ${historyHTML(L, C)}
   </section>`;
+}
+
+/* ---------- live scores (website only) ---------- */
+/* Each visitor's browser reads ESPN's public scoreboard directly. Football for now.
+   Finals from here count in the standings right away; the morning archive remains the permanent record. */
+const LIVE = { on: !!window.PORTFOLIO_PUBLIC, by:{NFL:[], CFB:[]}, prev:{NFL:[], CFB:[]}, cur:{}, ws:null, at:0, err:"", tried:false, busy:false, timer:null, coarse:"", fine:"" };
+const ESPN_PATH = { NFL:"football/nfl", CFB:"football/college-football" };
+const ESPN_Q = { NFL:"limit=100", CFB:"groups=80&limit=300" };
+const espnURL = (lg, wk) => `https://site.api.espn.com/apis/site/v2/sports/${ESPN_PATH[lg]}/scoreboard?${ESPN_Q[lg]}${wk ? `&seasontype=${wk.type}&week=${wk.n}` : ""}`;
+function etDate(d){
+  try{ const p = Object.fromEntries(new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(d).map(x=>[x.type,x.value])); return `${p.year}-${p.month}-${p.day}`; }
+  catch(_){ return iso(new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()))); }
+}
+const sbToday = () => etDate(new Date(Date.now() - 4*3600e3));      // the scoreboard's day turns over at 4 AM Eastern
+const liveAll = () => [...LIVE.by.NFL, ...LIVE.by.CFB];
+const liveWithPrev = () => [...LIVE.prev.NFL, ...LIVE.prev.CFB, ...liveAll()];
+
+function parseEvent(e, lg){
+  const c = (e.competitions||[])[0]; if (!c || !Array.isArray(c.competitors)) return null;
+  const H = c.competitors.find(x=>x.homeAway==="home"), W = c.competitors.find(x=>x.homeAway==="away");
+  if (!H || !W || !H.team || !W.team) return null;
+  const nm = t => lg==="NFL" ? (t.team.name || t.team.shortDisplayName || t.team.displayName || "") : (t.team.location || t.team.shortDisplayName || t.team.displayName || "");
+  const st = c.status || e.status || {}, ty = st.type || {}, sit = c.situation || null, start = new Date(e.date || c.date);
+  if (isNaN(start)) return null;
+  const home = canonName(nm(H), lg), away = canonName(nm(W), lg);
+  const rank = t => { const r = t.curatedRank && +t.curatedRank.current; return r>0 && r<=25 ? r : 0; };
+  const rec = t => { const r = (t.records||[]).find(x=>x.name==="overall" || x.type==="total") || (t.records||[])[0]; return r ? r.summary||"" : ""; };
+  const state = ty.state==="in" ? "in" : ty.state==="post" ? "post" : "pre";
+  return { id:String(e.id), lg, home, away, hk:tk(home,lg), ak:tk(away,lg), hs:+H.score||0, as:+W.score||0,
+    hab:H.team.abbreviation||"", aab:W.team.abbreviation||"", hrank:rank(H), arank:rank(W), hrec:rec(H), arec:rec(W),
+    state, done: state==="post" && !!ty.completed, detail: ty.shortDetail || ty.detail || ty.description || "", period:+st.period||0, clock: st.displayClock||"",
+    start: start.getTime(), date: etDate(start), tv: ((c.broadcasts||[]).flatMap(b=>b.names||[]).slice(0,2).join(", ")) || "",
+    poss: sit && sit.possession ? (String(sit.possession)===String(H.team.id) ? "home" : String(sit.possession)===String(W.team.id) ? "away" : "") : "",
+    dd: sit ? (sit.downDistanceText || [sit.shortDownDistanceText, sit.possessionText].filter(Boolean).join(" at ") || "") : "",
+    rz: !!(sit && sit.isRedZone), last: sit && sit.lastPlay && sit.lastPlay.text ? String(sit.lastPlay.text) : "" };
+}
+async function espnGet(lg, wk){
+  const r = await fetch(espnURL(lg, wk), {cache:"no-store"});
+  if (!r.ok) throw new Error("HTTP "+r.status);
+  const j = await r.json();
+  return { week: j.week && j.season && j.week.number ? {n:+j.week.number, type:+j.season.type||2} : null, games:(j.events||[]).map(e=>parseEvent(e,lg)).filter(Boolean) };
+}
+async function loadLive(){
+  if (!LIVE.on || LIVE.busy) return;
+  LIVE.busy = true;
+  const today = sbToday(), ws = weekStart(today), we = weekEnd(ws), early = (toD(today)-toD(ws))/864e5 <= 1;
+  if (LIVE.ws!==ws){ LIVE.ws = ws; LIVE.cur = {}; LIVE.prev = {NFL:[], CFB:[]}; }      // a new week: work out which ESPN week to ask for again
+  let failed = 0;
+  await Promise.all(["NFL","CFB"].map(async lg=>{
+    try{
+      const known = LIVE.cur[lg];
+      let R = await espnGet(lg, known || null);
+      if (!known){
+        let week = R.week;
+        // ESPN's "current week" doesn't always turn over when ours does (Tuesday), so step to the neighbouring week if needed.
+        if (week && R.games.length && !R.games.some(g=>g.date>=ws && g.date<=we)){
+          const step = R.games.every(g=>g.date<ws) ? 1 : R.games.every(g=>g.date>we) ? -1 : 0;
+          if (step && week.n+step>=1){
+            const alt = await espnGet(lg, {n:week.n+step, type:week.type}).catch(()=>null);
+            if (alt && alt.games.some(g=>g.date>=ws && g.date<=we)){ if (step>0) LIVE.prev[lg] = R.games; R = alt; week = {n:week.n+step, type:week.type}; }
+          }
+        }
+        if (week){
+          LIVE.cur[lg] = week;
+          // Early in the week, last week's late finals may not be in the morning archive yet.
+          if (early && week.n>1 && !LIVE.prev[lg].length) LIVE.prev[lg] = (await espnGet(lg, {n:week.n-1, type:week.type}).catch(()=>({games:[]}))).games;
+        }
+      }
+      LIVE.by[lg] = R.games;
+    }catch(_){ failed++; }
+  }));
+  LIVE.busy = false; LIVE.tried = true;
+  LIVE.err = failed===2 ? "unreachable" : "";
+  if (failed<2) LIVE.at = Date.now();
+  const all = liveWithPrev();
+  const coarse = LIVE.err + all.map(g=>[g.id,g.state,g.hs,g.as,g.done].join(":")).join("|");
+  const fine = all.map(g=>[g.id,g.clock,g.period,g.dd,g.poss].join(":")).join("|");
+  const onBoard = S.view==="league" && S.tab==="scores";
+  // Other pages only redraw when a score or a game's state changes; the scoreboard also follows the clock.
+  if (coarse!==LIVE.coarse || (onBoard && fine!==LIVE.fine)){ LIVE.coarse = coarse; LIVE.fine = fine; render(); }
+  else { LIVE.fine = fine; }
+}
+function liveLoop(){
+  clearTimeout(LIVE.timer); if (!LIVE.on) return;
+  const now = Date.now(), all = liveAll();
+  const anyLive = all.some(g=>g.state==="in"), soon = all.some(g=>g.state==="pre" && g.start-now < 15*60e3 && g.start-now > -4*3600e3);
+  const wait = anyLive ? 20000 : soon ? 60000 : LIVE.err ? 120000 : 300000;
+  LIVE.timer = setTimeout(async()=>{ if (document.visibilityState==="visible") await loadLive(); liveLoop(); }, wait);
+}
+if (LIVE.on) document.addEventListener("visibilitychange", ()=>{ if (document.visibilityState==="visible" && Date.now()-LIVE.at > 20000) loadLive().then(liveLoop); });
+
+/* Upcoming games for the weekly preview: the stored schedule (if any) plus whatever the live feed lists as not finished. */
+function schedAll(){
+  const z = n=>String(n).padStart(2,"0");
+  const up = liveAll().filter(g=>g.state!=="post").map(g=>{ const d = new Date(g.start); return {date:g.date, time:`${z(d.getHours())}:${z(d.getMinutes())}`, lg:g.lg, home:g.home, away:g.away}; });
+  return up.length ? [...S.schedDocs, {_id:"live", games:up}] : S.schedDocs;
+}
+
+function gameStatus(g){
+  if (g.state==="pre") return new Date(g.start).toLocaleString("en-US",{weekday:"short",hour:"numeric",minute:"2-digit"}) + (g.tv ? ` · ${esc(g.tv)}` : "");
+  if (g.state==="post") return esc(g.done ? (/final/i.test(g.detail) ? g.detail : "Final") : (g.detail || "Ended"));
+  if (/half/i.test(g.detail)) return "Halftime";
+  if (/^end/i.test(g.detail)) return esc(g.detail);
+  return (g.period>4 ? "OT" : g.period ? "Q"+g.period : "") + (g.clock ? " "+esc(g.clock) : "");
+}
+function scoreCard(g, C){
+  const ho = C.owner[g.hk], ao = C.owner[g.ak], fin = g.state==="post", live = g.state==="in";
+  const row = (side) => { const home = side==="home", sc = home?g.hs:g.as, other = home?g.as:g.hs, own = home?ho:ao, rk = home?g.hrank:g.arank, rec = home?g.hrec:g.arec;
+    return `<div class="sg-row ${fin && sc>other?"won":""} ${fin && sc<other?"lost":""}">
+      <span class="tn">${rk?`<span class="rk">${rk}</span>`:""}${esc(home?g.home:g.away)}${live && g.poss===side?`<span class="ball" role="img" aria-label="has the ball" title="Has the ball"></span>`:""}</span>
+      ${own?`<span class="own">${esc(own.owner)}</span>`:(g.state==="pre"&&rec?`<span class="rec">${esc(rec)}</span>`:"")}
+      <span class="sc num">${g.state==="pre"?"":sc}</span></div>`; };
+  const sit = live && g.dd ? `<div class="sg-sit ${g.rz?"rz":""}">${g.poss?`${esc(g.poss==="home"?g.home:g.away)} ball · `:""}${esc(g.dd)}</div>` : "";
+  return `<div class="card sg ${g.state}">
+    <div class="sg-top"><span class="sg-st">${live?`<span class="live-pill">Live</span> `:""}${gameStatus(g)}</span><span class="lg">${g.lg==="CFB"?"College":g.lg}</span></div>
+    ${row("away")}${row("home")}${sit}
+    ${live && g.last ? `<div class="sg-last">${esc(g.last.length>130 ? g.last.slice(0,127)+"…" : g.last)}</div>` : ""}
+  </div>`;
+}
+function scoresHTML(L, C){
+  const wrap = (sub, inner) => `<section class="panel"><div class="head-row"><h2>Scoreboard</h2>${sub}</div>${inner}</section>`;
+  if (!LIVE.on) return wrap("", `<div class="card empty"><strong>The live scoreboard is on the website.</strong>Open playtheportfolio.com to follow games as they happen.</div>`);
+  if (sportOf(L)!=="football") return wrap("", `<div class="card empty"><strong>Live scores cover football for now.</strong>Basketball scores arrive when that season starts.</div>`);
+  const ws = weekStart(sbToday()), we = weekEnd(ws), hasPicks = C.picks.length>0;
+  const mineOnly = hasPicks && !S.sbAll;
+  const all = liveAll().filter(g=> g.date>=ws && g.date<=we);
+  const shown = all.filter(g=> (!mineOnly || C.owner[g.hk] || C.owner[g.ak]) && (S.sbLg==="all" || g.lg===S.sbLg)).sort((a,b)=> a.start-b.start || a.home.localeCompare(b.home));
+  const filters = `<div class="btns">${hasPicks?`<div class="seg" role="group" aria-label="Which games"><button type="button" data-sb="mine" aria-pressed="${mineOnly}">This league's teams</button><button type="button" data-sb="all" aria-pressed="${!mineOnly}">All games</button></div>`:""}
+      <div class="seg" role="group" aria-label="Which level"><button type="button" data-sblg="all" aria-pressed="${S.sbLg==="all"}">All</button><button type="button" data-sblg="NFL" aria-pressed="${S.sbLg==="NFL"}">NFL</button><button type="button" data-sblg="CFB" aria-pressed="${S.sbLg==="CFB"}">College</button></div></div>`;
+  const sub = `<p class="sub">Week of ${fmtShort(ws)}–${fmtShort(we)}${LIVE.at?` · updated ${new Date(LIVE.at).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit",second:"2-digit"})}`:""}</p>`;
+  if (!LIVE.tried) return wrap(sub, `<div class="card empty"><strong>Loading the scoreboard…</strong></div>`);
+  if (LIVE.err && !all.length) return wrap(sub, `<div class="card empty"><strong>Live scores can't be reached right now.</strong>Standings still update from the morning results. This page keeps trying.</div>`);
+  const live = shown.filter(g=>g.state==="in"), pre = shown.filter(g=>g.state==="pre"), post = shown.filter(g=>g.state==="post").reverse();
+  const grid = gs => `<div class="sg-grid">${gs.map(g=>scoreCard(g, C)).join("")}</div>`;
+  const days = [...new Set(pre.map(g=>g.date))];
+  const body = (live.length ? `<div class="head-row"><h3>Live now</h3><span class="sub">${live.length} game${live.length===1?"":"s"}</span></div>${grid(live)}` : "")
+    + days.map(d=>`<div class="head-row"><h3>${fmtDay(d)}</h3><span class="sub">${pre.filter(g=>g.date===d).length} upcoming</span></div>${grid(pre.filter(g=>g.date===d))}`).join("")
+    + (post.length ? `<div class="head-row"><h3>Final</h3><span class="sub">${post.length} game${post.length===1?"":"s"}</span></div>${grid(post)}` : "");
+  return wrap(sub, `${filters}${LIVE.err?`<p class="ro">Some scores couldn't be refreshed just now. Showing the last ones received.</p>`:""}
+    ${body || `<div class="card empty"><strong>No games to show.</strong>${mineOnly?"None of this league's teams have a game listed this week. Try All games.":"Nothing is on the schedule for this week yet."}</div>`}
+    <p class="sub">Live scores come from ESPN's public scoreboard and refresh about every 20 seconds while games are on. A final here counts in the standings straight away.</p>`);
+}
+function liveStrip(L, C){
+  if (!LIVE.on || sportOf(L)!=="football" || !C.picks.length) return "";
+  const n = liveAll().filter(g=> g.state==="in" && (C.owner[g.hk] || C.owner[g.ak])).length;
+  return n ? `<button type="button" class="card you" data-tabgo="scores"><span><span class="live-pill">Live</span><span class="kv"><b>${n}</b> game${n===1?"":"s"} with this league's teams ${n===1?"is":"are"} on now</span></span><span class="kv"><b>Open the scoreboard ›</b></span></button>` : "";
 }
 
 /* ---------- chat ---------- */
@@ -1347,7 +1534,7 @@ function settingsHTML(){
       <p>Alert choices are part of your account on the website version.</p></div>`}
     <div class="card set"><h3>Help</h3>
       <details><summary>How does scoring work?</summary><p>Every win by a team in your portfolio adds to your total. Football: ${SPORTS.football.counts} Basketball: ${SPORTS.basketball.counts}</p></details>
-      <details><summary>When do scores update?</summary><p>Scores are pulled once each morning. A game that ends tonight shows up tomorrow morning.</p></details>
+      <details><summary>When do scores update?</summary><p>${LIVE.on?"On the website, football scores are live: the Scoreboard tab follows every game, and a final counts in the standings as soon as the game ends. Results are also saved to the permanent record each morning.":"Scores are pulled once each morning. A game that ends tonight shows up tomorrow morning. The website version also has live football scores."}</p></details>
       <details><summary>How do I see my team?</summary><p>${A?"Join a league with the invite link from its commissioner. It then appears under My Portfolios on Home, and you can switch between portfolios from the menu at the top.":"Open a league and pick your name on the My Team tab. That league then appears under My Portfolios on Home, and you can switch between portfolios from the menu at the top."}</p></details>
       <details><summary>A score looks wrong. What now?</summary><p>Tell your commissioner. They can enter a correction, and a corrected result always replaces the automatic one.</p></details>
       <details><summary>How do I start a league?</summary><p>${A?"Sign in and use Create a league on Home. You become its commissioner: you set the managers and draft order, share the invite link, and can make or undo picks for anyone.":"New leagues are set up by the commissioner, who also runs the draft."}</p></details>
@@ -1356,6 +1543,7 @@ function settingsHTML(){
       <details><summary>How is the projected finish worked out?</summary><p>Each team is assumed to keep winning at its current pace for the rest of its regular season, leaning slightly toward .500 early in the year. It's a pace, not a prediction: postseason games aren't included until they're played.</p></details>`:""}</div>
     <div class="card set"><h3>Legal notices</h3>
       <p>The Portfolio is an independent game and is not affiliated with, endorsed by or sponsored by the NFL, the NBA, the NCAA, or any team, school or conference. Team and school names are used only to identify the teams being followed.</p>
+      <p>Live scores are read from ESPN's public scoreboard. The Portfolio is not affiliated with or endorsed by ESPN.</p>
       <p>The Portfolio does not take entry fees or pay prizes, and is for entertainment.</p></div>
     <div class="card set"><h3>Privacy</h3>
       ${A?`<p>An account stores your email address, full name, username and, if you give one, a phone number. They are kept in the site's database (hosted by Supabase) and are visible only to you. They are used to sign you in and, later, to send the alerts you choose.</p>
@@ -1562,6 +1750,8 @@ function bind(){
   document.querySelectorAll("[data-pick]").forEach(b=> b.onclick=()=> makePick(b.dataset.pick, b.dataset.pool));
   const cAdd=$("#cAdd"); if(cAdd) cAdd.onclick=()=>{ const t=$("#cT").value.trim(); if(t) makePick(t, $("#cP").value); };
   const u=$("#undoPick"); if(u) u.onclick=undoPick;
+  document.querySelectorAll("[data-sb]").forEach(b=> b.onclick=()=>{ S.sbAll = b.dataset.sb==="all"; render(); });
+  document.querySelectorAll("[data-sblg]").forEach(b=> b.onclick=()=>{ S.sbLg = b.dataset.sblg; render(); });
   document.querySelectorAll("[data-tabgo]").forEach(b=> b.onclick=()=>{ S.tab=b.dataset.tabgo; render(); try{ window.scrollTo(0,0); }catch(_){} });
   document.querySelectorAll("[data-recap]").forEach(b=> b.onclick=()=>{ if (b.dataset.recap){ S.recapWeek=b.dataset.recap; render(); } });
   // league history
@@ -1749,6 +1939,7 @@ window.addEventListener("hashchange", ()=>{ applyHash(); settleLeague(); render(
   }, ()=>{});
   db.collection("games").limit(1000).onSnapshot(q=>{ S.gameDocs = q.docs.map(d=>({_id:d.id, ...d.data()})); render(); }, ()=>{});
   db.doc("meta/sync").onSnapshot(s=>{ S.sync = s.exists ? s.data() : null; render(); }, ()=>{});
+  if (LIVE.on) loadLive().then(liveLoop);
   db.collection("schedule").limit(200).onSnapshot(q=>{ S.schedDocs = q.docs.map(d=>({_id:d.id, ...d.data()})); if (S.schedDocs.length) render(); }, ()=>{});
 })();
 </script>
