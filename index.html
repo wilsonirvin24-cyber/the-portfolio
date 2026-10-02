@@ -50,7 +50,7 @@
   --accent:#0d6a45; --accent-ink:#ffffff; --accent-soft:#dcefe4;
   --up:#0d7a4b; --down:#b4362b; --gold:#a07612;
   --ticker-bg:#0f2a1e; --ticker-fg:#d9efe2;
-  --nfl:#1f4e9c; --acc:#c25412; --b10:#2d6fb8; --b12:#b8292f; --sec:#7a3fa5; --np4:#4f7a2a;
+  --nfl:#1f4e9c; --acc:#c25412; --b10:#2d6fb8; --b12:#b8292f; --sec:#7a3fa5; --np4:#4f7a2a; --be:#0e7f86;
   --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
   --body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
@@ -60,14 +60,14 @@
   --accent:#3fbf86; --accent-ink:#06130d; --accent-soft:#163326;
   --up:#4cc98f; --down:#f0766a; --gold:#e0b44a;
   --ticker-bg:#06100b; --ticker-fg:#bfe3cf;
-  --nfl:#7ea6ec; --acc:#f09a5c; --b10:#7fb3ec; --b12:#f07a7f; --sec:#c39ae6; --np4:#9bc96c;
+  --nfl:#7ea6ec; --acc:#f09a5c; --b10:#7fb3ec; --b12:#f07a7f; --sec:#c39ae6; --np4:#9bc96c; --be:#5fcfd6;
   color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0c1511; --surface:#121e18; --sunk:#0a120e; --line:#24352c; --fg:#e4ede7; --muted:#90a297;
   --accent:#3fbf86; --accent-ink:#06130d; --accent-soft:#163326;
   --up:#4cc98f; --down:#f0766a; --gold:#e0b44a;
   --ticker-bg:#06100b; --ticker-fg:#bfe3cf;
-  --nfl:#7ea6ec; --acc:#f09a5c; --b10:#7fb3ec; --b12:#f07a7f; --sec:#c39ae6; --np4:#9bc96c;
+  --nfl:#7ea6ec; --acc:#f09a5c; --b10:#7fb3ec; --b12:#f07a7f; --sec:#c39ae6; --np4:#9bc96c; --be:#5fcfd6;
   color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.45}
@@ -267,6 +267,44 @@ details.pend summary{cursor:pointer;font-weight:600;font-size:14px}
 .share{display:flex;gap:6px;align-items:stretch}
 .share input[type=text]{font-family:var(--mono);font-size:11.5px;padding:6px 8px;color:var(--muted)}
 .share .btn{padding:6px 10px;font-size:12.5px;white-space:nowrap}
+
+/* v5: app shell */
+.p-NBA{--c:var(--nfl)}.p-Big-East{--c:var(--be)}.p-Other{--c:var(--np4)}.p-Any{--c:var(--muted)}
+.topbar{display:flex;align-items:center;gap:8px}
+.gear{appearance:none;border:1px solid var(--line);background:var(--sunk);color:var(--fg);border-radius:6px;width:36px;height:34px;cursor:pointer;font-size:17px;line-height:1}
+.gear:hover{border-color:var(--muted)}
+.gear:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.sports{display:flex;gap:6px;flex-wrap:wrap}
+.sports button{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:6px 14px;font-weight:600;cursor:pointer}
+.sports button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.sports button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.pf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.pf{appearance:none;text-align:left;font:inherit;color:inherit;cursor:pointer;padding:16px;display:flex;flex-direction:column;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.pf:hover{border-color:var(--accent)}
+.pf:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.pf .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.pf .nm{font-family:var(--display);font-weight:800;font-size:22px;text-transform:uppercase;letter-spacing:.02em;line-height:1.05;overflow-wrap:anywhere}
+.pf .big{display:flex;align-items:baseline;gap:8px}
+.pf .big .bn{font-family:var(--mono);font-size:40px;font-weight:600;line-height:1}
+.pf .kv{font-size:13px;color:var(--muted)}
+.pf .kv b{color:var(--fg);font-weight:600}
+.sport-tag{font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--accent)}
+.claim{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.claim select{width:auto;padding:6px 8px}
+.me-head{padding:16px;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:end}
+.me-head .who{font-family:var(--display);font-weight:900;font-size:clamp(28px,6vw,40px);text-transform:uppercase;line-height:1}
+.me-head .n{font-family:var(--mono);font-size:44px;font-weight:600;line-height:1;text-align:right}
+.me-head .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;text-align:right}
+.team td{border-bottom:1px solid var(--line)}
+.team tr:last-child td{border-bottom:0}
+.set{padding:16px;display:flex;flex-direction:column;gap:10px}
+.set p{margin:0;font-size:14px;max-width:68ch}
+.set details{border-top:1px solid var(--line);padding-top:8px}
+.set summary{cursor:pointer;font-weight:600}
+.set details p{margin-top:6px;color:var(--muted)}
+details.how>summary{cursor:pointer;font-family:var(--display);font-weight:800;text-transform:uppercase;letter-spacing:.03em;font-size:20px}
+details.how[open]>summary{margin-bottom:14px}
+@media (max-width:520px){.me-head{grid-template-columns:1fr}.me-head .n,.me-head .lbl{text-align:left}}
 </style>
 
 <header class="mast">
@@ -275,15 +313,18 @@ details.pend summary{cursor:pointer;font-weight:600;font-size:14px}
       <h1><a href="#home" id="brandLink">The <span>Portfolio</span></a></h1>
       <p id="tagline">Draft teams, not players. Most wins takes the table.</p>
     </div>
-    <label class="league-pick" for="leagueSel">League
-      <select id="leagueSel"><option>Loading…</option></select>
-    </label>
+    <div class="topbar">
+      <label class="league-pick" for="leagueSel"><span class="hide-sm">Portfolio</span>
+        <select id="leagueSel"><option>Loading…</option></select>
+      </label>
+      <button class="gear" id="gearBtn" type="button" aria-label="Settings" title="Settings">⚙</button>
+    </div>
   </div>
 </header>
 <div class="ticker" id="ticker" aria-label="Latest results for drafted teams"><div class="ticker-track" id="tickerTrack"><span class="tk o">Loading the latest results…</span></div></div>
-<nav class="tabs" aria-label="Sections">
+<nav class="tabs" id="tabsNav" aria-label="League sections" hidden>
   <div class="wrap" role="tablist">
-    <button class="tab" role="tab" aria-selected="true" data-tab="home">Home</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="team">My Team</button>
     <button class="tab" role="tab" aria-selected="false" data-tab="standings">Standings</button>
     <button class="tab" role="tab" aria-selected="false" data-tab="board">Board</button>
     <button class="tab" role="tab" aria-selected="false" data-tab="results">Results</button>
@@ -291,48 +332,72 @@ details.pend summary{cursor:pointer;font-weight:600;font-size:14px}
   </div>
 </nav>
 <main class="wrap" id="main">
-  <section class="panel card empty"><strong>Opening the league…</strong>Standings, rosters and results load from the shared league file.</section>
+  <section class="panel card empty"><strong>Opening The Portfolio…</strong>Your leagues, standings and results load from the shared league file.</section>
 </main>
 
 <script>
-/* Every NFL team and all 138 FBS teams for 2026. Notre Dame sits in the ACC pool; every FBS team outside the Power 4 is Non-P4. */
-const POOL = {
+/* ---------- team pools ---------- */
+/* Football: every NFL team and all 138 FBS teams for 2026. Notre Dame sits in the ACC pool; every FBS team outside the Power 4 is Non-P4. */
+const FB_POOL = {
 "NFL":["49ers","Bears","Bengals","Bills","Broncos","Browns","Buccaneers","Cardinals","Chargers","Chiefs","Colts","Commanders","Cowboys","Dolphins","Eagles","Falcons","Giants","Jaguars","Jets","Lions","Packers","Panthers","Patriots","Raiders","Rams","Ravens","Saints","Seahawks","Steelers","Texans","Titans","Vikings"],
 "ACC":["Boston College","California","Clemson","Duke","Florida State","Georgia Tech","Louisville","Miami","NC State","North Carolina","Notre Dame","Pittsburgh","SMU","Stanford","Syracuse","Virginia","Virginia Tech","Wake Forest"],
 "Big Ten":["Illinois","Indiana","Iowa","Maryland","Michigan","Michigan State","Minnesota","Nebraska","Northwestern","Ohio State","Oregon","Penn State","Purdue","Rutgers","UCLA","USC","Washington","Wisconsin"],
 "Big 12":["Arizona","Arizona State","BYU","Baylor","Cincinnati","Colorado","Houston","Iowa State","Kansas","Kansas State","Oklahoma State","TCU","Texas Tech","UCF","Utah","West Virginia"],
 "SEC":["Alabama","Arkansas","Auburn","Florida","Georgia","Kentucky","LSU","Mississippi State","Missouri","Oklahoma","Ole Miss","South Carolina","Tennessee","Texas","Texas A&M","Vanderbilt"],
 "Non-P4":["Air Force","Akron","Appalachian State","Arkansas State","Army","Ball State","Boise State","Bowling Green","Buffalo","Central Michigan","Charlotte","Coastal Carolina","Colorado State","Delaware","East Carolina","Eastern Michigan","FIU","Florida Atlantic","Fresno State","Georgia Southern","Georgia State","Hawaii","Jacksonville State","James Madison","Kennesaw State","Kent State","Liberty","Louisiana","Louisiana Tech","Louisiana-Monroe","Marshall","Memphis","Miami (OH)","Middle Tennessee","Missouri State","Navy","Nevada","New Mexico","New Mexico State","North Dakota State","North Texas","Northern Illinois","Ohio","Old Dominion","Oregon State","Rice","Sacramento State","Sam Houston","San Diego State","San Jose State","South Alabama","South Florida","Southern Miss","Temple","Texas State","Toledo","Troy","Tulane","Tulsa","UAB","UConn","UMass","UNLV","UTEP","UTSA","Utah State","Washington State","Western Kentucky","Western Michigan","Wyoming"]};
-const POOLS = ["NFL","ACC","Big Ten","Big 12","SEC","Non-P4"];
-const DEFAULT_SLOTS = {"NFL":3,"ACC":1,"Big Ten":1,"Big 12":1,"SEC":1,"Non-P4":1};
+/* Basketball: all 30 NBA teams and all 365 Division I men's teams for 2026-27. "Other" is every team outside the five named conferences. */
+const BB_POOL = {
+"NBA":["76ers","Bucks","Bulls","Cavaliers","Celtics","Clippers","Grizzlies","Hawks","Heat","Hornets","Jazz","Kings","Knicks","Lakers","Magic","Mavericks","Nets","Nuggets","Pacers","Pelicans","Pistons","Raptors","Rockets","Spurs","Suns","Thunder","Timberwolves","Trail Blazers","Warriors","Wizards"],
+"SEC":FB_POOL.SEC,
+"Big Ten":FB_POOL["Big Ten"],
+"Big 12":FB_POOL["Big 12"],
+"ACC":FB_POOL.ACC,
+"Big East":["Butler","Creighton","DePaul","Georgetown","Marquette","Providence","Seton Hall","St. John's","UConn","Villanova","Xavier"],
+"Other":["Abilene Christian","Air Force","Akron","Alabama A&M","Alabama State","Albany","Alcorn State","American","Appalachian State","Arkansas State","Arkansas-Pine Bluff","Army","Austin Peay","Ball State","Bellarmine","Belmont","Bethune-Cookman","Binghamton","Boise State","Boston University","Bowling Green","Bradley","Brown","Bryant","Bucknell","Buffalo","Cal Baptist","Cal Poly","Cal State Bakersfield","Cal State Fullerton","Cal State Northridge","Campbell","Canisius","Central Arkansas","Central Connecticut","Central Michigan","Charleston","Charleston Southern","Charlotte","Chattanooga","Chicago State","Cleveland State","Coastal Carolina","Colgate","Colorado State","Columbia","Coppin State","Cornell","Dartmouth","Davidson","Dayton","Delaware","Delaware State","Denver","Detroit Mercy","Drake","Drexel","Duquesne","East Carolina","East Tennessee State","East Texas A&M","Eastern Illinois","Eastern Kentucky","Eastern Michigan","Eastern Washington","Elon","Evansville","FIU","Fairfield","Fairleigh Dickinson","Florida A&M","Florida Atlantic","Florida Gulf Coast","Fordham","Fresno State","Furman","Gardner-Webb","George Mason","George Washington","Georgia Southern","Georgia State","Gonzaga","Grambling State","Grand Canyon","Green Bay","Hampton","Harvard","Hawaii","High Point","Hofstra","Holy Cross","Houston Christian","Howard","IU Indy","Idaho","Idaho State","Illinois State","Incarnate Word","Indiana State","Iona","Jackson State","Jacksonville","Jacksonville State","James Madison","Kansas City","Kennesaw State","Kent State","LIU","La Salle","Lafayette","Lamar","Le Moyne","Lehigh","Liberty","Lindenwood","Lipscomb","Little Rock","Long Beach State","Longwood","Louisiana","Louisiana Tech","Louisiana-Monroe","Loyola Chicago","Loyola Marymount","Loyola Maryland","Maine","Manhattan","Marist","Marshall","Maryland Eastern Shore","McNeese","Memphis","Mercer","Mercyhurst","Merrimack","Miami (OH)","Middle Tennessee","Milwaukee","Mississippi Valley State","Missouri State","Monmouth","Montana","Montana State","Morehead State","Morgan State","Mount St. Mary's","Murray State","NJIT","Navy","Nevada","New Hampshire","New Haven","New Mexico","New Mexico State","New Orleans","Niagara","Nicholls","Norfolk State","North Alabama","North Carolina A&T","North Carolina Central","North Dakota","North Dakota State","North Florida","North Texas","Northeastern","Northern Arizona","Northern Colorado","Northern Illinois","Northern Iowa","Northern Kentucky","Northwestern State","Oakland","Ohio","Old Dominion","Omaha","Oral Roberts","Oregon State","Pacific","Penn","Pepperdine","Portland","Portland State","Prairie View A&M","Presbyterian","Princeton","Purdue Fort Wayne","Queens","Quinnipiac","Radford","Rhode Island","Rice","Richmond","Rider","Robert Morris","SIU Edwardsville","Sacramento State","Sacred Heart","Saint Joseph's","Saint Louis","Saint Mary's","Saint Peter's","Sam Houston","Samford","San Diego","San Diego State","San Francisco","San Jose State","Santa Clara","Seattle","Siena","South Alabama","South Carolina State","South Dakota","South Dakota State","South Florida","Southeast Missouri State","Southeastern Louisiana","Southern","Southern Illinois","Southern Indiana","Southern Miss","Southern Utah","St. Bonaventure","St. Thomas","Stephen F. Austin","Stetson","Stonehill","Stony Brook","Tarleton State","Temple","Tennessee State","Tennessee Tech","Texas A&M-Corpus Christi","Texas Southern","Texas State","The Citadel","Toledo","Towson","Troy","Tulane","Tulsa","UAB","UC Davis","UC Irvine","UC Riverside","UC San Diego","UC Santa Barbara","UIC","UMBC","UMass","UMass Lowell","UNC Asheville","UNC Greensboro","UNC Wilmington","UNLV","USC Upstate","UT Arlington","UT Martin","UTEP","UTRGV","UTSA","Utah State","Utah Tech","Utah Valley","VCU","VMI","Valparaiso","Vermont","Wagner","Washington State","Weber State","West Florida","West Georgia","Western Carolina","Western Illinois","Western Kentucky","Western Michigan","Wichita State","William & Mary","Winthrop","Wofford","Wright State","Wyoming","Yale","Youngstown State"]};
+
+const SPORTS = {
+  football:   { label:"Football",   pro:"NFL", col:"CFB", pools:["NFL","ACC","Big Ten","Big 12","SEC","Non-P4"], teams:FB_POOL,
+                slots:{"NFL":3,"ACC":1,"Big Ten":1,"Big 12":1,"SEC":1,"Non-P4":1}, flex:0, weights:{},
+                counts:"NFL regular season, plus the full college season including bowls and the playoff." },
+  basketball: { label:"Basketball", pro:"NBA", col:"CBB", pools:["NBA","SEC","Big Ten","Big 12","ACC","Big East","Other"], teams:BB_POOL,
+                slots:{"NBA":3,"SEC":1,"Big Ten":1,"Big 12":1,"ACC":1,"Big East":1,"Other":0}, flex:4, weights:{"NBA":0.5},
+                counts:"NBA regular season at half a win each, plus every college game including March Madness." }
+};
+const SPORT_KEYS = Object.keys(SPORTS);
+const PFX = {NFL:"n:", CFB:"c:", NBA:"b:", CBB:"m:"};
 /* Spellings other score sources use, mapped to the names above. */
-const ALIAS = {"miami (fla.)":"Miami","miami (fl)":"Miami","miami fl":"Miami","miami-fl":"Miami","miami (oh)":"Miami (OH)","miami-oh":"Miami (OH)","miami (ohio)":"Miami (OH)","miami oh":"Miami (OH)","miami ohio":"Miami (OH)","miss. state":"Mississippi State","ga. southern":"Georgia Southern","ga. tech":"Georgia Tech","va. tech":"Virginia Tech","ul-monroe":"Louisiana-Monroe","ul monroe":"Louisiana-Monroe","ulm":"Louisiana-Monroe","louisiana monroe":"Louisiana-Monroe","louisiana-lafayette":"Louisiana","ul-lafayette":"Louisiana","c. michigan":"Central Michigan","cent. michigan":"Central Michigan","e. michigan":"Eastern Michigan","w. michigan":"Western Michigan","n. illinois":"Northern Illinois","niu":"Northern Illinois","app. state":"Appalachian State","app state":"Appalachian State","so. miss":"Southern Miss","southern mississippi":"Southern Miss","southern miss.":"Southern Miss","w. kentucky":"Western Kentucky","wku":"Western Kentucky","middle tenn.":"Middle Tennessee","middle tennessee state":"Middle Tennessee","mtsu":"Middle Tennessee","fau":"Florida Atlantic","florida international":"FIU","c. carolina":"Coastal Carolina","pitt":"Pittsburgh","n.c. state":"NC State","north carolina state":"NC State","massachusetts":"UMass","connecticut":"UConn","southern methodist":"SMU","central florida":"UCF","brigham young":"BYU","mississippi":"Ole Miss","texas christian":"TCU","louisiana state":"LSU","southern california":"USC","hawai'i":"Hawaii","san josé state":"San Jose State","la. tech":"Louisiana Tech","la tech":"Louisiana Tech","sam houston state":"Sam Houston","ut san antonio":"UTSA","texas-san antonio":"UTSA","texas-el paso":"UTEP","alabama-birmingham":"UAB","army west point":"Army","n. texas":"North Texas","s. florida":"South Florida","usf":"South Florida","e. carolina":"East Carolina","ecu":"East Carolina","s. carolina":"South Carolina","n. carolina":"North Carolina","unc":"North Carolina","w. virginia":"West Virginia","boston col.":"Boston College","ndsu":"North Dakota State","n. dakota state":"North Dakota State","s. alabama":"South Alabama","cal":"California","jax state":"Jacksonville State","nevada-las vegas":"UNLV","bowling green state":"Bowling Green"};
+const ALIAS = {"miami (fla.)":"Miami","miami (fl)":"Miami","miami fl":"Miami","miami-fl":"Miami","miami (oh)":"Miami (OH)","miami-oh":"Miami (OH)","miami (ohio)":"Miami (OH)","miami oh":"Miami (OH)","miami ohio":"Miami (OH)","miss. state":"Mississippi State","ga. southern":"Georgia Southern","ga. tech":"Georgia Tech","va. tech":"Virginia Tech","ul-monroe":"Louisiana-Monroe","ul monroe":"Louisiana-Monroe","ulm":"Louisiana-Monroe","louisiana monroe":"Louisiana-Monroe","louisiana-lafayette":"Louisiana","ul-lafayette":"Louisiana","c. michigan":"Central Michigan","cent. michigan":"Central Michigan","e. michigan":"Eastern Michigan","w. michigan":"Western Michigan","n. illinois":"Northern Illinois","niu":"Northern Illinois","app. state":"Appalachian State","app state":"Appalachian State","so. miss":"Southern Miss","southern mississippi":"Southern Miss","southern miss.":"Southern Miss","w. kentucky":"Western Kentucky","wku":"Western Kentucky","middle tenn.":"Middle Tennessee","middle tennessee state":"Middle Tennessee","mtsu":"Middle Tennessee","fau":"Florida Atlantic","florida international":"FIU","c. carolina":"Coastal Carolina","pitt":"Pittsburgh","n.c. state":"NC State","north carolina state":"NC State","massachusetts":"UMass","connecticut":"UConn","southern methodist":"SMU","central florida":"UCF","brigham young":"BYU","mississippi":"Ole Miss","texas christian":"TCU","louisiana state":"LSU","southern california":"USC","hawai'i":"Hawaii","san josé state":"San Jose State","la. tech":"Louisiana Tech","la tech":"Louisiana Tech","sam houston state":"Sam Houston","ut san antonio":"UTSA","texas-san antonio":"UTSA","texas-el paso":"UTEP","alabama-birmingham":"UAB","army west point":"Army","n. texas":"North Texas","s. florida":"South Florida","usf":"South Florida","e. carolina":"East Carolina","ecu":"East Carolina","s. carolina":"South Carolina","n. carolina":"North Carolina","unc":"North Carolina","w. virginia":"West Virginia","boston col.":"Boston College","ndsu":"North Dakota State","n. dakota state":"North Dakota State","s. alabama":"South Alabama","cal":"California","jax state":"Jacksonville State","nevada-las vegas":"UNLV","bowling green state":"Bowling Green",
+  "saint john's":"St. John's","st. john's (ny)":"St. John's","uncw":"UNC Wilmington","uncg":"UNC Greensboro","etsu":"East Tennessee State","fgcu":"Florida Gulf Coast","siue":"SIU Edwardsville","semo":"Southeast Missouri State","loyola (chi)":"Loyola Chicago","loyola-chicago":"Loyola Chicago","loyola (md)":"Loyola Maryland","st. mary's":"Saint Mary's","saint mary's (ca)":"Saint Mary's","st. joseph's":"Saint Joseph's","st. peter's":"Saint Peter's","st. louis":"Saint Louis","iupui":"IU Indy","umkc":"Kansas City","citadel":"The Citadel","grambling":"Grambling State","southern university":"Southern","pennsylvania":"Penn","long island university":"LIU","texas a&m-cc":"Texas A&M-Corpus Christi","ut rio grande valley":"UTRGV","sf austin":"Stephen F. Austin","california baptist":"Cal Baptist","csu bakersfield":"Cal State Bakersfield","detroit":"Detroit Mercy","college of charleston":"Charleston"};
 
 const S = { db:null, canWrite:false, leagues:[], leaguesLoaded:false, leagueId:null, gameDocs:[], sync:null,
-  tab:"home", wantLeague:null, open:new Set(), onlyMine:true, weeksShown:2, draftPool:"all", draftQ:"",
-  confirmDel:null, confirmLg:null, newMgrs:[], reset:new Set() };
+  view:"home", tab:"standings", wantLeague:null, wantTab:null, open:new Set(), onlyMine:true, weeksShown:2, draftPool:"all", draftQ:"",
+  confirmDel:null, confirmLg:null, newMgrs:[], newSport:"football", sportFilter:"all", me:{}, theme:"system", reset:new Set() };
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const poolCls = p => "p-" + String(p).replace(/\s+/g,"-");
 const chip = p => `<span class="chip ${poolCls(p)}">${esc(p==="Big Ten"?"B1G":p==="Big 12"?"B12":p)}</span>`;
+const fmt = n => Number.isInteger(n) ? String(n) : n.toFixed(1);
+const ordinal = n => n + (n%100>=11&&n%100<=13 ? "th" : ["th","st","nd","rd"][n%10] || "th");
 
 /* ---------- team names ---------- */
-const CFB = new Map(), NFL = new Map(POOL.NFL.map(t=>[t.toLowerCase(),t])), POOL_OF = {};
-for (const p of POOLS) for (const t of POOL[p]) { POOL_OF[(p==="NFL"?"n:":"c:")+t.toLowerCase()] = p; if (p!=="NFL") CFB.set(t.toLowerCase(), t); }
+const NAMES = {NFL:new Map(), NBA:new Map(), CFB:new Map(), CBB:new Map()};
+for (const k of SPORT_KEYS){ const sp = SPORTS[k]; for (const p of sp.pools) for (const t of sp.teams[p]) NAMES[p===sp.pro ? sp.pro : sp.col].set(t.toLowerCase(), t); }
+const normLg = lg => PFX[lg] ? lg : "CFB";
 function canonName(name, lg){
   const s = String(name||"").trim().replace(/\s+/g," ");
   const low = s.toLowerCase().replace(/[’`ʻ]/g,"'");
-  if (lg==="NFL"){ if (NFL.has(low)) return NFL.get(low); return NFL.get(low.split(" ").pop()) || s; }
-  if (ALIAS[low]) return ALIAS[low];
-  if (CFB.has(low)) return CFB.get(low);
+  const m = NAMES[lg] || NAMES.CFB;
+  if (lg==="NFL" || lg==="NBA"){ if (m.has(low)) return m.get(low); const w = low.split(" "); return m.get(w.slice(-2).join(" ")) || m.get(w[w.length-1]) || s; }
+  if (ALIAS[low] && m.has(ALIAS[low].toLowerCase())) return ALIAS[low];
+  if (m.has(low)) return m.get(low);
   const st = low.replace(/\bst\.?$/,"state");
-  if (ALIAS[st]) return ALIAS[st];
-  if (CFB.has(st)) return CFB.get(st);
+  if (ALIAS[st] && m.has(ALIAS[st].toLowerCase())) return ALIAS[st];
+  if (m.has(st)) return m.get(st);
+  if (ALIAS[low]) return ALIAS[low];
   return st!==low ? s.replace(/\bSt\.?$/i,"State") : s;
 }
-const tk = (name, lg) => (lg==="NFL"?"n:":"c:") + canonName(name, lg).toLowerCase();
-const pk = p => tk(p.team, p.pool==="NFL"?"NFL":"CFB");
+const tk = (name, lg) => PFX[lg] + canonName(name, lg).toLowerCase();
 
 /* ---------- dates: league week runs Tuesday through Monday ---------- */
 const toD = s => { const [y,m,d] = s.split("-").map(Number); return new Date(Date.UTC(y,m-1,d)); };
@@ -347,10 +412,23 @@ const thisSeason = () => { const n = new Date(); return n.getMonth()>=2 ? n.getF
 
 /* ---------- league helpers ---------- */
 const league = () => S.leagues.find(l=>l.id===S.leagueId) || null;
-const slotsOf = L => L.slots || DEFAULT_SLOTS;
-const roundsOf = L => POOLS.reduce((n,p)=> n + (slotsOf(L)[p]||0), 0);
-function slotRows(L){ const out=[]; for (const p of POOLS){ const n=slotsOf(L)[p]||0; for (let i=1;i<=n;i++) out.push({slot: n>1?`${p} #${i}`:p, pool:p, ix:i, many:n>1}); } return out; }
-const slotText = L => POOLS.filter(p=>slotsOf(L)[p]).map(p=>`${slotsOf(L)[p]} ${p}`).join(" · ");
+const sportOf = L => SPORTS[L.sport] ? L.sport : "football";
+const SP = L => SPORTS[sportOf(L)];
+const slotsOf = L => L.slots || SP(L).slots;
+const flexOf = L => typeof L.flex==="number" ? L.flex : (L.slots ? 0 : SP(L).flex);
+const weightOf = (L, pool) => { const w = (L.weights || SP(L).weights || {})[pool]; return typeof w==="number" ? w : 1; };
+const lgOfPool = (L, pool) => pool===SP(L).pro ? SP(L).pro : SP(L).col;
+const pk = (L, p) => tk(p.team, lgOfPool(L, p.pool));
+const roundsOf = L => SP(L).pools.reduce((n,p)=> n + (slotsOf(L)[p]||0), 0) + flexOf(L);
+function slotRows(L){
+  const out=[];
+  for (const p of SP(L).pools){ const n=slotsOf(L)[p]||0; for (let i=1;i<=n;i++) out.push({slot: n>1?`${p} #${i}`:p, pool:p, ix:i, many:n>1}); }
+  const f = flexOf(L); for (let i=1;i<=f;i++) out.push({slot: f>1?`Any #${i}`:"Any", pool:"Any", ix:i, many:f>1});
+  return out;
+}
+const slotText = L => SP(L).pools.filter(p=>slotsOf(L)[p]).map(p=>`${slotsOf(L)[p]} ${p}`).concat(flexOf(L)?[`${flexOf(L)} any college`]:[]).join(" · ");
+const weightText = L => SP(L).pools.filter(p=>weightOf(L,p)!==1).map(p=>`${p} wins count ${weightOf(L,p)}`).join(" · ");
+const mine = L => { const o = S.me[L.id]; return o && L.owners.includes(o) ? o : null; };
 
 /* ---------- games: one list for every league, de-duplicated ---------- */
 let _games = null;
@@ -358,12 +436,14 @@ function allGames(){
   if (_games) return _games;
   const seen = new Map();
   for (const d of S.gameDocs) (d.games||[]).forEach(g=>{
-    const lg = g.lg==="NFL"?"NFL":"CFB", date = g.date||d.date, hs=+g.hs, as=+g.as;
+    const lg = normLg(g.lg || d.lg), date = g.date||d.date, hs=+g.hs, as=+g.as;
     if (!/^\d{4}-\d\d-\d\d$/.test(date||"") || !isFinite(hs) || !isFinite(as) || !g.home || !g.away) return;
-    const G = {doc:d._id, lg, date, home:canonName(g.home,lg), away:canonName(g.away,lg), rawHome:g.home, rawAway:g.away, hs, as, rank:({auto:1,sheet:2})[g.src||d.src]||3};
+    const G = {doc:d._id, lg, date, home:canonName(g.home,lg), away:canonName(g.away,lg), rawHome:g.home, rawAway:g.away, rawLg:g.lg, hs, as, rank:({auto:1,sheet:2})[g.src||d.src]||3};
     const a = tk(G.home,lg), b = tk(G.away,lg);
     G.hk=a; G.ak=b;
-    const k = weekStart(date)+"|"+(a<b?a+"|"+b:b+"|"+a);
+    // basketball teams can meet twice in a week, so those games are keyed by day; football by week
+    const span = (lg==="NBA"||lg==="CBB") ? date : weekStart(date);
+    const k = span+"|"+(a<b?a+"|"+b:b+"|"+a);
     const prev = seen.get(k);
     if (!prev || G.rank>prev.rank) seen.set(k, G);   // a hand-entered result outranks an automatic one
   });
@@ -372,9 +452,9 @@ function allGames(){
 const winnerKey = g => g.hs===g.as ? null : (g.hs>g.as ? g.hk : g.ak);
 
 function compute(L){
-  const y = L.year || thisSeason();
+  const sp = SP(L), y = L.year || thisSeason();
   const lo = `${y}-07-01`, hi = `${y+1}-06-30`;
-  const games = allGames().filter(g=> g.date>=lo && g.date<=hi);
+  const games = allGames().filter(g=> g.date>=lo && g.date<=hi && (g.lg===sp.pro || g.lg===sp.col));
   const rec = {}; const R = k => rec[k] || (rec[k] = {w:0,l:0,t:0,games:[]});
   for (const g of games){
     if (g.hs===g.as){ R(g.hk).t++; R(g.ak).t++; }
@@ -387,24 +467,72 @@ function compute(L){
   const firstWeek = games.length ? weekStart(games[0].date) : null;
   const weekNo = curWeek ? Math.round((toD(curWeek)-toD(firstWeek))/(7*864e5))+1 : 0;
   const picks = L.picks || [], owner = {};
-  for (const p of picks) owner[pk(p)] = p;
+  for (const p of picks) owner[pk(L,p)] = p;
   const order = slotRows(L).map(s=>s.slot);
   const rows = (L.owners||[]).map(o=>{
-    let nfl=0, cfb=0, wk=0;
+    let pro=0, col=0, total=0, wk=0;
     const holdings = picks.filter(p=>p.owner===o).map(p=>{
-      const k = pk(p), r = rec[k] || {w:0,l:0,t:0,games:[]};
-      if (p.pool==="NFL") nfl+=r.w; else cfb+=r.w;
+      const k = pk(L,p), r = rec[k] || {w:0,l:0,t:0,games:[]}, wt = weightOf(L,p.pool);
+      if (p.pool===sp.pro) pro+=r.w; else col+=r.w;
+      total += r.w*wt;
       const wkG = r.games.filter(g=>weekStart(g.date)===curWeek);
-      wk += wkG.filter(g=>winnerKey(g)===k).length;
-      return {...p, k, w:r.w, l:r.l, t:r.t, wkG};
+      wk += wkG.filter(g=>winnerKey(g)===k).length*wt;
+      return {...p, k, w:r.w, l:r.l, t:r.t, pts:r.w*wt, wt, wkG};
     }).sort((a,b)=> order.indexOf(a.slot)-order.indexOf(b.slot));
-    return {owner:o, nfl, cfb, total:nfl+cfb, wk, holdings};
+    return {owner:o, pro, col, total, wk, holdings};
   });
-  rows.sort((a,b)=> b.total-a.total || b.nfl-a.nfl || a.owner.localeCompare(b.owner));
+  rows.sort((a,b)=> b.total-a.total || b.pro-a.pro || a.owner.localeCompare(b.owner));
   let rank = 0;
   rows.forEach((r,i)=>{ if (i===0 || r.total!==rows[i-1].total) rank=i+1; r.rank=rank; });
   const top = rows[0]?.total || 0; rows.forEach(r=> r.gb = top-r.total);
-  return {games, rec, owner, rows, curWeek, weekNo, lastDate, picks};
+  return {games, rec, owner, rows, curWeek, weekNo, lastDate, picks, sp};
+}
+
+/* ---------- routing: #home, #settings, #<league>, #<league>.<tab> ---------- */
+const PUBLIC_BASE = window.PORTFOLIO_PUBLIC ? location.origin + location.pathname : "https://wilsonirvin24-cyber.github.io/the-portfolio/";
+const leagueURL = id => PUBLIC_BASE + "#" + id;
+const TABS = ["team","standings","board","results","draft"];
+function applyHash(){
+  const h = (location.hash||"").slice(1);
+  if (!h || h==="home"){ S.view = "home"; return; }
+  if (h==="settings"){ S.view = "settings"; return; }
+  const [lid, tab] = h.split(".");
+  S.view = "league"; S.wantLeague = lid; S.wantTab = TABS.includes(tab) ? tab : null;
+}
+function settleLeague(){
+  if (S.wantLeague && S.leaguesLoaded){
+    const L = S.leagues.find(l=>l.id===S.wantLeague);
+    if (L){ S.leagueId = L.id; S.tab = S.wantTab || (mine(L) ? "team" : "standings"); } else S.view = "home";
+    S.wantLeague = S.wantTab = null;
+  }
+  if (!S.leagues.some(l=>l.id===S.leagueId)) S.leagueId = (S.leagues.find(l=>mine(l)) || S.leagues[0])?.id || null;
+}
+function syncHash(){
+  const L = league();
+  const want = S.view==="settings" ? "settings" : (S.view==="league" && L) ? L.id + "." + S.tab : "";
+  const have = (location.hash||"").slice(1);
+  if (have===want || (want==="" && have==="home")) return;
+  try{ history.replaceState(null, "", want ? "#"+want : location.pathname + location.search); }catch(_){}
+}
+function go(view, id, tab){
+  S.view = view; S.confirmDel = S.confirmLg = null;
+  if (view==="league"){
+    if (id && id!==S.leagueId){ S.leagueId = id; S.open.clear(); S.weeksShown = 2; S.draftQ = ""; S.draftPool = "all"; }
+    const L = league(); S.tab = tab || (L && mine(L) ? "team" : "standings");
+  }
+  render(); try{ window.scrollTo(0,0); }catch(_){}
+}
+
+/* ---------- this device: who I am, theme ---------- */
+function loadLocal(){
+  try{ S.me = JSON.parse(localStorage.getItem("pf-me")||"{}") || {}; }catch(_){ S.me = {}; }
+  try{ const t = localStorage.getItem("pf-theme"); if (["system","light","dark"].includes(t)) S.theme = t; }catch(_){}
+}
+function saveMe(){ try{ localStorage.setItem("pf-me", JSON.stringify(S.me)); }catch(_){} }
+function applyTheme(){
+  const el = document.documentElement;
+  if (S.theme==="system"){ if (el.dataset.pfTheme){ delete el.dataset.theme; delete el.dataset.pfTheme; } }
+  else { el.dataset.theme = S.theme; el.dataset.pfTheme = "1"; }
 }
 
 /* ---------- rendering ---------- */
@@ -415,30 +543,35 @@ function render(){
   const ae = document.activeElement, fid = ae && main.contains(ae) ? ae.id : null;
   let sel = null; try{ if (fid && ae.selectionStart!=null) sel=[ae.selectionStart, ae.selectionEnd]; }catch(_){}
 
-  document.querySelectorAll(".tab").forEach(b=> b.setAttribute("aria-selected", String(b.dataset.tab===S.tab)));
-  renderLeagueSel();
   const L = league();
-  if (S.db===null) main.innerHTML = `<section class="card empty"><strong>League data isn't available here.</strong>Open this page in Claude while signed in to see the standings.</section>`;
-  else if (!S.leaguesLoaded) main.innerHTML = `<section class="card empty"><strong>Opening the league…</strong>Standings, rosters and results load from the shared league file.</section>`;
-  else if (!L || S.tab==="home"){ $("#tagline").textContent = "Draft teams, not players. Most wins takes the table."; renderTickerAll(); main.innerHTML = homeHTML(); }
+  const view = S.view==="league" && !L ? "home" : S.view;
+  $("#tabsNav").hidden = view!=="league";
+  document.querySelectorAll(".tab").forEach(b=> b.setAttribute("aria-selected", String(view==="league" && b.dataset.tab===S.tab)));
+  renderLeagueSel(view);
+  if (S.db===null) main.innerHTML = `<section class="card empty"><strong>League data isn't available here.</strong>Open this page in Claude while signed in to see your leagues.</section>`;
+  else if (!S.leaguesLoaded) main.innerHTML = `<section class="card empty"><strong>Opening The Portfolio…</strong>Your leagues, standings and results load from the shared league file.</section>`;
+  else if (view==="settings"){ $("#tagline").textContent = "Settings"; renderTickerAll(); main.innerHTML = settingsHTML(); }
+  else if (view==="home"){ $("#tagline").textContent = "Draft teams, not players. Most wins takes the table."; renderTickerAll(); main.innerHTML = homeHTML(); }
   else {
     const C = compute(L);
-    renderTicker(C);
-    $("#tagline").textContent = `${L.name} · ${seasonLabel(L.year)} season · ${L.owners.length} managers`;
-    main.innerHTML = {standings:standingsHTML, board:boardHTML, results:resultsHTML, draft:draftHTML}[S.tab](L, C);
+    renderTicker(L, C);
+    $("#tagline").textContent = `${L.name} · ${SP(L).label} ${seasonLabel(L.year)} · ${L.owners.length} managers`;
+    main.innerHTML = {team:teamHTML, standings:standingsHTML, board:boardHTML, results:resultsHTML, draft:draftHTML}[S.tab](L, C);
   }
-  const shown = (!L || S.tab==="home") ? "home" : S.tab;
-  document.querySelectorAll(".tab").forEach(b=> b.setAttribute("aria-selected", String(b.dataset.tab===shown)));
-  if (S.leaguesLoaded && L) syncHash();
   for (const id in keep){ if (S.reset.has(id)) continue; const el = document.getElementById(id); if (el && el.value!==keep[id]) el.value = keep[id]; }
   S.reset.clear();
   if (fid){ const el = document.getElementById(fid); if (el){ el.focus(); if (sel) try{ el.setSelectionRange(sel[0],sel[1]); }catch(_){} } }
   bind();
+  if (S.leaguesLoaded) syncHash();
 }
 
-function renderLeagueSel(){
+function renderLeagueSel(view){
   const sel = $("#leagueSel");
-  sel.innerHTML = S.leagues.length ? S.leagues.map(l=>`<option value="${esc(l.id)}" ${l.id===S.leagueId?"selected":""}>${esc(l.name)} · ${seasonLabel(l.year)}</option>`).join("") : `<option>${S.leaguesLoaded?"No leagues yet":"Loading…"}</option>`;
+  const opt = l => `<option value="${esc(l.id)}" ${view==="league"&&l.id===S.leagueId?"selected":""}>${esc(l.name)} · ${SP(l).label} ${seasonLabel(l.year)}</option>`;
+  const my = S.leagues.filter(l=>mine(l)), rest = S.leagues.filter(l=>!mine(l));
+  sel.innerHTML = `<option value="" ${view!=="league"?"selected":""}>${S.leaguesLoaded?"Home":"Loading…"}</option>`
+    + (my.length ? `<optgroup label="My portfolios">${my.map(opt).join("")}</optgroup>` : "")
+    + (rest.length ? `<optgroup label="${my.length?"Other leagues":"Leagues"}">${rest.map(opt).join("")}</optgroup>` : "");
 }
 
 /* The ticker: latest finals for drafted teams. label(key) returns the manager to show, "" for none, or null when the team is not drafted. */
@@ -447,24 +580,145 @@ function paintTicker(games, label, emptyText){
   const recent = games.filter(g=> label(g.hk)!==null || label(g.ak)!==null).slice(-30).reverse();
   for (const g of recent) for (const side of ["home","away"]){
     const who = label(side==="home"?g.hk:g.ak); if (who===null) continue;
-    const mine = side==="home"?g.hs:g.as, theirs = side==="home"?g.as:g.hs;
-    const res = mine>theirs?"W":mine<theirs?"L":"T";
-    items.push(`<span class="tk"><b>${esc(g[side].toUpperCase())}</b> <span class="${res==="W"?"w":res==="L"?"l":"o"}">${res==="W"?"▲":res==="L"?"▼":"■"} ${res} ${mine}–${theirs}</span>${who?` <span class="o">${esc(who)}</span>`:""}</span>`);
+    const m = side==="home"?g.hs:g.as, t = side==="home"?g.as:g.hs;
+    const res = m>t?"W":m<t?"L":"T";
+    items.push(`<span class="tk"><b>${esc(g[side].toUpperCase())}</b> <span class="${res==="W"?"w":res==="L"?"l":"o"}">${res==="W"?"▲":res==="L"?"▼":"■"} ${res} ${m}–${t}</span>${who?` <span class="o">${esc(who)}</span>`:""}</span>`);
   }
   const html = items.length ? items.join("") : `<span class="tk o">${emptyText}</span>`;
   $("#tickerTrack").innerHTML = items.length ? html+html : html;
 }
-function renderTicker(C){ paintTicker(C.games, k=> C.owner[k] ? C.owner[k].owner : null, "No results yet for this league's teams."); }
+function renderTicker(L, C){ paintTicker(C.games, k=> C.owner[k] ? C.owner[k].owner : null, "No results yet for this league's teams."); }
 function renderTickerAll(){
   const own = new Map();
-  for (const l of S.leagues) for (const p of (l.picks||[])) own.set(pk(p), p.owner);
+  for (const l of S.leagues) for (const p of (l.picks||[])) own.set(pk(l,p), p.owner);
   const one = S.leagues.length===1;
   paintTicker(allGames(), k=> own.has(k) ? (one ? own.get(k) : "") : null, S.leagues.length ? "No results yet for drafted teams." : "Results appear here once a league has drafted.");
 }
 
+/* ---------- home ---------- */
+function homeHTML(){
+  const show = S.leagues.filter(l=> S.sportFilter==="all" || sportOf(l)===S.sportFilter);
+  const my = show.filter(l=>mine(l)), rest = show.filter(l=>!mine(l));
+  const sports = `<div class="sports" role="group" aria-label="Sport">${[["all","All sports"],...SPORT_KEYS.map(k=>[k,SPORTS[k].label])].map(([k,t])=>`<button type="button" data-sport="${k}" aria-pressed="${S.sportFilter===k}">${t}</button>`).join("")}</div>`;
+
+  const myCards = my.map(l=>{
+    const C = compute(l), o = mine(l), r = C.rows.find(x=>x.owner===o);
+    const best = [...r.holdings].sort((a,b)=> b.pts-a.pts || a.l-b.l)[0];
+    const tied = C.rows.filter(x=>x.rank===r.rank).length>1;
+    const drafting = l.status==="drafting";
+    return `<button type="button" class="pf" data-go="${esc(l.id)}">
+      <div class="top"><span class="sport-tag">${SP(l).label} · ${seasonLabel(l.year)}</span>${drafting?`<span class="status live">Drafting</span>`:""}</div>
+      <div class="nm">${esc(l.name)}</div>
+      <div class="big"><span class="bn">${fmt(r.total)}</span><span class="kv">wins · <b>${tied?"T-":""}${ordinal(r.rank)}</b> of ${l.owners.length}${r.wk?` · <span class="delta up">+${fmt(r.wk)} this week</span>`:""}</span></div>
+      <div class="kv">${best ? `Top performer: <b>${esc(best.team)}</b> ${best.w}-${best.l}${best.t?"-"+best.t:""}` : "No teams drafted yet"}</div>
+      <div class="kv">Managing as <b>${esc(o)}</b></div>
+    </button>`;
+  }).join("");
+
+  const restCards = rest.map(l=>{
+    const C = compute(l), lead = C.rows[0], D = draftState(l);
+    const tied = lead ? C.rows.filter(r=>r.total===lead.total).length : 0;
+    const st = l.status==="drafting" ? `<span class="status live">Drafting · pick ${Math.min(D.i+1,D.total)} of ${D.total}</span>` : `<span class="status">Season on</span>`;
+    return `<div class="card lg-card">
+      <div class="top" style="display:flex;justify-content:space-between;gap:8px;align-items:center"><span class="sport-tag">${SP(l).label} · ${seasonLabel(l.year)}</span>${st}</div>
+      <div class="nm">${esc(l.name)}</div>
+      <div class="kv">${l.owners.length} managers · ${esc(slotText(l))}</div>
+      <div class="kv">${lead&&lead.total ? `Leader: <b>${esc(lead.owner)}</b>${tied>1?` (tied with ${tied-1})`:""}, ${fmt(lead.total)} wins` : "No wins on the board yet"}</div>
+      <div class="claim"><label for="cl-${esc(l.id)}">I manage</label><select id="cl-${esc(l.id)}" data-claim="${esc(l.id)}"><option value="">Choose your name</option>${l.owners.map(o=>`<option>${esc(o)}</option>`).join("")}</select></div>
+      <div class="btns"><button class="btn primary" data-go="${esc(l.id)}">Open league</button>
+      ${S.canWrite?`<button class="btn danger" data-dellg="${esc(l.id)}">${S.confirmLg===l.id?"Delete for everyone?":"Delete"}</button>`:""}</div>
+      <div class="share"><input type="text" readonly id="ln-${esc(l.id)}" value="${esc(leagueURL(l.id))}" aria-label="Link to ${esc(l.name)}"><button type="button" class="btn" data-copy="ln-${esc(l.id)}">Copy link</button></div>
+    </div>`;
+  }).join("");
+
+  const how = `<ol class="steps">
+      <li class="card"><span class="n">1</span><h3>Draft before the season</h3><p>Managers take turns in a snake draft. Once a team is taken, it's off the board for everyone else in the league.</p></li>
+      <li class="card"><span class="n">2</span><h3>Your teams play, you collect</h3><p>Every win by one of your teams goes on your total. There are no lineups to set and nothing to manage week to week.</p></li>
+      <li class="card"><span class="n">3</span><h3>One table, no playoffs</h3><p>Standings run like a league table all season. The manager with the most wins at the end is the champion.</p></li>
+    </ol>
+    <div class="slots"><span><b>Football</b> portfolio, eight teams:</span>${["NFL","NFL","NFL","ACC","Big Ten","Big 12","SEC","Non-P4"].map(chip).join("")}</div>
+    <p class="sub">${SPORTS.football.counts}</p>
+    <div class="slots"><span><b>Basketball</b> portfolio, twelve teams:</span>${["NBA","NBA","NBA","SEC","Big Ten","Big 12","ACC","Big East","Any","Any","Any","Any"].map(chip).join("")}</div>
+    <p class="sub">${SPORTS.basketball.counts}</p>`;
+  const hero = `<div class="hero">
+      <h2>Draft teams,<br><em>not players.</em></h2>
+      <p>The Portfolio is a season-long league where every manager drafts a portfolio of pro and college teams. Each win by one of your teams counts toward your total. Whoever holds the most wins when the season ends takes the table.</p>
+    </div>`;
+
+  return `<section class="panel">
+    ${my.length || S.me && Object.keys(S.me).length ? "" : hero}
+    ${S.leagues.length ? sports : ""}
+    ${my.length ? `<div class="head-row"><h2>My Portfolios</h2><p class="sub">Tap one to open your team.</p></div><div class="pf-grid">${myCards}</div>` : ""}
+    ${rest.length ? `<div class="head-row"><h2>${my.length?"Other leagues":"Leagues"}</h2><p class="sub">Pick your name in a league to add it to My Portfolios on this device.</p></div><div class="lg-grid">${restCards}</div>` : ""}
+    ${!show.length ? `<div class="card empty"><strong>No ${S.sportFilter==="all"?"":SPORTS[S.sportFilter].label.toLowerCase()+" "}leagues yet.</strong>${S.canWrite?"Create one below.":"Leagues appear here once the commissioner creates one."}</div>` : ""}
+    ${my.length ? `<details class="how"><summary>How The Portfolio works</summary>${how}</details>` : `<div class="head-row"><h2>How it works</h2></div>${how}`}
+    ${createFormHTML()}
+  </section>`;
+}
+
+function createFormHTML(){
+  if (!S.canWrite) return `<p class="ro">New leagues are set up by the commissioner, who also runs each draft.</p>`;
+  const sp = SPORTS[S.newSport], cur = league(), y = thisSeason();
+  const mgrs = S.newMgrs.map((m,i)=>`<li><span class="ord">${i+1}</span><span class="who">${esc(m)}</span>
+      <button type="button" class="ib" data-mv="${i}|-1" ${i?"":"disabled"} aria-label="Move ${esc(m)} up">↑</button>
+      <button type="button" class="ib" data-mv="${i}|1" ${i<S.newMgrs.length-1?"":"disabled"} aria-label="Move ${esc(m)} down">↓</button>
+      <button type="button" class="ib" data-rm="${i}" aria-label="Remove ${esc(m)}">✕</button></li>`).join("");
+  const pw = sp.weights[sp.pro] ?? 1;
+  return `<form class="card form" id="lgForm" autocomplete="off">
+      <div class="head-row"><h3>Create a league</h3><span class="sub">${S.newSport==="football"?"Drafts from all 32 NFL teams and all 138 FBS teams.":"Drafts from all 30 NBA teams and all 365 Division I teams."}</span></div>
+      <div class="form-grid">
+        <label class="f" for="lgSport">Sport<select id="lgSport">${SPORT_KEYS.map(k=>`<option value="${k}" ${k===S.newSport?"selected":""}>${SPORTS[k].label}</option>`).join("")}</select></label>
+        <label class="f" for="lgName">League name<input type="text" id="lgName" required placeholder="Sunday Syndicate"></label>
+        <label class="f" for="lgYear">Season<select id="lgYear">${[y,y+1].map(v=>`<option value="${v}">${seasonLabel(v)}</option>`).join("")}</select></label>
+        <label class="f" for="lgType">Draft order<select id="lgType"><option value="snake">Snake (order reverses each round)</option><option value="straight">Straight (same order each round)</option></select></label>
+      </div>
+      <div><h3 style="margin-bottom:8px">Teams each manager drafts</h3>
+        <div class="slot-grid">${sp.pools.filter(p=>p!=="Other").map(p=>`<label class="f" for="sl-${poolCls(p)}">${p}<input type="number" id="sl-${poolCls(p)}" min="0" max="10" value="${sp.slots[p]}" inputmode="numeric"></label>`).join("")}
+          ${S.newSport==="basketball"?`<label class="f" for="lgFlex">Any conference<input type="number" id="lgFlex" min="0" max="12" value="${sp.flex}" inputmode="numeric"></label>
+          <label class="f" for="lgProW">${sp.pro} win counts<select id="lgProW"><option value="0.5" ${pw===0.5?"selected":""}>0.5</option><option value="1" ${pw===1?"selected":""}>1</option></select></label>`:""}</div></div>
+      <div><h3 style="margin-bottom:8px">Managers, in draft order</h3>
+        <ol class="mgr-list">${mgrs||`<li><span class="sub">Add each manager below. First on the list picks first.</span></li>`}</ol>
+        <div class="btns" style="margin-top:8px">
+          <input type="text" id="mgrName" placeholder="Manager name" style="max-width:220px" aria-label="Manager name">
+          <button type="button" class="btn" id="mgrAdd">Add</button>
+          <button type="button" class="btn" id="mgrShuffle" ${S.newMgrs.length>1?"":"disabled"}>Randomize order</button>
+          ${cur?`<button type="button" class="btn" id="mgrCopy">Copy from ${esc(cur.name)}</button>`:""}
+        </div></div>
+      <div class="btns"><button class="btn primary" type="submit">Create league and open the draft</button><span class="msg" id="lgMsg" role="status"></span></div>
+    </form>`;
+}
+
+/* ---------- my team ---------- */
+function teamHTML(L, C){
+  const o = mine(L);
+  const picker = `<div class="claim"><label for="cl-${esc(L.id)}">${o?"Viewing as":"I manage"}</label><select id="cl-${esc(L.id)}" data-claim="${esc(L.id)}"><option value="">${o?"Not in this league":"Choose your name"}</option>${L.owners.map(x=>`<option ${x===o?"selected":""}>${esc(x)}</option>`).join("")}</select></div>`;
+  if (!o) return `<section class="panel"><div class="head-row"><h2>My Team</h2></div>
+    <div class="card empty"><strong>Which manager are you?</strong>Pick your name to see your team here. The choice is saved on this device only.<div style="display:flex;justify-content:center;margin-top:12px">${picker}</div></div></section>`;
+  const r = C.rows.find(x=>x.owner===o), tied = C.rows.filter(x=>x.rank===r.rank).length>1;
+  const wtNote = weightText(L);
+  const rows = r.holdings.map(h=>{
+    const wk = h.wkG.map(g=>{ const w=winnerKey(g), m=g.hk===h.k?g.hs:g.as, t=g.hk===h.k?g.as:g.hs; return `${w===h.k?"W":w===null?"T":"L"} ${m}–${t}`; }).join(", ");
+    return `<tr><td>${chip(h.slot.startsWith("Any")?"Any":h.pool)}</td><td><b>${esc(h.team)}</b>${h.slot.startsWith("Any")?` <span class="lg">${esc(h.pool)}</span>`:""}</td>
+      <td class="r num">${h.w}-${h.l}${h.t?"-"+h.t:""}</td><td class="r num">${fmt(h.pts)}</td><td class="r num hide-sm">${wk||"–"}</td><td class="r num hide-sm">${h.n?"#"+h.n:"–"}</td></tr>`;
+  }).join("");
+  return `<section class="panel">
+    <div class="card me-head">
+      <div><div class="sport-tag">${esc(L.name)} · ${SP(L).label} ${seasonLabel(L.year)}</div><div class="who">${esc(o)}</div>
+        <div class="sub" style="margin-top:6px"><b>${tied?"T-":""}${ordinal(r.rank)}</b> of ${L.owners.length}${r.gb?` · ${fmt(r.gb)} back`:" · leading"} · ${r.pro} ${C.sp.pro} + ${r.col} college wins${r.wk?` · +${fmt(r.wk)} this week`:""}</div></div>
+      <div><div class="n">${fmt(r.total)}</div><div class="lbl">Wins</div></div>
+    </div>
+    ${r.holdings.length ? `<div class="card scroll"><table class="team">
+      <thead><tr><th>Slot</th><th>Team</th><th class="r">Record</th><th class="r">Counts</th><th class="r hide-sm">This week</th><th class="r hide-sm">Pick</th></tr></thead>
+      <tbody>${rows}</tbody></table></div>` : `<div class="card empty"><strong>No teams yet.</strong>${L.status==="drafting"?"Your picks appear here as the draft goes on.":"This league hasn't drafted."}</div>`}
+    ${wtNote?`<p class="sub">${esc(wtNote)}.</p>`:""}
+    ${picker}
+  </section>`;
+}
+
+/* ---------- league views ---------- */
 function standingsHTML(L, C){
   if (!C.picks.length) return `<section class="panel"><div class="card empty"><strong>No rosters yet.</strong>${L.status==="drafting"?"The draft is open on the Draft tab. The table fills in as teams come off the board.":"Run the draft on the Draft tab and the table fills in here."}</div></section>`;
-  const max = Math.max(1, ...C.rows.map(r=>r.total));
+  const max = Math.max(1, ...C.rows.map(r=>r.total)), me = mine(L);
   const wkLabel = C.curWeek ? `Wk ${C.weekNo}` : "Wk";
   const body = C.rows.map(r=>{
     const open = S.open.has(r.owner);
@@ -474,22 +728,23 @@ function standingsHTML(L, C){
     }).join("");
     return `<tr class="row ${r.rank===1&&r.total?"lead":""} ${open?"open":""}" tabindex="0" data-owner="${esc(r.owner)}" aria-expanded="${open}">
       <td class="rk num">${r.rank}</td>
-      <td><span class="chev">›</span> <span class="mgr">${esc(r.owner)}</span><div class="bar"><i style="width:${(r.total/max*100).toFixed(1)}%"></i></div></td>
-      <td class="r num tot">${r.total}</td><td class="r num">${r.nfl}</td><td class="r num">${r.cfb}</td>
-      <td class="r num delta ${r.wk?"up":"zero"}">${r.wk?"+"+r.wk:"–"}</td>
-      <td class="r num hide-sm">${r.gb?r.gb:"—"}</td>
+      <td><span class="chev">›</span> <span class="mgr">${esc(r.owner)}</span>${r.owner===me?` <span class="tag">you</span>`:""}<div class="bar"><i style="width:${(r.total/max*100).toFixed(1)}%"></i></div></td>
+      <td class="r num tot">${fmt(r.total)}</td><td class="r num">${r.pro}</td><td class="r num">${r.col}</td>
+      <td class="r num delta ${r.wk?"up":"zero"}">${r.wk?"+"+fmt(r.wk):"–"}</td>
+      <td class="r num hide-sm">${r.gb?fmt(r.gb):"—"}</td>
     </tr>${open?`<tr class="detail"><td colspan="7"><div class="hold">${hold||`<span class="sub">No teams drafted yet.</span>`}</div></td></tr>`:""}`;
   }).join("");
-  const leaders = POOLS.map(pool=>{
-    const best = C.picks.filter(p=>p.pool===pool).map(p=>({...p, ...(C.rec[pk(p)]||{w:0,l:0})})).sort((a,b)=> b.w-a.w || a.l-b.l)[0];
+  const leaders = C.sp.pools.map(pool=>{
+    const best = C.picks.filter(p=>p.pool===pool).map(p=>({...p, ...(C.rec[pk(L,p)]||{w:0,l:0})})).sort((a,b)=> b.w-a.w || a.l-b.l)[0];
     return best ? `<div class="card ld">${chip(pool)}<span class="t">${esc(best.team)}</span><span class="n">${best.w}-${best.l}</span><span class="o">${esc(best.owner)}</span></div>` : "";
   }).join("");
+  const wtNote = weightText(L);
   return `<section class="panel">
     <div class="head-row"><h2>The Table</h2><p class="sub">${C.lastDate?`Through ${fmtDay(C.lastDate)} · ${wkLabel} runs ${fmtShort(C.curWeek)}–${fmtShort(weekEnd(C.curWeek))}`:"No games logged yet"}</p></div>
     <div class="card scroll"><table class="st">
-      <thead><tr><th>#</th><th>Manager</th><th class="r">Wins</th><th class="r">NFL</th><th class="r">CFB</th><th class="r">${wkLabel}</th><th class="r hide-sm">Back</th></tr></thead>
+      <thead><tr><th>#</th><th>Manager</th><th class="r">Wins</th><th class="r">${C.sp.pro}</th><th class="r">${C.sp.col}</th><th class="r">${wkLabel}</th><th class="r hide-sm">Back</th></tr></thead>
       <tbody>${body}</tbody></table></div>
-    <p class="sub">Tap a manager to see their teams. Ties share a rank; order within a tie follows NFL wins.</p>
+    <p class="sub">Tap a manager to see their teams. Ties share a rank; order within a tie follows ${C.sp.pro} wins.${wtNote?` ${esc(wtNote)}; the ${C.sp.pro} column shows actual wins.`:""}</p>
     <div class="head-row"><h2>Best in each pool</h2></div>
     <div class="leaders">${leaders}</div>
   </section>`;
@@ -501,19 +756,19 @@ function boardHTML(L, C){
   const rows = slotRows(L).map(s=> `<tr><td class="slot">${chip(s.pool)} ${s.many?s.ix:""}</td>${owners.map(o=>{
       const p = C.picks.find(x=>x.owner===o && x.slot===s.slot);
       if (!p) return `<td></td>`;
-      const r = C.rec[pk(p)]||{w:0,l:0,t:0}, gp = r.w+r.l+r.t, pct = gp? r.w/gp : null;
-      return `<td><div class="cell ${pct===null?"":pct>=.7?"hot":pct<=.3?"cold":""}"><span>${esc(p.team)}</span><span class="rec">${r.w}-${r.l}${r.t?"-"+r.t:""}${p.n?` · pick ${p.n}`:""}</span></div></td>`;
+      const r = C.rec[pk(L,p)]||{w:0,l:0,t:0}, gp = r.w+r.l+r.t, pct = gp? r.w/gp : null;
+      return `<td><div class="cell ${pct===null?"":pct>=.7?"hot":pct<=.3?"cold":""}"><span>${esc(p.team)}</span><span class="rec">${r.w}-${r.l}${r.t?"-"+r.t:""}${s.pool==="Any"?` · ${esc(p.pool)}`:""}${p.n?` · pick ${p.n}`:""}</span></div></td>`;
     }).join("")}</tr>`).join("");
-  const tot = `<tr><td class="slot">Total</td>${owners.map(o=>`<td class="tot-row">${C.rows.find(r=>r.owner===o)?.total??0} W</td>`).join("")}</tr>`;
+  const tot = `<tr><td class="slot">Total</td>${owners.map(o=>`<td class="tot-row">${fmt(C.rows.find(r=>r.owner===o)?.total??0)} W</td>`).join("")}</tr>`;
   return `<section class="panel">
     <div class="head-row"><h2>Rosters</h2><p class="sub">Columns follow draft order. Green edge: winning 70%+. Red edge: 30% or less.</p></div>
     <div class="card scroll"><table class="board"><thead><tr><th>Slot</th>${owners.map(o=>`<th>${esc(o)}</th>`).join("")}</tr></thead><tbody>${rows}${tot}</tbody></table></div>
   </section>`;
 }
 
-function teamOptions(C){
+function teamOptions(L, C){
   const set = new Map();
-  for (const p of POOLS) for (const t of POOL[p]) set.set(t.toLowerCase(), t);
+  for (const p of C.sp.pools) for (const t of C.sp.teams[p]) set.set(t.toLowerCase(), t);
   for (const g of C.games){ set.set(g.home.toLowerCase(), g.home); set.set(g.away.toLowerCase(), g.away); }
   return [...set.values()].sort((a,b)=>a.localeCompare(b));
 }
@@ -530,7 +785,7 @@ function resultsHTML(L, C){
       <div class="head-row"><h3>Add or correct a final</h3><span class="sub">A result you enter by hand replaces the automatic one for that game.</span></div>
       <div class="form-grid">
         <label class="f" for="gDate">Date<input type="date" id="gDate" required value="${todayISO()}"></label>
-        <label class="f" for="gLg">League<select id="gLg"><option value="CFB">College</option><option value="NFL">NFL</option></select></label>
+        <label class="f" for="gLg">League<select id="gLg"><option value="${C.sp.col}">College</option><option value="${C.sp.pro}">${C.sp.pro}</option></select></label>
       </div>
       <div class="form-grid">
         <label class="f" for="gHome">Home team<input type="text" id="gHome" list="teamList" required></label>
@@ -538,12 +793,12 @@ function resultsHTML(L, C){
         <label class="f" for="gAway">Away team<input type="text" id="gAway" list="teamList" required></label>
         <label class="f" for="gAs">Away score<input type="number" id="gAs" min="0" inputmode="numeric" required></label>
       </div>
-      <datalist id="teamList">${teamOptions(C).map(t=>`<option value="${esc(t)}">`).join("")}</datalist>
+      <datalist id="teamList">${teamOptions(L, C).map(t=>`<option value="${esc(t)}">`).join("")}</datalist>
       <div class="btns"><button class="btn primary" type="submit">Save game</button><span class="msg" id="gMsg" role="status"></span></div>
-    </form>` : `<p class="ro">You're viewing the league. Results come in automatically, and the commissioner can correct them.</p>`;
+    </form>` : `<p class="ro">Results come in automatically each morning, and the commissioner can correct them.</p>`;
 
   const thisWeek = weekStart(todayISO());
-  const missing = C.picks.filter(p=> !(C.rec[pk(p)]?.games||[]).some(g=>weekStart(g.date)===thisWeek));
+  const missing = C.picks.filter(p=> !(C.rec[pk(L,p)]?.games||[]).some(g=>weekStart(g.date)===thisWeek));
   const pend = C.picks.length ? `<details class="card pend"><summary>${missing.length} drafted team${missing.length===1?"":"s"} with no result yet this week (${fmtShort(thisWeek)}–${fmtShort(weekEnd(thisWeek))})</summary>
       <div class="pend-list">${missing.map(p=>`<span class="pill">${esc(p.team)}</span>`).join("")||`<span class="sub">Every drafted team has a result.</span>`}</div></details>` : "";
 
@@ -570,7 +825,7 @@ function resultsHTML(L, C){
     <div class="head-row"><h2>Results</h2>
       <div class="seg" role="group" aria-label="Which games to show"><button type="button" data-only="1" aria-pressed="${S.onlyMine}">This league's teams</button><button type="button" data-only="0" aria-pressed="${!S.onlyMine}">All games</button></div></div>
     ${syncHTML()}${form}${pend}
-    ${log || `<div class="card empty"><strong>No games logged yet.</strong>Finals appear here after each automatic pull.</div>`}${more}
+    ${log || `<div class="card empty"><strong>No games logged yet.</strong>Finals appear here once the season starts and scores are pulled.</div>`}${more}
   </section>`;
 }
 
@@ -582,13 +837,17 @@ function draftState(L){
   const onClock = i<total ? ((L.draftType==="straight" || r%2===0) ? owners[pos] : owners[N-1-pos]) : null;
   return {owners,N,total,ordered,i,onClock,round:r+1,inRound:pos+1};
 }
+/* What a manager can still take: required conference/pro slots first, then "any college" slots. */
 function needsFor(L, o){
-  const have = {}; for (const p of (L.picks||[])) if (p.owner===o) have[p.pool]=(have[p.pool]||0)+1;
-  const out = {}; for (const p of POOLS) out[p] = (slotsOf(L)[p]||0)-(have[p]||0);
-  return out;
+  const req = {}; for (const p of SP(L).pools) req[p] = slotsOf(L)[p]||0;
+  let flex = flexOf(L);
+  for (const p of (L.picks||[])) if (p.owner===o){ if (String(p.slot).startsWith("Any")) flex--; else req[p.pool]--; }
+  return {req, flex};
 }
+const canTake = (L, need, pool) => need.req[pool]>0 || (pool!==SP(L).pro && need.flex>0);
+
 function draftHTML(L){
-  const D = draftState(L), type = L.draftType==="straight"?"Straight":"Snake";
+  const D = draftState(L), type = L.draftType==="straight"?"Straight":"Snake", sp = SP(L);
   if (L.status!=="drafting"){
     if (!D.i) return `<section class="panel"><div class="head-row"><h2>Draft</h2></div><div class="card empty"><strong>No draft on record.</strong></div></section>`;
     const rounds = Math.ceil(D.i/D.N);
@@ -602,117 +861,69 @@ function draftHTML(L){
       ${S.canWrite?`<div class="btns"><button class="btn" id="reopen">Reopen the draft</button><span class="sub">Lets you undo or change the last picks.</span><span class="msg" id="dMsg" role="status"></span></div>`:""}
     </section>`;
   }
-  const taken = new Set((L.picks||[]).map(pk));
-  const need = D.onClock ? needsFor(L, D.onClock) : {};
+  const taken = new Set((L.picks||[]).map(p=>pk(L,p)));
+  const need = D.onClock ? needsFor(L, D.onClock) : {req:{},flex:0};
   const q = S.draftQ.trim().toLowerCase();
-  const list = POOLS.filter(p=>(S.draftPool==="all"||S.draftPool===p) && slotsOf(L)[p]).flatMap(p=>POOL[p].map(t=>({t,p})))
-    .filter(x=>!taken.has(tk(x.t, x.p==="NFL"?"NFL":"CFB")) && (!q || x.t.toLowerCase().includes(q)));
-  const avail = list.map(x=>`<button class="av" data-pick="${esc(x.t)}" data-pool="${esc(x.p)}" ${(!S.canWrite||!(need[x.p]>0))?"disabled":""}><span>${esc(x.t)}</span>${chip(x.p)}</button>`).join("");
-  const needChips = POOLS.filter(p=>slotsOf(L)[p]).map(p=>`<span class="need ${need[p]>0?"":"done"}">${chip(p)}${need[p]>1?` <span class="num" style="font-size:12px">×${need[p]}</span>`:""}</span>`).join("");
+  const pools = sp.pools.filter(p=> slotsOf(L)[p] || (p!==sp.pro && flexOf(L)));
+  const all = pools.filter(p=>S.draftPool==="all"||S.draftPool===p).flatMap(p=>sp.teams[p].map(t=>({t,p})))
+    .filter(x=>!taken.has(tk(x.t, lgOfPool(L,x.p))) && (!q || x.t.toLowerCase().includes(q)));
+  const list = all.slice(0,150);
+  const avail = list.map(x=>`<button class="av" data-pick="${esc(x.t)}" data-pool="${esc(x.p)}" ${(!S.canWrite||!canTake(L,need,x.p))?"disabled":""}><span>${esc(x.t)}</span>${chip(x.p)}</button>`).join("");
+  const needChips = pools.filter(p=>slotsOf(L)[p]).map(p=>`<span class="need ${need.req[p]>0?"":"done"}">${chip(p)}${need.req[p]>1?` <span class="num" style="font-size:12px">×${need.req[p]}</span>`:""}</span>`).join("")
+    + (flexOf(L) ? `<span class="need ${need.flex>0?"":"done"}">${chip("Any")}${need.flex>1?` <span class="num" style="font-size:12px">×${need.flex}</span>`:""}</span>` : "");
   const feed = [...D.ordered].reverse().map(p=>`<div><span class="pk">${Math.ceil(p.n/D.N)}.${String(((p.n-1)%D.N)+1).padStart(2,"0")}</span>${chip(p.pool)}<span style="flex:1"><b>${esc(p.team)}</b></span><span class="sub">${esc(p.owner)}</span></div>`).join("");
   const order = D.owners.map((o,ix)=>`<span class="pill" style="${o===D.onClock?"border-color:var(--accent);font-weight:700":""}">${ix+1}. ${esc(o)}</span>`).join("");
   return `<section class="panel">
-    <div class="head-row"><h2>Draft Room</h2><p class="sub">${type} draft · ${D.N} managers · ${roundsOf(L)} rounds · ${slotText(L)}</p></div>
-    <div class="card clock"><div><div class="meta">On the clock · Round ${D.round}, pick ${D.inRound} · Overall ${D.i+1} of ${D.total}</div><div class="who">${esc(D.onClock||"Done")}</div><div class="needs">${needChips}</div></div>
+    <div class="head-row"><h2>Draft Room</h2><p class="sub">${type} draft · ${D.N} managers · ${roundsOf(L)} rounds · ${esc(slotText(L))}</p></div>
+    <div class="card clock"><div><div class="meta">On the clock · Round ${D.round}, pick ${D.inRound} · Overall ${Math.min(D.i+1,D.total)} of ${D.total}</div><div class="who">${esc(D.onClock||"Done")}</div><div class="needs">${needChips}</div></div>
       ${S.canWrite?`<div class="btns"><button class="btn danger" id="undoPick" ${D.i?"":"disabled"}>Undo last pick</button></div>`:""}</div>
     <div class="pend-list">${order}</div>
     <div class="two">
       <div class="card">
         <div class="form" style="padding-bottom:0">
           <div class="form-grid">
-            <label class="f" for="dq">Search ${list.length} available teams<input type="text" id="dq" value="${esc(S.draftQ)}" placeholder="Type a team"></label>
-            <label class="f" for="dp">Pool<select id="dp"><option value="all">All pools</option>${POOLS.filter(p=>slotsOf(L)[p]).map(p=>`<option ${S.draftPool===p?"selected":""}>${p}</option>`).join("")}</select></label>
+            <label class="f" for="dq">Search ${all.length} available teams<input type="text" id="dq" value="${esc(S.draftQ)}" placeholder="Type a team"></label>
+            <label class="f" for="dp">Pool<select id="dp"><option value="all">All pools</option>${pools.map(p=>`<option ${S.draftPool===p?"selected":""}>${p}</option>`).join("")}</select></label>
           </div>
-          ${S.canWrite?"":`<p class="ro">The commissioner enters each pick as it's called.</p>`}
+          ${S.canWrite?`<details><summary class="sub" style="cursor:pointer">Team not listed? Add it</summary>
+            <div class="form-grid" style="margin-top:8px"><label class="f" for="cT">Team<input type="text" id="cT"></label>
+            <label class="f" for="cP">Pool<select id="cP">${pools.map(p=>`<option>${p}</option>`).join("")}</select></label></div>
+            <div class="btns" style="margin-top:8px"><button type="button" class="btn" id="cAdd">Draft this team</button></div></details>`:`<p class="ro">The commissioner enters each pick as it's called.</p>`}
           <span class="msg" id="dMsg" role="status"></span>
         </div>
-        <div class="avail">${avail||`<span class="sub">No available teams match.</span>`}</div>
+        <div class="avail">${avail||`<span class="sub">No available teams match.</span>`}${all.length>list.length?`<span class="sub">Showing the first ${list.length}. Search to narrow the list.</span>`:""}</div>
       </div>
       <div class="card feed"><div class="day-h"><span>Picks</span><span class="sub">${D.i} made</span></div>${feed||`<div class="sub">First pick is ${esc(D.onClock)}'s.</div>`}</div>
     </div>
   </section>`;
 }
 
-/* ---------- routing: #home, #<league>, #<league>.<tab> ---------- */
-const PUBLIC_BASE = window.PORTFOLIO_PUBLIC ? location.origin + location.pathname : "https://wilsonirvin24-cyber.github.io/the-portfolio/";
-const leagueURL = id => PUBLIC_BASE + "#" + id;
-const TABS = ["home","standings","board","results","draft"];
-function applyHash(){
-  const h = (location.hash||"").slice(1);
-  if (!h || h==="home"){ S.tab = "home"; return; }
-  if (TABS.includes(h)){ S.tab = h; return; }
-  const [lid, tab] = h.split(".");
-  S.wantLeague = lid; S.tab = TABS.includes(tab) && tab!=="home" ? tab : "standings";
-}
-function settleLeague(){
-  if (S.wantLeague){ if (S.leagues.some(l=>l.id===S.wantLeague)) S.leagueId = S.wantLeague; else if (S.leaguesLoaded) S.tab = "home"; if (S.leaguesLoaded) S.wantLeague = null; }
-  if (!S.leagues.some(l=>l.id===S.leagueId)) S.leagueId = S.leagues[0]?.id || null;
-}
-function syncHash(){
-  const want = S.tab==="home" || !S.leagueId ? "" : S.leagueId + (S.tab==="standings" ? "" : "."+S.tab);
-  const have = (location.hash||"").slice(1);
-  if (have===want || (want==="" && have==="home")) return;
-  try{ history.replaceState(null, "", want ? "#"+want : location.pathname + location.search); }catch(_){}
-}
-
-/* ---------- front page and leagues ---------- */
-function homeHTML(){
-  const cards = S.leagues.map(l=>{
-    const C = compute(l), lead = C.rows[0], D = draftState(l);
-    const tied = lead ? C.rows.filter(r=>r.total===lead.total).length : 0;
-    const st = l.status==="drafting" ? `<span class="status live">Drafting · pick ${Math.min(D.i+1,D.total)} of ${D.total}</span>` : `<span class="status">Season on</span>`;
-    return `<div class="card lg-card ${l.id===S.leagueId?"cur":""}">
-      ${st}<div class="nm">${esc(l.name)}</div>
-      <div class="kv"><b>${seasonLabel(l.year)}</b> · ${l.owners.length} managers · ${l.draftType==="straight"?"straight":"snake"} draft</div>
-      <div class="kv">${esc(slotText(l))}</div>
-      <div class="kv">${lead&&lead.total ? `Leader: <b>${esc(lead.owner)}</b>${tied>1?` (tied with ${tied-1})`:""}, ${lead.total} wins` : "No wins on the board yet"}</div>
-      <div class="btns"><button class="btn primary" data-open="${esc(l.id)}">Open standings</button>
-      ${S.canWrite?`<button class="btn danger" data-dellg="${esc(l.id)}">${S.confirmLg===l.id?"Delete for everyone?":"Delete"}</button>`:""}</div>
-      <div class="share"><input type="text" readonly id="ln-${esc(l.id)}" value="${esc(leagueURL(l.id))}" aria-label="Link to ${esc(l.name)}"><button type="button" class="btn" data-copy="ln-${esc(l.id)}">Copy link</button></div>
-    </div>`;
-  }).join("");
-  const cur = league();
-  const mgrs = S.newMgrs.map((m,i)=>`<li><span class="ord">${i+1}</span><span class="who">${esc(m)}</span>
-      <button type="button" class="ib" data-mv="${i}|-1" ${i?"":"disabled"} aria-label="Move ${esc(m)} up">↑</button>
-      <button type="button" class="ib" data-mv="${i}|1" ${i<S.newMgrs.length-1?"":"disabled"} aria-label="Move ${esc(m)} down">↓</button>
-      <button type="button" class="ib" data-rm="${i}" aria-label="Remove ${esc(m)}">✕</button></li>`).join("");
-  const y = thisSeason();
-  const form = S.canWrite ? `<form class="card form" id="lgForm" autocomplete="off">
-      <div class="head-row"><h3>Create a league</h3><span class="sub">Every league drafts from all 32 NFL teams and all 138 FBS teams.</span></div>
-      <div class="form-grid">
-        <label class="f" for="lgName">League name<input type="text" id="lgName" required placeholder="Sunday Syndicate"></label>
-        <label class="f" for="lgYear">Season<select id="lgYear">${[y,y+1].map(v=>`<option value="${v}">${seasonLabel(v)}</option>`).join("")}</select></label>
-        <label class="f" for="lgType">Draft order<select id="lgType"><option value="snake">Snake (order reverses each round)</option><option value="straight">Straight (same order each round)</option></select></label>
-      </div>
-      <div><h3 style="margin-bottom:8px">Teams each manager drafts</h3>
-        <div class="slot-grid">${POOLS.map(p=>`<label class="f" for="sl-${poolCls(p)}">${p}<input type="number" id="sl-${poolCls(p)}" min="0" max="10" value="${DEFAULT_SLOTS[p]}" inputmode="numeric"></label>`).join("")}</div></div>
-      <div><h3 style="margin-bottom:8px">Managers, in draft order</h3>
-        <ol class="mgr-list">${mgrs||`<li><span class="sub">Add each manager below. First on the list picks first.</span></li>`}</ol>
-        <div class="btns" style="margin-top:8px">
-          <input type="text" id="mgrName" placeholder="Manager name" style="max-width:220px" aria-label="Manager name">
-          <button type="button" class="btn" id="mgrAdd">Add</button>
-          <button type="button" class="btn" id="mgrShuffle" ${S.newMgrs.length>1?"":"disabled"}>Randomize order</button>
-          ${cur?`<button type="button" class="btn" id="mgrCopy">Copy from ${esc(cur.name)}</button>`:""}
-        </div></div>
-      <div class="btns"><button class="btn primary" type="submit">Create league and open the draft</button><span class="msg" id="lgMsg" role="status"></span></div>
-    </form>` : `<p class="ro">The commissioner creates leagues and runs each draft.</p>`;
-  const managers = S.leagues.reduce((n,l)=> n + l.owners.length, 0), gamesN = allGames().length;
+/* ---------- settings ---------- */
+function settingsHTML(){
+  const claims = S.leagues.filter(l=>mine(l)).map(l=>`<div class="claim"><b style="color:var(--fg)">${esc(mine(l))}</b> in ${esc(l.name)} (${SP(l).label} ${seasonLabel(l.year)}) <button type="button" class="btn" data-unclaim="${esc(l.id)}" style="padding:4px 10px;font-size:12.5px">Remove</button></div>`).join("");
   return `<section class="panel">
-    <div class="hero">
-      <h2>Draft teams,<br><em>not players.</em></h2>
-      <p>The Portfolio is a season-long football league where every manager drafts a portfolio of NFL and college teams. Each win by one of your teams counts as one. Whoever holds the most wins when the season ends takes the table.</p>
-      <div class="facts"><span>${S.leagues.length} league${S.leagues.length===1?"":"s"}</span><span>${managers} managers</span><span>${gamesN} games tracked</span><span>32 NFL + 138 college teams</span></div>
-    </div>
-    <div class="head-row"><h2>How it works</h2></div>
-    <ol class="steps">
-      <li class="card"><span class="n">1</span><h3>Draft before kickoff</h3><p>Managers take turns in a snake draft before the college season starts. Once a team is taken, it's off the board for everyone else in the league.</p></li>
-      <li class="card"><span class="n">2</span><h3>Your teams play, you collect</h3><p>Every win is worth one, from Week 1 through the NFL regular season and the college bowls and playoff. There are no weekly lineups to set.</p></li>
-      <li class="card"><span class="n">3</span><h3>One table, no playoffs</h3><p>Standings run like a league table all season. The manager with the most wins at the end is the champion.</p></li>
-    </ol>
-    <div class="slots"><span>A standard portfolio is eight teams:</span>${["NFL","NFL","NFL","ACC","Big Ten","Big 12","SEC","Non-P4"].map(chip).join("")}</div>
-    <div class="head-row"><h2>Leagues</h2><p class="sub">Each league has its own link. Scores update for all of them together.</p></div>
-    ${cards?`<div class="lg-grid">${cards}</div>`:`<div class="card empty"><strong>No leagues yet.</strong>${S.canWrite?"Create the first one below.":"Leagues appear here once the commissioner creates one."}</div>`}
-    ${form}
+    <div class="head-row"><h2>Settings</h2><button type="button" class="btn" id="setBack">Back to Home</button></div>
+    <div class="card set"><h3>Display theme</h3>
+      <div class="seg" role="group" aria-label="Display theme">${[["system","Match device"],["light","Light"],["dark","Dark"]].map(([k,t])=>`<button type="button" data-theme-pick="${k}" aria-pressed="${S.theme===k}">${t}</button>`).join("")}</div></div>
+    <div class="card set"><h3>You on this device</h3>
+      ${claims || `<p>You haven't picked your name in any league yet. Do that on a league's My Team tab or from Home.</p>`}
+      ${claims ? `<div class="btns"><button type="button" class="btn danger" id="forget">Sign out on this device</button><span class="sub">Clears your name from every league here. League data is not affected.</span></div>` : ""}</div>
+    <div class="card set"><h3>Account</h3>
+      <p>Accounts with an email, username and password are not available yet. For now, your name in each league is remembered on this device only, and anyone can view any league.</p></div>
+    <div class="card set"><h3>Alert preferences</h3>
+      <p>Alerts for draft turns and weekly results will arrive together with accounts, since they need a way to reach you.</p></div>
+    <div class="card set"><h3>Help</h3>
+      <details><summary>How does scoring work?</summary><p>Every win by a team in your portfolio adds to your total. Football: ${SPORTS.football.counts} Basketball: ${SPORTS.basketball.counts}</p></details>
+      <details><summary>When do scores update?</summary><p>Scores are pulled once each morning. A game that ends tonight shows up tomorrow morning.</p></details>
+      <details><summary>How do I see my team?</summary><p>Open a league and pick your name on the My Team tab. That league then appears under My Portfolios on Home, and you can switch between portfolios from the menu at the top.</p></details>
+      <details><summary>A score looks wrong. What now?</summary><p>Tell your commissioner. They can enter a correction, and a corrected result always replaces the automatic one.</p></details>
+      <details><summary>How do I start a league?</summary><p>New leagues are set up by the commissioner, who also runs the draft.</p></details></div>
+    <div class="card set"><h3>Legal notices</h3>
+      <p>The Portfolio is an independent game and is not affiliated with, endorsed by or sponsored by the NFL, the NBA, the NCAA, or any team, school or conference. Team and school names are used only to identify the teams being followed.</p>
+      <p>The Portfolio does not take entry fees or pay prizes, and is for entertainment.</p></div>
+    <div class="card set"><h3>Privacy</h3>
+      <p>This site does not ask for or store personal information. Your display theme and the name you pick in each league are saved in this browser only and are never sent anywhere.</p>
+      <p>League pages show each manager's first name, their teams and results to anyone who has the link.</p></div>
   </section>`;
 }
 
@@ -722,19 +933,29 @@ function failText(e){ return e?.code==="invalid_argument" ? "You don't have perm
 
 function bind(){
   document.querySelectorAll("tr.row").forEach(tr=>{
-    const go = ()=>{ const o=tr.dataset.owner; S.open.has(o)?S.open.delete(o):S.open.add(o); render(); };
-    tr.onclick = go; tr.onkeydown = e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); go(); } };
+    const tog = ()=>{ const o=tr.dataset.owner; S.open.has(o)?S.open.delete(o):S.open.add(o); render(); };
+    tr.onclick = tog; tr.onkeydown = e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); tog(); } };
   });
   document.querySelectorAll("[data-only]").forEach(b=> b.onclick=()=>{ S.onlyMine = b.dataset.only==="1"; render(); });
+  document.querySelectorAll("[data-sport]").forEach(b=> b.onclick=()=>{ S.sportFilter = b.dataset.sport; render(); });
+  document.querySelectorAll("[data-go]").forEach(b=> b.onclick=()=> go("league", b.dataset.go));
+  document.querySelectorAll("[data-claim]").forEach(s=> s.onchange=()=>{
+    const id=s.dataset.claim; if (s.value) S.me[id]=s.value; else delete S.me[id]; saveMe(); S.reset.add(s.id);
+    if (S.view==="league") S.tab="team"; render();
+  });
+  document.querySelectorAll("[data-unclaim]").forEach(b=> b.onclick=()=>{ delete S.me[b.dataset.unclaim]; saveMe(); render(); });
+  document.querySelectorAll("[data-theme-pick]").forEach(b=> b.onclick=()=>{ S.theme=b.dataset.themePick; try{ localStorage.setItem("pf-theme",S.theme); }catch(_){} applyTheme(); render(); });
+  const fg=$("#forget"); if(fg) fg.onclick=()=>{ S.me={}; saveMe(); render(); };
+  const sb=$("#setBack"); if(sb) sb.onclick=()=> go("home");
   const mw=$("#moreWeeks"); if(mw) mw.onclick=()=>{ S.weeksShown+=3; render(); };
   const gf=$("#gameForm"); if(gf) gf.onsubmit=addGame;
   document.querySelectorAll("[data-del]").forEach(b=> b.onclick=()=> delGame(b.dataset.del));
   const dq=$("#dq"); if(dq) dq.oninput=()=>{ S.draftQ=dq.value; render(); };
   const dp=$("#dp"); if(dp) dp.onchange=()=>{ S.draftPool=dp.value; render(); };
   document.querySelectorAll("[data-pick]").forEach(b=> b.onclick=()=> makePick(b.dataset.pick, b.dataset.pool));
+  const cAdd=$("#cAdd"); if(cAdd) cAdd.onclick=()=>{ const t=$("#cT").value.trim(); if(t) makePick(t, $("#cP").value); };
   const u=$("#undoPick"); if(u) u.onclick=undoPick;
   const ro=$("#reopen"); if(ro) ro.onclick=reopenDraft;
-  document.querySelectorAll("[data-open]").forEach(b=> b.onclick=()=> pickLeague(b.dataset.open, "standings"));
   document.querySelectorAll("[data-copy]").forEach(b=> b.onclick=async()=>{
     const inp = document.getElementById(b.dataset.copy); if (!inp) return;
     try{ await navigator.clipboard.writeText(inp.value); b.textContent = "Copied"; }
@@ -748,10 +969,9 @@ function bind(){
   const mn=$("#mgrName"); if(mn) mn.onkeydown=e=>{ if(e.key==="Enter"){ e.preventDefault(); addM(); } };
   const ms=$("#mgrShuffle"); if(ms) ms.onclick=()=>{ const a=S.newMgrs; for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } render(); };
   const mc=$("#mgrCopy"); if(mc) mc.onclick=()=>{ S.newMgrs=[...(league()?.owners||[])]; render(); };
+  const ls=$("#lgSport"); if(ls) ls.onchange=()=>{ S.newSport=ls.value; document.querySelectorAll("#lgForm input[type=number], #lgProW").forEach(e=>S.reset.add(e.id)); S.reset.add("lgFlex"); S.reset.add("lgProW"); render(); };
   const lf=$("#lgForm"); if(lf) lf.onsubmit=createLeague;
 }
-
-function pickLeague(id, tab){ S.leagueId=id; if(tab) S.tab=tab; S.open.clear(); S.weeksShown=2; try{ localStorage.setItem("pf-league",id); }catch(_){} render(); }
 
 async function addGame(e){
   e.preventDefault();
@@ -762,7 +982,7 @@ async function addGame(e){
   const ref = S.db.doc(`games/${date}`);
   try{
     const snap = await ref.get();
-    const games = snap.exists ? (snap.data().games||[]).filter(g=> !(g.lg===lg && tk(g.home,lg)===tk(home,lg) && tk(g.away,lg)===tk(away,lg))) : [];
+    const games = snap.exists ? (snap.data().games||[]).filter(g=> !(normLg(g.lg)===lg && tk(g.home,lg)===tk(home,lg) && tk(g.away,lg)===tk(away,lg))) : [];
     games.push({lg, home, away, hs, as});
     await ref.set({date, games});
     ["gHome","gHs","gAway","gAs"].forEach(id=>S.reset.add(id));
@@ -778,26 +998,29 @@ async function delGame(id){
   const ref=S.db.doc(`games/${docId}`);
   try{
     const snap=await ref.get(); if(!snap.exists) return render();
-    const d=snap.data(), games=(d.games||[]).filter(g=> !((g.lg==="NFL"?"NFL":"CFB")===lg && g.home===home && g.away===away));
+    const d=snap.data(), games=(d.games||[]).filter(g=> !(normLg(g.lg||d.lg)===lg && g.home===home && g.away===away));
     if(games.length || d.src==="auto") await ref.set({...d, games}); else await ref.delete();
   }catch(err){ setMsg("#gMsg",failText(err)); }
 }
 
 async function makePick(team, pool){
   const L=league(), D=draftState(L); if(!D.onClock) return;
-  const lg = pool==="NFL"?"NFL":"CFB";
-  if ((L.picks||[]).some(p=>pk(p)===tk(team,lg))) return setMsg("#dMsg",`${team} is already drafted.`);
+  const lg = lgOfPool(L, pool);
+  team = canonName(team, lg);
+  if ((L.picks||[]).some(p=>pk(L,p)===tk(team,lg))) return setMsg("#dMsg",`${team} is already drafted.`);
   const need = needsFor(L, D.onClock);
-  if (!(need[pool]>0)) return setMsg("#dMsg",`${D.onClock} has no ${pool} slot left.`);
-  const many = slotsOf(L)[pool]>1, have = (L.picks||[]).filter(p=>p.owner===D.onClock&&p.pool===pool).length;
-  const picks = [...(L.picks||[]), {n:D.i+1, owner:D.onClock, team, pool, slot: many?`${pool} #${have+1}`:pool}];
-  try{ await S.db.doc(`leagues/${L.id}`).update({picks, status: picks.length>=D.total?"complete":"drafting"}); S.draftQ=""; S.reset.add("dq"); render(); }
+  if (!canTake(L, need, pool)) return setMsg("#dMsg",`${D.onClock} has no open slot for a ${pool} team.`);
+  let slot;
+  if (need.req[pool]>0){ const many = slotsOf(L)[pool]>1; slot = many ? `${pool} #${slotsOf(L)[pool]-need.req[pool]+1}` : pool; }
+  else { const f = flexOf(L); slot = f>1 ? `Any #${f-need.flex+1}` : "Any"; }
+  const picks = [...(L.picks||[]), {n:D.i+1, owner:D.onClock, team, pool, slot}];
+  try{ await S.db.doc(`leagues/${L.id}`).update({picks, status: picks.length>=D.total?"complete":"drafting"}); S.draftQ=""; S.reset.add("dq"); S.reset.add("cT"); render(); }
   catch(err){ setMsg("#dMsg",failText(err)); }
 }
 async function undoPick(){
   const L=league(), D=draftState(L); if(!D.i) return;
   const last=D.ordered[D.ordered.length-1];
-  try{ await S.db.doc(`leagues/${L.id}`).update({picks:(L.picks||[]).filter(p=>p!==last && p.n!==last.n), status:"drafting"}); }
+  try{ await S.db.doc(`leagues/${L.id}`).update({picks:(L.picks||[]).filter(p=>p.n!==last.n), status:"drafting"}); }
   catch(err){ setMsg("#dMsg",failText(err)); }
 }
 async function reopenDraft(){
@@ -805,17 +1028,20 @@ async function reopenDraft(){
 }
 async function createLeague(e){
   e.preventDefault();
+  const sport = S.newSport, sp = SPORTS[sport];
   const name=$("#lgName").value.trim(), year=+$("#lgYear").value, draftType=$("#lgType").value, owners=[...S.newMgrs];
-  const slots={}; for(const p of POOLS) slots[p]=Math.max(0,Math.min(10,parseInt($("#sl-"+poolCls(p)).value,10)||0));
+  const slots={}; for(const p of sp.pools){ const el=$("#sl-"+poolCls(p)); slots[p]= el ? Math.max(0,Math.min(10,parseInt(el.value,10)||0)) : 0; }
+  const flex = $("#lgFlex") ? Math.max(0,Math.min(12,parseInt($("#lgFlex").value,10)||0)) : 0;
+  const weights = {}; if ($("#lgProW") && +$("#lgProW").value!==1) weights[sp.pro] = +$("#lgProW").value;
   if(!name) return setMsg("#lgMsg","Name the league.");
   if(owners.length<2) return setMsg("#lgMsg","Add at least two managers.");
-  if(!POOLS.some(p=>slots[p])) return setMsg("#lgMsg","Each manager needs at least one team.");
-  for(const p of POOLS) if(owners.length*slots[p]>POOL[p].length) return setMsg("#lgMsg",`${owners.length} managers × ${slots[p]} ${p} teams is more than the ${POOL[p].length} ${p} teams available.`);
-  let id=(name+"-"+year).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")||"league";
+  if(!sp.pools.some(p=>slots[p]) && !flex) return setMsg("#lgMsg","Each manager needs at least one team.");
+  for(const p of sp.pools) if(owners.length*slots[p]>sp.teams[p].length) return setMsg("#lgMsg",`${owners.length} managers × ${slots[p]} ${p} teams is more than the ${sp.teams[p].length} ${p} teams available.`);
+  let id=(name+"-"+sport+"-"+year).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")||"league";
   if(S.leagues.some(l=>l.id===id)) id+="-"+Math.random().toString(36).slice(2,6);
   try{
-    await S.db.doc(`leagues/${id}`).set({name, year, owners, slots, draftType, status:"drafting", picks:[], created:new Date().toISOString()});
-    S.newMgrs=[]; S.reset.add("lgName"); pickLeague(id,"draft");
+    await S.db.doc(`leagues/${id}`).set({name, sport, year, owners, slots, flex, weights, draftType, status:"drafting", picks:[], created:new Date().toISOString()});
+    S.newMgrs=[]; S.reset.add("lgName"); S.leagueId=id; S.view="league"; S.tab="draft"; render();
   }catch(err){ setMsg("#lgMsg",failText(err)); }
 }
 async function delLeague(id){
@@ -826,14 +1052,10 @@ async function delLeague(id){
 
 /* ---------- boot ---------- */
 document.querySelectorAll(".tab").forEach(b=> b.onclick=()=>{ S.tab=b.dataset.tab; S.confirmDel=S.confirmLg=null; render(); });
-$("#leagueSel").onchange=e=> pickLeague(e.target.value, S.tab==="home"?"standings":null);
-$("#brandLink").onclick=e=>{ e.preventDefault(); S.tab="home"; render(); };
-try{ S.leagueId=localStorage.getItem("pf-league"); }catch(_){}
-applyHash();
-{ // opened from a home-screen icon with no league in the address: go to the league used last
-  let standalone=false; try{ standalone = navigator.standalone===true || matchMedia("(display-mode: standalone)").matches; }catch(_){}
-  if (standalone && !location.hash && S.leagueId){ S.wantLeague=S.leagueId; S.tab="standings"; }
-}
+$("#leagueSel").onchange=e=>{ e.target.value ? go("league", e.target.value) : go("home"); };
+$("#brandLink").onclick=e=>{ e.preventDefault(); go("home"); };
+$("#gearBtn").onclick=()=> go(S.view==="settings" ? "home" : "settings");
+loadLocal(); applyTheme(); applyHash();
 window.addEventListener("hashchange", ()=>{ applyHash(); settleLeague(); render(); });
 
 (async function boot(){
@@ -844,9 +1066,14 @@ window.addEventListener("hashchange", ()=>{ applyHash(); settleLeague(); render(
   S.canWrite = (user ? await user.can("data.write") : null) !== false;
   db.collection("leagues").limit(200).onSnapshot(q=>{
     S.leagues = q.docs.map(d=>({id:d.id, ...d.data()})).filter(l=>l.name && Array.isArray(l.owners)).sort((a,b)=> (a.created||"")<(b.created||"")?-1:1);
-    S.leaguesLoaded = true;
-    settleLeague();
-    render();
+    const first = !S.leaguesLoaded; S.leaguesLoaded = true;
+    if (first){
+      // opened with no address: go straight to your portfolio if you have exactly one
+      const my = S.leagues.filter(l=>mine(l));
+      let standalone=false; try{ standalone = navigator.standalone===true || matchMedia("(display-mode: standalone)").matches; }catch(_){}
+      if (!location.hash && standalone && my.length===1){ S.view="league"; S.wantLeague=my[0].id; S.wantTab="team"; }
+    }
+    settleLeague(); render();
   }, ()=>{});
   db.collection("games").limit(1000).onSnapshot(q=>{ S.gameDocs = q.docs.map(d=>({_id:d.id, ...d.data()})); render(); }, ()=>{});
   db.doc("meta/sync").onSnapshot(s=>{ S.sync = s.exists ? s.data() : null; render(); }, ()=>{});
