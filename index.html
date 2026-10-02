@@ -178,6 +178,14 @@ details.pend summary{cursor:pointer;font-weight:600;font-size:14px}
 .clock{padding:18px;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;border-color:var(--accent)}
 .clock .who{font-family:var(--display);font-weight:900;font-size:clamp(30px,6vw,44px);text-transform:uppercase;line-height:1}
 .clock .meta{color:var(--muted);font-size:13px}
+.clock-side{display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.tm{text-align:right}
+.tm .t{font-family:var(--mono);font-weight:600;font-size:clamp(30px,7vw,44px);line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.tm .lab{font-size:12px;color:var(--muted);margin-top:4px}
+.tm.low .t{color:var(--down)}
+.tm.paused .t{font-family:var(--body,inherit);font-size:18px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.tag-auto{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:1px 5px;margin-left:6px;font-weight:500}
+@media (max-width:520px){.clock{grid-template-columns:1fr}.clock-side{flex-direction:row;justify-content:space-between;align-items:center;width:100%}.tm{text-align:left}}
 .needs{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .need.done{opacity:.35;text-decoration:line-through}
 .avail{max-height:560px;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:6px;padding:12px}
@@ -363,7 +371,7 @@ const ALIAS = {"miami (fla.)":"Miami","miami (fl)":"Miami","miami fl":"Miami","m
 const S = { db:null, canWrite:false, leagues:[], leaguesLoaded:false, leagueId:null, gameDocs:[], sync:null,
   view:"home", tab:"standings", wantLeague:null, wantTab:null, open:new Set(), onlyMine:true, weeksShown:2, draftPool:"all", draftQ:"",
   confirmDel:null, confirmLg:null, newMgrs:[], newSport:"football", sportFilter:"all", me:{}, theme:"system", reset:new Set(),
-  auth:{user:null, profile:null, live:true}, authMode:"in", authNote:"", join:null, invites:{} };
+  auth:{user:null, profile:null, live:true, timer:false}, authMode:"in", authNote:"", join:null, invites:{} };
 
 /* Accounts exist on the website (window.portfolioAuth). Inside Claude there are none, and the owner manages everything. */
 const A = window.portfolioAuth || null;
@@ -371,6 +379,12 @@ const meId = () => A && S.auth.user ? S.auth.user.id : null;
 const canCreate = () => A ? !!meId() && S.auth.live : S.canWrite;
 const canAdmin = L => A ? !!meId() && S.auth.live && (L.commissioner===meId() || !!(S.auth.profile && S.auth.profile.is_admin)) : S.canWrite;
 const canEditGames = () => !A && S.canWrite;
+/* Pick timer (website only): seconds per pick, counted on the database's clock. */
+const hasTimer = () => !!(A && S.auth.live && S.auth.timer);
+const TIMERS = [[0,"No timer"],[30,"30 seconds"],[60,"1 minute"],[90,"90 seconds"],[120,"2 minutes"],[300,"5 minutes"],[3600,"1 hour"],[14400,"4 hours"],[43200,"12 hours"],[86400,"24 hours"]];
+const timerOpts = cur => (TIMERS.some(t=>t[0]===cur) ? TIMERS : [...TIMERS,[cur,spanText(cur)]]).map(([v,t])=>`<option value="${v}" ${v===cur?"selected":""}>${t}</option>`).join("");
+function spanText(s){ return s<120 ? `${s} seconds` : s<7200 ? `${Math.round(s/60)} minutes` : `${Math.round(s/3600)} hours`; }
+function leftText(s){ if (s<=0) return "0:00"; if (s>=3600){ const h=Math.floor(s/3600), m=Math.floor((s%3600)/60); return `${h}h ${String(m).padStart(2,"0")}m`; } return `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`; }
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -682,6 +696,7 @@ function createFormHTML(){
         <label class="f" for="lgName">League name<input type="text" id="lgName" required placeholder="Sunday Syndicate"></label>
         <label class="f" for="lgYear">Season<select id="lgYear">${[y,y+1].map(v=>`<option value="${v}">${seasonLabel(v)}</option>`).join("")}</select></label>
         <label class="f" for="lgType">Draft order<select id="lgType"><option value="snake">Snake (order reverses each round)</option><option value="straight">Straight (same order each round)</option></select></label>
+        ${hasTimer()?`<label class="f" for="lgTimer">Pick timer<select id="lgTimer">${timerOpts(0)}</select></label>`:""}
       </div>
       <div><h3 style="margin-bottom:8px">Teams each manager drafts</h3>
         <div class="slot-grid">${sp.pools.map(p=>`<label class="f" for="sl-${poolCls(p)}">${p==="Other"?"Other conferences":p}<input type="number" id="sl-${poolCls(p)}" min="0" max="10" value="${sp.slots[p]}" inputmode="numeric"></label>`).join("")}
@@ -885,13 +900,24 @@ function draftHTML(L){
   const avail = list.map(x=>`<button class="av" data-pick="${esc(x.t)}" data-pool="${esc(x.p)}" ${(!canP||!canTake(L,need,x.p))?"disabled":""}><span>${esc(x.t)}</span>${chip(x.p)}</button>`).join("");
   const needChips = pools.filter(p=>slotsOf(L)[p]).map(p=>`<span class="need ${need.req[p]>0?"":"done"}">${chip(p)}${need.req[p]>1?` <span class="num" style="font-size:12px">×${need.req[p]}</span>`:""}</span>`).join("")
     + (flexOf(L) ? `<span class="need ${need.flex>0?"":"done"}">${chip("Any")}${need.flex>1?` <span class="num" style="font-size:12px">×${need.flex}</span>`:""}</span>` : "");
-  const feed = [...D.ordered].reverse().map(p=>`<div><span class="pk">${Math.ceil(p.n/D.N)}.${String(((p.n-1)%D.N)+1).padStart(2,"0")}</span>${chip(p.pool)}<span style="flex:1"><b>${esc(p.team)}</b></span><span class="sub">${esc(p.owner)}</span></div>`).join("");
+  const feed = [...D.ordered].reverse().map(p=>`<div><span class="pk">${Math.ceil(p.n/D.N)}.${String(((p.n-1)%D.N)+1).padStart(2,"0")}</span>${chip(p.pool)}<span style="flex:1"><b>${esc(p.team)}</b>${p.auto?`<span class="tag-auto" title="Picked automatically when time ran out">auto</span>`:""}</span><span class="sub">${esc(p.owner)}</span></div>`).join("");
+  const secs = hasTimer() ? (L.pickSeconds||0) : 0, running = !!(secs && L.clockAt && D.onClock);
+  const end = running ? new Date(L.clockAt).getTime() + secs*1000 : 0, left = running ? Math.ceil((end - A.now())/1000) : 0;
+  const tm = !secs || !D.onClock ? "" : running
+    ? `<div class="tm ${left<=10?"low":""}" id="pickClock" data-end="${end}" data-lg="${esc(L.id)}" role="timer" aria-label="Time left to pick"><div class="t">${leftText(left)}</div><div class="lab">${left>0?"left to pick":"Time's up. Auto-picking…"}</div></div>`
+    : `<div class="tm paused"><div class="t">Clock stopped</div><div class="lab">${spanText(secs)} per pick</div></div>`;
+  S.reset.add("tmSec");
+  const timerCtl = !(admin && hasTimer() && D.onClock) ? "" : `<div class="card form"><div class="head-row"><h3>Pick timer</h3><span class="sub">${!secs?"Off":running?"Running":"Stopped"}</span></div>
+      <div class="form-grid"><label class="f" for="tmSec">Time for each pick<select id="tmSec">${timerOpts(secs)}</select></label></div>
+      <div class="btns">${running?`<button type="button" class="btn" id="tmPause">Pause the clock</button>`:`<button type="button" class="btn primary" id="tmStart">Start the clock</button>`}<span class="msg" id="tmMsg" role="status"></span></div>
+      <p class="sub">When a manager's time runs out, the best team still available for one of their open spots is picked for them and marked "auto". The clock restarts after every pick. Start it once everyone is ready.</p></div>`;
   const order = D.owners.map((o,ix)=>`<span class="pill" style="${o===D.onClock?"border-color:var(--accent);font-weight:700":""}">${ix+1}. ${esc(o)}</span>`).join("");
   return `<section class="panel">
     <div class="head-row"><h2>Draft Room</h2><p class="sub">${type} draft · ${D.N} managers · ${roundsOf(L)} rounds · ${esc(slotText(L))}</p></div>
     <div class="card clock"><div><div class="meta">On the clock · Round ${D.round}, pick ${D.inRound} · Overall ${Math.min(D.i+1,D.total)} of ${D.total}</div><div class="who">${esc(D.onClock||"Done")}</div><div class="needs">${needChips}</div></div>
-      ${admin?`<div class="btns"><button class="btn danger" id="undoPick" ${D.i?"":"disabled"}>Undo last pick</button></div>`:""}</div>
+      ${(tm||admin)?`<div class="clock-side">${tm}${admin?`<div class="btns"><button class="btn danger" id="undoPick" ${D.i?"":"disabled"}>Undo last pick</button></div>`:""}</div>`:""}</div>
     ${myPick?`<div class="banner">You're on the clock. Pick a team below.</div>`:""}
+    ${timerCtl}
     <div class="pend-list">${order}</div>
     <div class="two">
       <div class="card">
@@ -934,7 +960,7 @@ function settingsHTML(){
       <details><summary>How do I see my team?</summary><p>${A?"Join a league with the invite link from its commissioner. It then appears under My Portfolios on Home, and you can switch between portfolios from the menu at the top.":"Open a league and pick your name on the My Team tab. That league then appears under My Portfolios on Home, and you can switch between portfolios from the menu at the top."}</p></details>
       <details><summary>A score looks wrong. What now?</summary><p>Tell your commissioner. They can enter a correction, and a corrected result always replaces the automatic one.</p></details>
       <details><summary>How do I start a league?</summary><p>${A?"Sign in and use Create a league on Home. You become its commissioner: you set the managers and draft order, share the invite link, and can make or undo picks for anyone.":"New leagues are set up by the commissioner, who also runs the draft."}</p></details>
-      ${A?`<details><summary>How does the draft work?</summary><p>Managers pick on their own phones when it's their turn, and everyone sees each pick as it happens. The commissioner can pick on behalf of a manager who isn't there.</p></details>`:""}</div>
+      ${A?`<details><summary>How does the draft work?</summary><p>Managers pick on their own phones when it's their turn, and everyone sees each pick as it happens. The commissioner can pick on behalf of a manager who isn't there.</p><p>The commissioner can also set a pick timer. If your time runs out, the best team still available for one of your open spots is picked for you, and the draft moves on.</p></details>`:""}</div>
     <div class="card set"><h3>Legal notices</h3>
       <p>The Portfolio is an independent game and is not affiliated with, endorsed by or sponsored by the NFL, the NBA, the NCAA, or any team, school or conference. Team and school names are used only to identify the teams being followed.</p>
       <p>The Portfolio does not take entry fees or pay prizes, and is for entertainment.</p></div>
@@ -968,7 +994,9 @@ function accountHTML(){
     <form class="card set" id="alertForm"><h3>Alert preferences</h3>
       <label class="check" for="alDraft"><input type="checkbox" id="alDraft" ${al.draft!==false?"checked":""}> When it's my turn in a draft</label>
       <label class="check" for="alWeekly"><input type="checkbox" id="alWeekly" ${al.weekly!==false?"checked":""}> Weekly results for my portfolios</label>
-      <p class="sub">Alerts aren't being sent yet. Your choices are saved and will apply when they start.</p>
+      <label class="check" for="alSms"><input type="checkbox" id="alSms" ${al.sms===true?"checked":""}> Text these alerts to my phone number</label>
+      <p class="sub">By turning on texts you agree to receive text messages from The Portfolio about your leagues at the phone number on your account. Message frequency varies. Message and data rates may apply. Reply STOP to stop or HELP for help.</p>
+      <p class="sub">Texts aren't switched on yet. Your choices are saved and will apply when they start.</p>
       <div class="btns"><button class="btn" type="submit">Save alert preferences</button><span class="msg" id="alMsg" role="status"></span></div>
     </form>
     <div class="card set"><h3>Log out</h3><div class="btns"><button type="button" class="btn danger" id="logout">Log out</button><span class="sub">Signed in as ${esc(u.email||"")}</span></div></div>`;
@@ -1069,7 +1097,9 @@ function bindAccounts(){
   const pw=$("#pwForm"); if(pw) pw.onsubmit=async e=>{ e.preventDefault();
     try{ await A.updatePassword($("#pwNew").value); S.reset.add("pwNew"); render(); setMsg("#pwMsg","Password changed.",true); }catch(err){ setMsg("#pwMsg",failText(err)); } };
   const al=$("#alertForm"); if(al) al.onsubmit=async e=>{ e.preventDefault();
-    try{ await A.updateProfile({alerts:{draft:$("#alDraft").checked, weekly:$("#alWeekly").checked}}); setMsg("#alMsg","Saved.",true); }catch(err){ setMsg("#alMsg",failText(err)); } };
+    const sms = $("#alSms").checked;
+    if (sms && !(S.auth.profile && S.auth.profile.phone)) return setMsg("#alMsg","Add your phone number under Account information first, then save it.");
+    try{ await A.updateProfile({alerts:{draft:$("#alDraft").checked, weekly:$("#alWeekly").checked, sms}}); setMsg("#alMsg","Saved.",true); }catch(err){ setMsg("#alMsg",failText(err)); } };
   const lo=$("#logout"); if(lo) lo.onclick=async()=>{ await A.signOut(); S.view="home"; render(); };
   document.querySelectorAll("[data-seat]").forEach(b=> b.onclick=async()=>{
     const j=S.join; try{ await A.join(j.id, j.code, b.dataset.seat); S.join=null; go("league", j.id, "team"); }catch(err){ setMsg("#jnMsg",failText(err)); } });
@@ -1078,6 +1108,27 @@ function bindAccounts(){
   document.querySelectorAll("[data-release]").forEach(b=> b.onclick=async()=>{
     try{ await A.releaseSeat(league().id, b.dataset.release); }catch(err){ setMsg("#stMsg",failText(err)); } });
 }
+
+/* ---------- pick clock ---------- */
+/* Updates the countdown in place. When it reaches zero, any signed-in viewer asks the database to make the pick;
+   the database checks the time itself, so asking early or twice does nothing. */
+let autoBusy = false, autoNext = 0;
+async function askAutoPick(id){
+  if (autoBusy || Date.now() < autoNext) return;
+  autoBusy = true; autoNext = Date.now() + 2500 + Math.random()*1500;
+  try{ if (meId()){ const n = await A.autoPick(id); if (!n) await A.refresh(); } else await A.refresh(); }catch(_){}
+  finally{ autoBusy = false; }
+}
+function tickClock(){
+  const el = $("#pickClock"); if (!el || !A) return;
+  const left = Math.ceil((+el.dataset.end - A.now())/1000);
+  const t = el.querySelector(".t"), lab = el.querySelector(".lab"), txt = leftText(left);
+  if (t.textContent !== txt) t.textContent = txt;
+  el.classList.toggle("low", left <= 10);
+  const lt = left>0 ? "left to pick" : "Time's up. Auto-picking…"; if (lab.textContent !== lt) lab.textContent = lt;
+  if (left <= 0 && S.auth.live) askAutoPick(el.dataset.lg);
+}
+setInterval(tickClock, 250);
 
 /* ---------- events ---------- */
 function setMsg(id, text, ok){ const m=$(id); if(m){ m.textContent=text; m.className="msg "+(ok?"ok":"err"); } }
@@ -1108,6 +1159,12 @@ function bind(){
   document.querySelectorAll("[data-pick]").forEach(b=> b.onclick=()=> makePick(b.dataset.pick, b.dataset.pool));
   const cAdd=$("#cAdd"); if(cAdd) cAdd.onclick=()=>{ const t=$("#cT").value.trim(); if(t) makePick(t, $("#cP").value); };
   const u=$("#undoPick"); if(u) u.onclick=undoPick;
+  const clk = async running => { const L=league(), el=$("#tmSec"); if(!L||!el) return; const secs=+el.value;
+    if (running && !secs) return setMsg("#tmMsg","Choose a time for each pick first.");
+    try{ await A.setClock(L.id, secs, running); }catch(err){ setMsg("#tmMsg",failText(err)); } };
+  const ts=$("#tmStart"); if(ts) ts.onclick=()=>clk(true);
+  const tp=$("#tmPause"); if(tp) tp.onclick=()=>clk(false);
+  const tsec=$("#tmSec"); if(tsec) tsec.onchange=()=>clk(!!$("#tmPause") && +tsec.value>0);
   const ro=$("#reopen"); if(ro) ro.onclick=reopenDraft;
   document.querySelectorAll("[data-copy]").forEach(b=> b.onclick=async()=>{
     const inp = document.getElementById(b.dataset.copy); if (!inp) return;
@@ -1197,7 +1254,9 @@ async function createLeague(e){
   let id=(name+"-"+sport+"-"+year).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")||"league";
   if(S.leagues.some(l=>l.id===id)) id+="-"+Math.random().toString(36).slice(2,6);
   try{
-    await S.db.doc(`leagues/${id}`).set({name, sport, year, owners, slots, flex, weights, draftType, status:"drafting", picks:[], created:new Date().toISOString()});
+    const doc = {name, sport, year, owners, slots, flex, weights, draftType, status:"drafting", picks:[], created:new Date().toISOString()};
+    if ($("#lgTimer") && +$("#lgTimer").value) doc.pickSeconds = +$("#lgTimer").value;
+    await S.db.doc(`leagues/${id}`).set(doc);
     S.newMgrs=[]; S.reset.add("lgName"); S.leagueId=id; S.view="league"; S.tab="draft"; render();
   }catch(err){ setMsg("#lgMsg",failText(err)); }
 }
@@ -1215,7 +1274,7 @@ $("#gearBtn").onclick=()=> go(S.view==="settings" ? "home" : "settings");
 $("#signBtn").onclick=()=>{ S.authMode="in"; go("auth"); };
 if (A) A.onChange(st=>{
   const was = meId();
-  S.auth = {user:st.user, profile:st.profile, live:st.live};
+  S.auth = {user:st.user, profile:st.profile, live:st.live, timer:!!st.timer};
   if (st.recovery){ S.view="auth"; S.authMode="newpw"; }
   else if (!was && meId() && (S.view==="auth")) return afterSignIn();
   if (!meId()) S.invites = {};

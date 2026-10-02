@@ -15,7 +15,7 @@
   const fail = (error, fallback) => ({ code: "backend", message: (error && error.message) || fallback || "Something went wrong. Try again." });
 
   const sb = window.supabase.createClient(CFG.url, CFG.key);
-  const state = { user: null, profile: null, live: true, recovery: false };
+  const state = { user: null, profile: null, live: true, recovery: false, timer: true, offset: 0 };
   const authSubs = new Set(), leagueSubs = new Set();
   const tellAuth = () => authSubs.forEach(f => { try { f(state); } catch (_) {} });
 
@@ -29,6 +29,7 @@
     state.user = u ? { id: u.id, email: u.email } : null;
   }
   const ready = sb.auth.getSession().then(async ({ data }) => { setSession(data && data.session); await loadProfile(); }).catch(() => {});
+  ready.then(() => syncClock()).catch(() => {});
   sb.auth.onAuthStateChange((event, session) => {
     // Supabase asks that no other client calls run inside this callback, so the work is deferred.
     setTimeout(async () => {
@@ -48,7 +49,13 @@
     return fetching = (async () => {
       await ready;
       let rows;
-      const { data, error } = await sb.from("leagues").select("id,doc,commissioner,members,created_at").order("created_at");
+      const BASE = "id,doc,commissioner,members,created_at";
+      let { data, error } = await sb.from("leagues").select(state.timer ? BASE + ",pick_seconds,clock_at" : BASE).order("created_at");
+      if (error && state.timer && (error.code === "42703" || /pick_seconds|clock_at/.test(error.message || ""))){
+        // The database hasn't had the pick-timer update yet: carry on without the timer.
+        state.timer = false; tellAuth();
+        ({ data, error } = await sb.from("leagues").select(BASE).order("created_at"));
+      }
       if (error){
         // The database isn't set up or can't be reached: show the last published snapshot, read-only.
         const was = state.live; state.live = false; if (was) tellAuth();
@@ -56,7 +63,8 @@
         rows = Object.keys(d.docs || {}).filter(k => k.startsWith("leagues/")).map(k => ({ id: k.slice(8), data: d.docs[k] }));
       } else {
         const was = state.live; state.live = true; if (!was) tellAuth();
-        rows = data.map(r => ({ id: r.id, data: Object.assign({}, r.doc, { commissioner: r.commissioner, members: r.members || {}, created: r.doc.created || r.created_at }) }));
+        rows = data.map(r => ({ id: r.id, data: Object.assign({}, r.doc, { commissioner: r.commissioner, members: r.members || {}, created: r.doc.created || r.created_at,
+          pickSeconds: r.pick_seconds || 0, clockAt: r.clock_at || null }) }));
       }
       const snap = { docs: rows.map(r => snapDoc(r.id, r.data)), size: rows.length, empty: !rows.length };
       leagueSubs.forEach(f => { try { f(snap); } catch (_) {} });
@@ -77,7 +85,12 @@
     if (error) throw fail(error, fallback);
     return data;
   }
-  const leagueFields = d => { const o = Object.assign({}, d); delete o.commissioner; delete o.members; delete o.id; return o; };
+  const leagueFields = (d, keepTimer) => { const o = Object.assign({}, d); delete o.commissioner; delete o.members; delete o.id; delete o.clockAt; if (!keepTimer) delete o.pickSeconds; return o; };
+  // The pick clock runs on the database's time, so measure how far this device's clock is off.
+  async function syncClock(){
+    const t0 = Date.now(); const { data, error } = await sb.rpc("pf_now");
+    if (!error && data) state.offset = new Date(data).getTime() - (t0 + Date.now()) / 2;
+  }
 
   /* ---- the data interface the page expects ---- */
   function collection(name){
@@ -101,7 +114,7 @@
     return {
       id, path,
       get: async () => snapDoc(id, ((await loadStatic()).docs || {})[path]),
-      set: isLeague ? async data => { await rpc("create_league", { p_id: id, p_doc: leagueFields(data) }); await fetchLeagues(); } : readOnly,
+      set: isLeague ? async data => { await rpc("create_league", { p_id: id, p_doc: leagueFields(data, true) }); await fetchLeagues(); } : readOnly,
       update: isLeague ? async patch => { await rpc("patch_league", { p_id: id, p_patch: leagueFields(patch) }); await fetchLeagues(); } : readOnly,
       delete: isLeague ? async () => { await rpc("delete_league", { p_id: id }); await fetchLeagues(); } : readOnly,
       onSnapshot(next){ loadStatic().then(d => next(snapDoc(id, (d.docs || {})[path]))); return () => {}; }
@@ -149,6 +162,9 @@
     async join(id, code, seat){ await rpc("join_league", { p_id: id, p_code: code, p_seat: seat }); await fetchLeagues(); },
     async releaseSeat(id, seat){ await rpc("release_seat", { p_id: id, p_seat: seat }); await fetchLeagues(); },
     async invite(id){ return await rpc("league_invite", { p_id: id }); },
+    now: () => Date.now() + state.offset,
+    async setClock(id, seconds, running){ await rpc("set_clock", { p_id: id, p_seconds: seconds, p_running: !!running }); await syncClock().catch(() => {}); await fetchLeagues(); },
+    async autoPick(id){ const n = await rpc("auto_pick", { p_id: id }); if (n) await fetchLeagues(); return n; },
     async makePick(id, team, pool, slot){ await rpc("make_pick", { p_id: id, p_team: team, p_pool: pool, p_slot: slot }); await fetchLeagues(); },
     refresh: fetchLeagues
   };
