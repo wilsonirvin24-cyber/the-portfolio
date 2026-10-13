@@ -115,7 +115,7 @@ tr.open .chev{transform:rotate(90deg)}
 .h-item .tn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .h-item .rec{font-family:var(--mono);font-size:13px}
 
-.chip{white-space:nowrap;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;min-width:44px;padding:2px 6px;border-radius:4px;font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--c);border:1px solid color-mix(in srgb,var(--c) 45%,transparent);background:color-mix(in srgb,var(--c) 10%,transparent)}
+.chip{--c:var(--muted);white-space:nowrap;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;min-width:44px;padding:2px 6px;border-radius:4px;font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--c);border:1px solid color-mix(in srgb,var(--c) 45%,transparent);background:color-mix(in srgb,var(--c) 10%,transparent)}
 .p-NFL{--c:var(--nfl)}.p-ACC{--c:var(--acc)}.p-Big-Ten{--c:var(--b10)}.p-Big-12{--c:var(--b12)}.p-SEC{--c:var(--sec)}.p-Non-P4{--c:var(--np4)}
 
 .leaders{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
@@ -364,6 +364,21 @@ input[type=datetime-local]{background:var(--bg);border:1px solid var(--line);bor
 .sg-sit{font-size:13px;font-weight:600;padding-top:4px;border-top:1px solid var(--line)}
 .sg-sit.rz{color:var(--down)}
 .sg-last{font-size:12.5px;color:var(--muted)}
+/* v12: pickups and trades */
+.fa td{border-bottom:1px solid var(--line);vertical-align:middle}
+.fa .tn{font-weight:600}
+.qb.add{width:34px;height:32px;font-size:18px;line-height:1;color:var(--accent);border-color:color-mix(in srgb,var(--accent) 50%,transparent)}
+.fa-drop{border-color:var(--accent)}
+.drop-opt{padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);flex-wrap:wrap}
+.offer{padding:12px 14px;display:grid;grid-template-columns:1fr 1fr;gap:10px 16px}
+.offer .btns{grid-column:1/-1}
+@media (max-width:520px){.offer{grid-template-columns:1fr}}
+.two.even{grid-template-columns:1fr 1fr}
+@media (max-width:640px){.two.even{grid-template-columns:1fr}}
+.err-banner{background:color-mix(in srgb,var(--down) 12%,transparent);border-color:var(--down)}
+.team tr.incoming td{background:var(--accent-soft)}
+.team tr.leaving td{color:var(--muted)}
+.act li{align-items:baseline}
 .check{display:flex;align-items:center;gap:8px;font-size:14px}
 .check input{width:18px;height:18px;accent-color:var(--accent)}
 input[type=email],input[type=password],input[type=tel]{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:9px 10px;width:100%;min-width:0;color:var(--fg)}
@@ -392,6 +407,8 @@ input[type=email],input[type=password],input[type=tel]{background:var(--bg);bord
     <button class="tab" role="tab" aria-selected="false" data-tab="scores" id="scoresTab" hidden>Scoreboard</button>
     <button class="tab" role="tab" aria-selected="false" data-tab="team">My Team</button>
     <button class="tab" role="tab" aria-selected="false" data-tab="standings">Standings</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="fa" id="faTab" hidden>Free Agents</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="trades" id="trTab" hidden>Trades</button>
     <button class="tab" role="tab" aria-selected="false" data-tab="board">Board</button>
     <button class="tab" role="tab" aria-selected="false" data-tab="results">Results</button>
     <button class="tab" role="tab" aria-selected="false" data-tab="draft">Draft</button>
@@ -422,13 +439,18 @@ const BB_POOL = {
 "Big East":["Butler","Creighton","DePaul","Georgetown","Marquette","Providence","Seton Hall","St. John's","UConn","Villanova","Xavier"],
 "Other":["Abilene Christian","Air Force","Akron","Alabama A&M","Alabama State","Albany","Alcorn State","American","Appalachian State","Arkansas State","Arkansas-Pine Bluff","Army","Austin Peay","Ball State","Bellarmine","Belmont","Bethune-Cookman","Binghamton","Boise State","Boston University","Bowling Green","Bradley","Brown","Bryant","Bucknell","Buffalo","Cal Baptist","Cal Poly","Cal State Bakersfield","Cal State Fullerton","Cal State Northridge","Campbell","Canisius","Central Arkansas","Central Connecticut","Central Michigan","Charleston","Charleston Southern","Charlotte","Chattanooga","Chicago State","Cleveland State","Coastal Carolina","Colgate","Colorado State","Columbia","Coppin State","Cornell","Dartmouth","Davidson","Dayton","Delaware","Delaware State","Denver","Detroit Mercy","Drake","Drexel","Duquesne","East Carolina","East Tennessee State","East Texas A&M","Eastern Illinois","Eastern Kentucky","Eastern Michigan","Eastern Washington","Elon","Evansville","FIU","Fairfield","Fairleigh Dickinson","Florida A&M","Florida Atlantic","Florida Gulf Coast","Fordham","Fresno State","Furman","Gardner-Webb","George Mason","George Washington","Georgia Southern","Georgia State","Gonzaga","Grambling State","Grand Canyon","Green Bay","Hampton","Harvard","Hawaii","High Point","Hofstra","Holy Cross","Houston Christian","Howard","IU Indy","Idaho","Idaho State","Illinois State","Incarnate Word","Indiana State","Iona","Jackson State","Jacksonville","Jacksonville State","James Madison","Kansas City","Kennesaw State","Kent State","LIU","La Salle","Lafayette","Lamar","Le Moyne","Lehigh","Liberty","Lindenwood","Lipscomb","Little Rock","Long Beach State","Longwood","Louisiana","Louisiana Tech","Louisiana-Monroe","Loyola Chicago","Loyola Marymount","Loyola Maryland","Maine","Manhattan","Marist","Marshall","Maryland Eastern Shore","McNeese","Memphis","Mercer","Mercyhurst","Merrimack","Miami (OH)","Middle Tennessee","Milwaukee","Mississippi Valley State","Missouri State","Monmouth","Montana","Montana State","Morehead State","Morgan State","Mount St. Mary's","Murray State","NJIT","Navy","Nevada","New Hampshire","New Haven","New Mexico","New Mexico State","New Orleans","Niagara","Nicholls","Norfolk State","North Alabama","North Carolina A&T","North Carolina Central","North Dakota","North Dakota State","North Florida","North Texas","Northeastern","Northern Arizona","Northern Colorado","Northern Illinois","Northern Iowa","Northern Kentucky","Northwestern State","Oakland","Ohio","Old Dominion","Omaha","Oral Roberts","Oregon State","Pacific","Penn","Pepperdine","Portland","Portland State","Prairie View A&M","Presbyterian","Princeton","Purdue Fort Wayne","Queens","Quinnipiac","Radford","Rhode Island","Rice","Richmond","Rider","Robert Morris","SIU Edwardsville","Sacramento State","Sacred Heart","Saint Joseph's","Saint Louis","Saint Mary's","Saint Peter's","Sam Houston","Samford","San Diego","San Diego State","San Francisco","San Jose State","Santa Clara","Seattle","Siena","South Alabama","South Carolina State","South Dakota","South Dakota State","South Florida","Southeast Missouri State","Southeastern Louisiana","Southern","Southern Illinois","Southern Indiana","Southern Miss","Southern Utah","St. Bonaventure","St. Thomas","Stephen F. Austin","Stetson","Stonehill","Stony Brook","Tarleton State","Temple","Tennessee State","Tennessee Tech","Texas A&M-Corpus Christi","Texas Southern","Texas State","The Citadel","Toledo","Towson","Troy","Tulane","Tulsa","UAB","UC Davis","UC Irvine","UC Riverside","UC San Diego","UC Santa Barbara","UIC","UMBC","UMass","UMass Lowell","UNC Asheville","UNC Greensboro","UNC Wilmington","UNLV","USC Upstate","UT Arlington","UT Martin","UTEP","UTRGV","UTSA","Utah State","Utah Tech","Utah Valley","VCU","VMI","Valparaiso","Vermont","Wagner","Washington State","Weber State","West Florida","West Georgia","Western Carolina","Western Illinois","Western Kentucky","Western Michigan","Wichita State","William & Mary","Winthrop","Wofford","Wright State","Wyoming","Yale","Youngstown State"]};
 
+/* College basketball: every Division I team in its 2026-27 conference. */
+const CBB_CONF = {"SEC":["Alabama","Arkansas","Auburn","Florida","Georgia","Kentucky","LSU","Mississippi State","Missouri","Oklahoma","Ole Miss","South Carolina","Tennessee","Texas","Texas A&M","Vanderbilt"],"Big Ten":["Illinois","Indiana","Iowa","Maryland","Michigan","Michigan State","Minnesota","Nebraska","Northwestern","Ohio State","Oregon","Penn State","Purdue","Rutgers","UCLA","USC","Washington","Wisconsin"],"Big 12":["Arizona","Arizona State","Baylor","BYU","Cincinnati","Colorado","Houston","Iowa State","Kansas","Kansas State","Oklahoma State","TCU","Texas Tech","UCF","Utah","West Virginia"],"ACC":["Boston College","California","Clemson","Duke","Florida State","Georgia Tech","Louisville","Miami","NC State","North Carolina","Notre Dame","Pittsburgh","SMU","Stanford","Syracuse","Virginia","Virginia Tech","Wake Forest"],"Big East":["Butler","Creighton","DePaul","Georgetown","Marquette","Providence","Seton Hall","St. John's","UConn","Villanova","Xavier"],"America East":["Albany","Binghamton","Bryant","Maine","New Hampshire","NJIT","UMass Lowell","UMBC","Vermont"],"American":["Charlotte","East Carolina","Florida Atlantic","Memphis","North Texas","Rice","South Florida","Temple","Tulane","Tulsa","UAB","UTSA","Wichita State"],"ASUN":["Bellarmine","Florida Gulf Coast","Jacksonville","Lipscomb","North Florida","Queens","Stetson","West Florida"],"Atlantic 10":["Davidson","Dayton","Duquesne","Fordham","George Mason","George Washington","La Salle","Loyola Chicago","Rhode Island","Richmond","Saint Joseph's","Saint Louis","St. Bonaventure","VCU"],"Big Sky":["Eastern Washington","Idaho","Idaho State","Montana","Montana State","Northern Arizona","Northern Colorado","Portland State","Southern Utah","Utah Tech","Weber State"],"Big South":["Charleston Southern","Gardner-Webb","High Point","Longwood","Presbyterian","Radford","UNC Asheville","USC Upstate","Winthrop"],"Big West":["Cal Baptist","Cal Poly","Cal State Bakersfield","Cal State Fullerton","Cal State Northridge","Long Beach State","Sacramento State","UC Irvine","UC Riverside","UC San Diego","UC Santa Barbara","Utah Valley"],"CAA":["Campbell","Charleston","Drexel","Elon","Hampton","Hofstra","Monmouth","North Carolina A&T","Northeastern","Stony Brook","Towson","UNC Wilmington","William & Mary"],"Conference USA":["Delaware","FIU","Jacksonville State","Kennesaw State","Liberty","Middle Tennessee","Missouri State","New Mexico State","Sam Houston","Western Kentucky"],"Horizon":["Cleveland State","Detroit Mercy","Green Bay","IU Indy","Milwaukee","Northern Illinois","Northern Kentucky","Oakland","Purdue Fort Wayne","Robert Morris","Wright State","Youngstown State"],"Ivy":["Brown","Columbia","Cornell","Dartmouth","Harvard","Penn","Princeton","Yale"],"MAAC":["Canisius","Fairfield","Iona","Manhattan","Marist","Merrimack","Mount St. Mary's","Niagara","Quinnipiac","Rider","Sacred Heart","Saint Peter's","Siena"],"MAC":["Akron","Ball State","Bowling Green","Buffalo","Central Michigan","Eastern Michigan","Kent State","Miami (OH)","Ohio","Toledo","UMass","Western Michigan"],"MEAC":["Coppin State","Delaware State","Howard","Maryland Eastern Shore","Morgan State","Norfolk State","North Carolina Central","South Carolina State"],"Missouri Valley":["Belmont","Bradley","Drake","Evansville","Illinois State","Indiana State","Murray State","Northern Iowa","Southern Illinois","UIC","Valparaiso"],"Mountain West":["Air Force","Grand Canyon","Hawaii","Nevada","New Mexico","San Jose State","UC Davis","UNLV","UTEP","Wyoming"],"NEC":["Central Connecticut","Chicago State","Fairleigh Dickinson","Le Moyne","LIU","Mercyhurst","New Haven","Stonehill","Wagner"],"OVC":["Eastern Illinois","Lindenwood","Morehead State","SIU Edwardsville","Southeast Missouri State","Southern Indiana","Tennessee State","UT Martin","Western Illinois"],"Pac-12":["Boise State","Colorado State","Fresno State","Gonzaga","Oregon State","San Diego State","Texas State","Utah State","Washington State"],"Patriot":["American","Army","Boston University","Bucknell","Colgate","Holy Cross","Lafayette","Lehigh","Loyola Maryland","Navy"],"SoCon":["Chattanooga","East Tennessee State","Furman","Mercer","Samford","Tennessee Tech","The Citadel","UNC Greensboro","VMI","Western Carolina","Wofford"],"Southland":["East Texas A&M","Houston Christian","Incarnate Word","Lamar","McNeese","New Orleans","Nicholls","Northwestern State","Southeastern Louisiana","Stephen F. Austin","Texas A&M-Corpus Christi","UTRGV"],"Summit":["Kansas City","North Dakota","North Dakota State","Omaha","Oral Roberts","South Dakota","South Dakota State","St. Thomas"],"Sun Belt":["Appalachian State","Arkansas State","Coastal Carolina","Georgia Southern","Georgia State","James Madison","Louisiana","Louisiana Tech","Louisiana-Monroe","Marshall","Old Dominion","South Alabama","Southern Miss","Troy"],"SWAC":["Alabama A&M","Alabama State","Alcorn State","Arkansas-Pine Bluff","Bethune-Cookman","Florida A&M","Grambling State","Jackson State","Mississippi Valley State","Prairie View A&M","Southern","Texas Southern"],"UAC":["Abilene Christian","Austin Peay","Central Arkansas","Eastern Kentucky","Little Rock","North Alabama","Tarleton State","UT Arlington","West Georgia"],"WCC":["Denver","Loyola Marymount","Pacific","Pepperdine","Portland","Saint Mary's","San Diego","San Francisco","Santa Clara","Seattle"]};
 const SPORTS = {
   football:   { label:"Football",   pro:"NFL", col:"CFB", pools:["NFL","ACC","Big Ten","Big 12","SEC","Non-P4"], teams:FB_POOL,
                 slots:{"NFL":3,"ACC":1,"Big Ten":1,"Big 12":1,"SEC":1,"Non-P4":1}, flex:0, weights:{},
                 counts:"NFL regular season, plus the full college season including bowls and the playoff." },
   basketball: { label:"Basketball", pro:"NBA", col:"CBB", pools:["NBA","SEC","Big Ten","Big 12","ACC","Big East","Other"], teams:BB_POOL,
                 slots:{"NBA":3,"SEC":1,"Big Ten":1,"Big 12":1,"ACC":1,"Big East":1,"Other":4}, flex:0, weights:{"NBA":0.5},
-                counts:"NBA regular season at half a win each, plus every college game including March Madness." }
+                counts:"NBA regular season at half a win each, plus every college game including March Madness." },
+  cbb:        { label:"College Basketball", pro:null, col:"CBB", pools:Object.keys(CBB_CONF), teams:CBB_CONF,
+                slots:Object.fromEntries(Object.keys(CBB_CONF).map(c=>[c, ["SEC","Big Ten","Big 12","ACC","Big East"].includes(c) ? 1 : 0])), flex:3, weights:{},
+                counts:"Every Division I game counts, including conference tournaments and March Madness." }
 };
 const SPORT_KEYS = Object.keys(SPORTS);
 const PFX = {NFL:"n:", CFB:"c:", NBA:"b:", CBB:"m:"};
@@ -439,8 +461,8 @@ const ALIAS = {"miami (fla.)":"Miami","miami (fl)":"Miami","miami fl":"Miami","m
 const S = { db:null, canWrite:false, leagues:[], leaguesLoaded:false, leagueId:null, gameDocs:[], sync:null,
   view:"home", tab:"standings", wantLeague:null, wantTab:null, open:new Set(), onlyMine:true, weeksShown:2, draftPool:"all", draftQ:"",
   confirmDel:null, confirmLg:null, newMgrs:[], newSport:"football", sportFilter:"all", me:{}, theme:"system", reset:new Set(),
-  auth:{user:null, profile:null, live:true, timer:false, level:1, google:false}, authMode:"in", authNote:"", join:null, invites:{},
-  schedDocs:[], sbAll:false, sbLg:"all", recapWeek:null, chat:null, chatConn:null, queue:null, queueShut:false, mock:null, dAtDirty:false, leagueSig:"" };
+  auth:{user:null, profile:null, live:true, timer:false, level:1, google:false, dbv:0}, authMode:"in", authNote:"", join:null, invites:{},
+  schedDocs:[], faPool:"all", faQ:"", faSort:"wins", faAdd:null, actFor:null, flash:null, trades:null, tradeWatch:null, trTo:null, trGive:[], trGet:[], sbAll:false, sbLg:"all", recapWeek:null, chat:null, chatConn:null, queue:null, queueShut:false, mock:null, dAtDirty:false, leagueSig:"" };
 
 /* Accounts exist on the website (window.portfolioAuth). Inside Claude there are none, and the owner manages everything. */
 const A = window.portfolioAuth || null;
@@ -460,7 +482,8 @@ function leftText(s){ if (s<=0) return "0:00"; if (s>=86400) return `${Math.floo
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const poolCls = p => "p-" + String(p).replace(/\s+/g,"-");
-const chip = p => `<span class="chip ${poolCls(p)}">${esc(p==="Big Ten"?"B1G":p==="Big 12"?"B12":p)}</span>`;
+const CHIP = {"Big Ten":"B1G","Big 12":"B12","Atlantic 10":"A-10","America East":"AE","American":"AAC","Big Sky":"BSKY","Big South":"BSTH","Big West":"BWEST","Conference USA":"CUSA","Horizon":"HRZN","Missouri Valley":"MVC","Mountain West":"MWC","Patriot":"PAT","Southland":"SLND","Summit":"SUMMIT","Sun Belt":"SBC","Pac-12":"PAC-12","Big East":"BIG EAST"};
+const chip = p => `<span class="chip ${poolCls(p)}" title="${esc(p)}">${esc(CHIP[p] || p)}</span>`;
 const fmt = n => Number.isInteger(n) ? String(n) : n.toFixed(1);
 const ordinal = n => n + (n%100>=11&&n%100<=13 ? "th" : ["th","st","nd","rd"][n%10] || "th");
 
@@ -510,7 +533,7 @@ function slotRows(L){
   const f = flexOf(L); for (let i=1;i<=f;i++) out.push({slot: f>1?`Any #${i}`:"Any", pool:"Any", ix:i, many:f>1});
   return out;
 }
-const slotText = L => SP(L).pools.filter(p=>slotsOf(L)[p]).map(p=>`${slotsOf(L)[p]} ${p==="Other"?"other-conference":p}`).concat(flexOf(L)?[`${flexOf(L)} any college`]:[]).join(" · ");
+const slotText = L => SP(L).pools.filter(p=>slotsOf(L)[p]).map(p=>`${slotsOf(L)[p]} ${p==="Other"?"other-conference":p}`).concat(flexOf(L)?[`${flexOf(L)} any ${sportOf(L)==="cbb"?"conference":"college"}`]:[]).join(" · ");
 const weightText = L => SP(L).pools.filter(p=>weightOf(L,p)!==1).map(p=>`${p} wins count ${weightOf(L,p)}`).join(" · ");
 const mine = L => {
   if (A){ const id = meId(), m = L.members || {}; return id ? (L.owners.find(o=>m[o]===id) || null) : null; }
@@ -550,6 +573,14 @@ function allGames(){
 }
 const winnerKey = g => g.hs===g.as ? null : (g.hs>g.as ? g.hk : g.ak);
 
+/* Who held which team when. Before any pickup or trade this is just the draft; afterwards the league keeps "holds":
+   each has the league week it started counting (from) and the week it stopped (to). */
+function stintsOf(L){
+  if (Array.isArray(L.holds) && L.holds.length) return L.holds;
+  return (L.picks||[]).map(p=>({owner:p.owner, team:p.team, pool:p.pool, slot:p.slot, n:p.n, auto:p.auto}));
+}
+const nextWeekStart = () => addDays(weekStart(etDate(new Date())), 7);
+
 function compute(L){
   const sp = SP(L), y = L.year || thisSeason();
   const lo = `${y}-07-01`, hi = `${y+1}-06-30`;
@@ -565,32 +596,54 @@ function compute(L){
   const curWeek = lastDate ? weekStart(lastDate) : null;
   const firstWeek = games.length ? weekStart(games[0].date) : null;
   const weekNo = curWeek ? Math.round((toD(curWeek)-toD(firstWeek))/(7*864e5))+1 : 0;
-  const picks = L.picks || [], owner = {};
-  for (const p of picks) owner[pk(L,p)] = p;
+  const picks = L.picks || [], today = etDate(new Date());
+  const stints = stintsOf(L).map((s,i)=>({...s, i, k: tk(s.team, lgOfPool(L, s.pool)), w:0, l:0, t:0, wkG:[], wt: weightOf(L, s.pool)}));
+  const byK = {}; for (const s of stints) (byK[s.k] || (byK[s.k] = [])).push(s);
+  const on = (s, d) => (!s.from || d >= s.from) && (!s.to || d < s.to);
+  const who = (k, d) => (byK[k] || []).find(s=>on(s, d)) || null;
+  // Every result goes to whoever held the team on the day it was played.
+  for (const g of games){
+    const win = winnerKey(g);
+    for (const k of [g.hk, g.ak]){
+      const s = who(k, g.date); if (!s) continue;
+      if (win===null) s.t++; else if (win===k) s.w++; else s.l++;
+      if (weekStart(g.date)===curWeek) s.wkG.push(g);
+    }
+  }
+  for (const s of stints){
+    s.pts = s.w * s.wt; s.rec = rec[s.k] || {w:0,l:0,t:0,games:[]};
+    // a team picked up and moved on again within the same week never counted for that manager
+    s.state = s.from && s.to && s.to <= s.from ? "void" : s.from && s.from > today ? "incoming" : (s.to && s.to <= today ? "former" : (s.to ? "leaving" : "current"));
+  }
   const order = slotRows(L).map(s=>s.slot);
+  const bySlot = (a,b)=> order.indexOf(a.slot)-order.indexOf(b.slot) || (a.from||"").localeCompare(b.from||"");
   const rows = (L.owners||[]).map(o=>{
     let pro=0, col=0, total=0, wk=0;
-    const holdings = picks.filter(p=>p.owner===o).map(p=>{
-      const k = pk(L,p), r = rec[k] || {w:0,l:0,t:0,games:[]}, wt = weightOf(L,p.pool);
-      if (p.pool===sp.pro) pro+=r.w; else col+=r.w;
-      total += r.w*wt;
-      const wkG = r.games.filter(g=>weekStart(g.date)===curWeek);
-      wk += wkG.filter(g=>winnerKey(g)===k).length*wt;
-      return {...p, k, w:r.w, l:r.l, t:r.t, pts:r.w*wt, wt, wkG};
-    }).sort((a,b)=> order.indexOf(a.slot)-order.indexOf(b.slot));
-    return {owner:o, pro, col, total, wk, holdings};
+    const mineS = stints.filter(s=>s.owner===o);
+    for (const s of mineS){
+      if (s.pool===sp.pro) pro += s.w; else col += s.w;
+      total += s.pts;
+      wk += s.wkG.filter(g=>winnerKey(g)===s.k).length * s.wt;
+    }
+    const holdings = mineS.filter(s=>s.state==="current" || s.state==="leaving").sort(bySlot);
+    const incoming = mineS.filter(s=>s.state==="incoming").sort(bySlot);
+    const former = mineS.filter(s=>s.state==="former" && (s.w+s.l+s.t>0 || s.n)).sort(bySlot);
+    return {owner:o, pro, col, total, wk, holdings, incoming, former};
   });
   rows.sort((a,b)=> b.total-a.total || b.pro-a.pro || a.owner.localeCompare(b.owner));
   let rank = 0;
   rows.forEach((r,i)=>{ if (i===0 || r.total!==rows[i-1].total) rank=i+1; r.rank=rank; });
   const top = rows[0]?.total || 0; rows.forEach(r=> r.gb = top-r.total);
-  return {games, rec, owner, rows, curWeek, weekNo, lastDate, picks, sp};
+  const cur = stints.filter(s=>s.state==="current" || s.state==="leaving");
+  const owner = {}; for (const s of stints) if (s.state==="incoming" && !owner[s.k]) owner[s.k] = s;
+  for (const s of cur) owner[s.k] = s;          // display: who holds a team now (or is about to)
+  return {games, rec, owner, who, stints, cur, rows, curWeek, weekNo, lastDate, picks, sp, today};
 }
 
 /* ---------- routing: #home, #settings, #<league>, #<league>.<tab> ---------- */
 const PUBLIC_BASE = window.PORTFOLIO_PUBLIC ? location.origin + location.pathname : "https://playtheportfolio.com/";
 const leagueURL = id => PUBLIC_BASE + "#" + id;
-const TABS = ["league","scores","team","standings","board","results","draft","chat"];
+const TABS = ["league","scores","team","standings","fa","trades","board","results","draft","chat"];
 function applyHash(){
   const h = (location.hash||"").slice(1);
   if (!h || h==="home"){ S.view = "home"; return; }
@@ -622,11 +675,11 @@ function syncHash(){
 function go(view, id, tab){
   S.view = view; S.confirmDel = S.confirmLg = null;
   if (view==="league"){
-    if (id && id!==S.leagueId){ S.leagueId = id; S.open.clear(); S.weeksShown = 2; S.draftQ = ""; S.draftPool = "all"; S.recapWeek = null; S.dAtDirty = false; S.reset.add("dAt"); }
+    if (id && id!==S.leagueId){ S.leagueId = id; S.open.clear(); S.faAdd = null; S.flash = null; S.trGive = []; S.trGet = []; S.trTo = null; S.actFor = null; S.faPool = "all"; S.faQ = ""; S.weeksShown = 2; S.draftQ = ""; S.draftPool = "all"; S.recapWeek = null; S.dAtDirty = false; S.reset.add("dAt"); }
     S.tab = tab || "league";
   }
   render(); try{ window.scrollTo(0,0); }catch(_){}
-  if (A && view==="league") A.refresh();      // make sure the league is current when it's opened
+  if (A && view==="league"){ A.refresh(); if (S.trades && S.trades.id===S.leagueId && S.trades.reload) S.trades.reload(); }      // make sure the league is current when it's opened
 }
 
 /* ---------- this device: who I am, theme ---------- */
@@ -655,6 +708,7 @@ function render(){
   $("#tabsNav").hidden = view!=="league";
   $("#chatTab").hidden = !hasV3();
   $("#scoresTab").hidden = !LIVE.on;
+  $("#faTab").hidden = $("#trTab").hidden = !A;
   if (S.chatConn && !(view==="league" && S.tab==="chat" && L && S.chat && S.chat.id===L.id)) stopChat();
   $("#signBtn").hidden = !(A && S.auth.live && !meId()) || view==="auth";
   document.querySelectorAll(".tab").forEach(b=> b.setAttribute("aria-selected", String(view==="league" && b.dataset.tab===S.tab)));
@@ -671,7 +725,7 @@ function render(){
     renderTicker(L, C);
     $("#tagline").textContent = `${L.name} · ${SP(L).label} ${seasonLabel(L.year)} · ${L.owners.length} managers`;
     if (S.tab==="chat" && !hasV3() && S.leaguesLoaded && !A) S.tab = "league";
-    main.innerHTML = ({league:leagueHTML, scores:scoresHTML, team:teamHTML, standings:standingsHTML, board:boardHTML, results:resultsHTML, draft:draftHTML, chat:chatHTML}[S.tab] || leagueHTML)(L, C);
+    main.innerHTML = ({league:leagueHTML, scores:scoresHTML, fa:faHTML, trades:tradesHTML, team:teamHTML, standings:standingsHTML, board:boardHTML, results:resultsHTML, draft:draftHTML, chat:chatHTML}[S.tab] || leagueHTML)(L, C);
   }
   for (const id in keep){ if (S.reset.has(id)) continue; const el = document.getElementById(id); if (el && el.value!==keep[id]) el.value = keep[id]; }
   S.reset.clear();
@@ -694,24 +748,24 @@ function renderLeagueSel(view){
 /* The ticker: latest finals for drafted teams. label(key) returns the manager to show, "" for none, or null when the team is not drafted. */
 function paintTicker(games, label, emptyText){
   const items = [];
-  const recent = games.filter(g=> label(g.hk)!==null || label(g.ak)!==null).slice(-30).reverse();
+  const recent = games.filter(g=> label(g.hk, g)!==null || label(g.ak, g)!==null).slice(-30).reverse();
   for (const g of recent) for (const side of ["home","away"]){
-    const who = label(side==="home"?g.hk:g.ak); if (who===null) continue;
+    const who = label(side==="home"?g.hk:g.ak, g); if (who===null) continue;
     const m = side==="home"?g.hs:g.as, t = side==="home"?g.as:g.hs;
     const res = m>t?"W":m<t?"L":"T";
     items.push(`<span class="tk"><b>${esc(g[side].toUpperCase())}</b> <span class="${res==="W"?"w":res==="L"?"l":"o"}">${res==="W"?"▲":res==="L"?"▼":"■"} ${res} ${m}–${t}</span>${who?` <span class="o">${esc(who)}</span>`:""}</span>`);
   }
-  const liveItems = LIVE.on ? liveAll().filter(g=> g.state==="in" && (label(g.hk)!==null || label(g.ak)!==null)).map(g=>
+  const liveItems = LIVE.on ? liveAll().filter(g=> g.state==="in" && (label(g.hk, g)!==null || label(g.ak, g)!==null)).map(g=>
     `<span class="tk"><span class="l">● LIVE</span> <b>${esc(g.away.toUpperCase())} ${g.as}</b> @ <b>${esc(g.home.toUpperCase())} ${g.hs}</b> <span class="o">${g.period>4?"OT":g.period?"Q"+g.period:""}</span></span>`) : [];
   items.unshift(...liveItems);
   const html = items.length ? items.join("") : `<span class="tk o">${emptyText}</span>`;
   const track = $("#tickerTrack"), full = items.length ? html+html : html;
   if (track.dataset.sig !== full){ track.dataset.sig = full; track.innerHTML = full; }
 }
-function renderTicker(L, C){ paintTicker(C.games, k=> C.owner[k] ? C.owner[k].owner : null, "No results yet for this league's teams."); }
+function renderTicker(L, C){ paintTicker(C.games, (k, g)=>{ const s = C.who(k, g.date); return s ? s.owner : null; }, "No results yet for this league's teams."); }
 function renderTickerAll(){
   const own = new Map();
-  for (const l of S.leagues) for (const p of (l.picks||[])) own.set(pk(l,p), p.owner);
+  for (const l of S.leagues) for (const p of stintsOf(l)) if (!p.to) own.set(pk(l,p), p.owner);
   const one = S.leagues.length===1;
   paintTicker(allGames(), k=> own.has(k) ? (one ? own.get(k) : "") : null, S.leagues.length ? "No results yet for drafted teams." : "Results appear here once a league has drafted.");
 }
@@ -760,7 +814,9 @@ function homeHTML(){
     <div class="slots"><span><b>Football</b> portfolio, eight teams:</span>${["NFL","NFL","NFL","ACC","Big Ten","Big 12","SEC","Non-P4"].map(chip).join("")}</div>
     <p class="sub">${SPORTS.football.counts}</p>
     <div class="slots"><span><b>Basketball</b> portfolio, twelve teams:</span>${["NBA","NBA","NBA","SEC","Big Ten","Big 12","ACC","Big East","Other","Other","Other","Other"].map(chip).join("")}</div>
-    <p class="sub">"Other" means any Division I team outside those five conferences. ${SPORTS.basketball.counts}</p>`;
+    <p class="sub">"Other" means any Division I team outside those five conferences. ${SPORTS.basketball.counts}</p>
+    <div class="slots"><span><b>College Basketball</b> portfolio: the commissioner picks how many teams come from each of the 32 Division I conferences.</span></div>
+    <p class="sub">${SPORTS.cbb.counts}</p>`;
   const hero = `<div class="hero">
       <h2>Draft teams,<br><em>not players.</em></h2>
       <p>The Portfolio is a season-long league where every manager drafts a portfolio of pro and college teams. Each win by one of your teams counts toward your total. Whoever holds the most wins when the season ends takes the table.</p>
@@ -788,9 +844,9 @@ function createFormHTML(){
       <button type="button" class="ib" data-rm="${i}" aria-label="Remove ${esc(m)}">✕</button></li>`).join("");
   const pw = sp.weights[sp.pro] ?? 1;
   return `<form class="card form" id="lgForm" autocomplete="off">
-      <div class="head-row"><h3>Create a league</h3><span class="sub">${S.newSport==="football"?"Drafts from all 32 NFL teams and all 138 FBS teams.":"Drafts from all 30 NBA teams and all 365 Division I teams."}</span></div>
+      <div class="head-row"><h3>Create a league</h3><span class="sub">${S.newSport==="football"?"Drafts from all 32 NFL teams and all 138 FBS teams.":S.newSport==="cbb"?"Drafts from all 365 Division I teams. Choose how many each manager takes from any conference.":"Drafts from all 30 NBA teams and all 365 Division I teams."}</span></div>
       <div class="form-grid">
-        <label class="f" for="lgSport">Sport<select id="lgSport">${SPORT_KEYS.map(k=>`<option value="${k}" ${k===S.newSport?"selected":""}>${SPORTS[k].label}</option>`).join("")}</select></label>
+        <label class="f" for="lgSport">Sport<select id="lgSport">${SPORT_KEYS.filter(k=> k!=="cbb" || !A || hasV4()).map(k=>`<option value="${k}" ${k===S.newSport?"selected":""}>${SPORTS[k].label}</option>`).join("")}</select></label>
         <label class="f" for="lgName">League name<input type="text" id="lgName" required placeholder="Sunday Syndicate"></label>
         <label class="f" for="lgYear">Season<select id="lgYear">${[y,y+1].map(v=>`<option value="${v}">${seasonLabel(v)}</option>`).join("")}</select></label>
         <label class="f" for="lgType">Draft order<select id="lgType"><option value="snake">Snake (order reverses each round)</option><option value="straight">Straight (same order each round)</option></select></label>
@@ -798,6 +854,7 @@ function createFormHTML(){
       </div>
       <div><h3 style="margin-bottom:8px">Teams each manager drafts</h3>
         <div class="slot-grid">${sp.pools.map(p=>`<label class="f" for="sl-${poolCls(p)}">${p==="Other"?"Other conferences":p}<input type="number" id="sl-${poolCls(p)}" min="0" max="10" value="${sp.slots[p]}" inputmode="numeric"></label>`).join("")}
+          ${S.newSport==="cbb"?`<label class="f" for="lgFlex">Any conference<input type="number" id="lgFlex" min="0" max="12" value="${sp.flex}" inputmode="numeric"></label>`:""}
           ${S.newSport==="basketball"?`<label class="f" for="lgProW">${sp.pro} win counts<select id="lgProW"><option value="0.5" ${pw===0.5?"selected":""}>0.5</option><option value="1" ${pw===1?"selected":""}>1</option></select></label>`:""}</div></div>
       <div><h3 style="margin-bottom:8px">Managers, in draft order</h3>
         <ol class="mgr-list">${mgrs||`<li><span class="sub">Add each manager below. First on the list picks first.</span></li>`}</ol>
@@ -821,20 +878,26 @@ function teamHTML(L, C){
     <div class="card empty"><strong>Which manager are you?</strong>Pick your name to see your team here. The choice is saved on this device only.<div style="display:flex;justify-content:center;margin-top:12px">${picker}</div></div></section>`;
   const r = C.rows.find(x=>x.owner===o), tied = C.rows.filter(x=>x.rank===r.rank).length>1;
   const wtNote = weightText(L), P = C.games.length && C.picks.length ? projection(L, C).find(x=>x.owner===o) : null;
-  const rows = r.holdings.map(h=>{
+  const recTxt = x => `${x.w}-${x.l}${x.t?"-"+x.t:""}`;
+  const how = h => h.via==="trade" ? "Trade" : h.via==="add" ? "Added" : (h.n ? "#"+h.n : "–");
+  const row = (h, note) => {
     const wk = h.wkG.map(g=>{ const w=winnerKey(g), m=g.hk===h.k?g.hs:g.as, t=g.hk===h.k?g.as:g.hs; return `${w===h.k?"W":w===null?"T":"L"} ${m}–${t}`; }).join(", ");
-    return `<tr><td>${chip(h.slot.startsWith("Any")?"Any":h.pool)}</td><td><b>${esc(h.team)}</b>${h.slot.startsWith("Any")?` <span class="lg">${esc(h.pool)}</span>`:""}</td>
-      <td class="r num">${h.w}-${h.l}${h.t?"-"+h.t:""}</td><td class="r num">${fmt(h.pts)}</td><td class="r num hide-sm">${wk||"–"}</td><td class="r num hide-sm">${h.n?"#"+h.n:"–"}</td></tr>`;
-  }).join("");
+    return `<tr class="${h.state}"><td>${chip(h.slot.startsWith("Any")?"Any":h.pool)}</td><td><b>${esc(h.team)}</b>${h.slot.startsWith("Any")?` <span class="lg">${esc(h.pool)}</span>`:""}${note?`<div class="sub">${note}</div>`:""}</td>
+      <td class="r num">${recTxt(h.rec)}</td><td class="r num">${fmt(h.pts)}</td><td class="r num hide-sm">${wk||"–"}</td><td class="r num hide-sm">${how(h)}</td></tr>`;
+  };
+  const rows = r.holdings.map(h=> row(h, h.state==="leaving" ? `Counts for you through ${fmtDay(addDays(h.to,-1))}` : "")).join("")
+    + r.incoming.map(h=> row(h, `Joins your portfolio ${fmtDay(h.from)}`)).join("");
+  const former = r.former.map(h=> `<div class="h-item">${chip(h.pool)}<span class="tn">${esc(h.team)}</span><span class="rec">${fmt(h.pts)} win${h.pts===1?"":"s"} kept</span><span class="lg">${h.from?fmtShort(h.from):"draft"}–${fmtShort(addDays(h.to,-1))}</span></div>`).join("");
   return `<section class="panel">
     <div class="card me-head">
       <div><div class="sport-tag">${esc(L.name)} · ${SP(L).label} ${seasonLabel(L.year)}</div><div class="who">${esc(o)}</div>
-        <div class="sub" style="margin-top:6px"><b>${tied?"T-":""}${ordinal(r.rank)}</b> of ${L.owners.length}${r.gb?` · ${fmt(r.gb)} back`:" · leading"} · ${r.pro} ${C.sp.pro} + ${r.col} college wins${r.wk?` · +${fmt(r.wk)} this week`:""}${P?` · projected ${P.proj.toFixed(1)} (${ordinal(P.projRank)})`:""}</div></div>
+        <div class="sub" style="margin-top:6px"><b>${tied?"T-":""}${ordinal(r.rank)}</b> of ${L.owners.length}${r.gb?` · ${fmt(r.gb)} back`:" · leading"}${C.sp.pro?` · ${r.pro} ${C.sp.pro} + ${r.col} college wins`:""}${r.wk?` · +${fmt(r.wk)} this week`:""}${P?` · projected ${P.proj.toFixed(1)} (${ordinal(P.projRank)})`:""}</div></div>
       <div><div class="n">${fmt(r.total)}</div><div class="lbl">Wins</div></div>
     </div>
-    ${r.holdings.length ? `<div class="card scroll"><table class="team">
-      <thead><tr><th>Slot</th><th>Team</th><th class="r">Record</th><th class="r">Counts</th><th class="r hide-sm">This week</th><th class="r hide-sm">Pick</th></tr></thead>
+    ${r.holdings.length || r.incoming.length ? `<div class="card scroll"><table class="team">
+      <thead><tr><th>Slot</th><th>Team</th><th class="r">Record</th><th class="r">Counts</th><th class="r hide-sm">This week</th><th class="r hide-sm">How</th></tr></thead>
       <tbody>${rows}</tbody></table></div>` : `<div class="card empty"><strong>No teams yet.</strong>${L.status==="drafting"?"Your picks appear here as the draft goes on.":"This league hasn't drafted."}</div>`}
+    ${former ? `<div class="card" style="padding:12px 14px"><h3 style="margin-bottom:8px">Former teams</h3><div class="hold">${former}</div><p class="sub" style="margin-top:8px">Wins a team earned while it was yours stay on your total.</p></div>` : ""}
     ${wtNote?`<p class="sub">${esc(wtNote)}.</p>`:""}
     ${A ? "" : picker}
   </section>`;
@@ -849,27 +912,27 @@ function standingsHTML(L, C){
     const open = S.open.has(r.owner);
     const hold = r.holdings.map(h=>{
       const wkTxt = h.wkG.map(g=>{ const w=winnerKey(g); return w===h.k?"W":w===null?"T":"L"; }).join(" ");
-      return `<div class="h-item">${chip(h.pool)}<span class="tn">${esc(h.team)}</span><span class="rec">${h.w}-${h.l}${h.t?"-"+h.t:""}</span>${wkTxt?`<span class="lg">${wkTxt}</span>`:""}</div>`;
+      return `<div class="h-item">${chip(h.pool)}<span class="tn">${esc(h.team)}</span><span class="rec">${recTxt(h.rec)}</span>${wkTxt?`<span class="lg">${wkTxt}</span>`:""}</div>`;
     }).join("");
     return `<tr class="row ${r.rank===1&&r.total?"lead":""} ${open?"open":""}" tabindex="0" data-owner="${esc(r.owner)}" aria-expanded="${open}">
       <td class="rk num">${r.rank}</td>
       <td><span class="chev">›</span> <span class="mgr">${esc(r.owner)}</span>${r.owner===me?` <span class="tag">you</span>`:""}<div class="bar"><i style="width:${(r.total/max*100).toFixed(1)}%"></i></div></td>
-      <td class="r num tot">${fmt(r.total)}</td><td class="r num">${r.pro}</td><td class="r num">${r.col}</td>
+      <td class="r num tot">${fmt(r.total)}</td>${C.sp.pro?`<td class="r num">${r.pro}</td><td class="r num">${r.col}</td>`:""}
       <td class="r num delta ${r.wk?"up":"zero"}">${r.wk?"+"+fmt(r.wk):"–"}</td>
       <td class="r num hide-sm">${r.gb?fmt(r.gb):"—"}</td>
     </tr>${open?`<tr class="detail"><td colspan="7"><div class="hold">${hold||`<span class="sub">No teams drafted yet.</span>`}</div></td></tr>`:""}`;
   }).join("");
-  const leaders = C.sp.pools.map(pool=>{
-    const best = C.picks.filter(p=>p.pool===pool).map(p=>({...p, ...(C.rec[pk(L,p)]||{w:0,l:0})})).sort((a,b)=> b.w-a.w || a.l-b.l)[0];
+  const leaders = C.sp.pools.filter(pool=> slotsOf(L)[pool] || C.cur.some(s=>s.pool===pool)).map(pool=>{
+    const best = C.cur.filter(p=>p.pool===pool).map(p=>({...p, w:p.rec.w, l:p.rec.l})).sort((a,b)=> b.w-a.w || a.l-b.l)[0];
     return best ? `<div class="card ld">${chip(pool)}<span class="t">${esc(best.team)}</span><span class="n">${best.w}-${best.l}</span><span class="o">${esc(best.owner)}</span></div>` : "";
   }).join("");
   const wtNote = weightText(L);
   return `<section class="panel">
     <div class="head-row"><h2>The Table</h2><p class="sub">${C.lastDate?`Through ${fmtDay(C.lastDate)} · ${wkLabel} runs ${fmtShort(C.curWeek)}–${fmtShort(weekEnd(C.curWeek))}`:"No games logged yet"}</p></div>
     <div class="card scroll"><table class="st">
-      <thead><tr><th>#</th><th>Manager</th><th class="r">Wins</th><th class="r">${C.sp.pro}</th><th class="r">${C.sp.col}</th><th class="r">${wkLabel}</th><th class="r hide-sm">Back</th></tr></thead>
+      <thead><tr><th>#</th><th>Manager</th><th class="r">Wins</th>${C.sp.pro?`<th class="r">${C.sp.pro}</th><th class="r">${C.sp.col}</th>`:""}<th class="r">${wkLabel}</th><th class="r hide-sm">Back</th></tr></thead>
       <tbody>${body}</tbody></table></div>
-    <p class="sub">Tap a manager to see their teams. Ties share a rank; order within a tie follows ${C.sp.pro} wins.${wtNote?` ${esc(wtNote)}; the ${C.sp.pro} column shows actual wins.`:""}</p>
+    <p class="sub">Tap a manager to see their teams. Ties share a rank${C.sp.pro?`; order within a tie follows ${C.sp.pro} wins`:""}.${wtNote?` ${esc(wtNote)}; the ${C.sp.pro} column shows actual wins.`:""}</p>
     <div class="head-row"><h2>Best in each pool</h2></div>
     <div class="leaders">${leaders}</div>
   </section>`;
@@ -879,10 +942,10 @@ function boardHTML(L, C){
   const owners = L.owners;
   if (!C.picks.length) return `<section class="panel"><div class="card empty"><strong>The board is empty.</strong>Picks appear here as soon as the draft starts.</div></section>`;
   const rows = slotRows(L).map(s=> `<tr><td class="slot">${chip(s.pool)} ${s.many?s.ix:""}</td>${owners.map(o=>{
-      const p = C.picks.find(x=>x.owner===o && x.slot===s.slot);
+      const p = C.cur.find(x=>x.owner===o && x.slot===s.slot);
       if (!p) return `<td></td>`;
-      const r = C.rec[pk(L,p)]||{w:0,l:0,t:0}, gp = r.w+r.l+r.t, pct = gp? r.w/gp : null;
-      return `<td><div class="cell ${pct===null?"":pct>=.7?"hot":pct<=.3?"cold":""}"><span>${esc(p.team)}</span><span class="rec">${r.w}-${r.l}${r.t?"-"+r.t:""}${s.pool==="Any"?` · ${esc(p.pool)}`:""}${p.n?` · pick ${p.n}`:""}</span></div></td>`;
+      const r = p.rec, gp = r.w+r.l+r.t, pct = gp? r.w/gp : null;
+      return `<td><div class="cell ${pct===null?"":pct>=.7?"hot":pct<=.3?"cold":""}"><span>${esc(p.team)}</span><span class="rec">${r.w}-${r.l}${r.t?"-"+r.t:""}${s.pool==="Any"?` · ${esc(p.pool)}`:""}${p.via==="trade"?" · trade":p.via==="add"?" · added":p.n?` · pick ${p.n}`:""}</span></div></td>`;
     }).join("")}</tr>`).join("");
   const tot = `<tr><td class="slot">Total</td>${owners.map(o=>`<td class="tot-row">${fmt(C.rows.find(r=>r.owner===o)?.total??0)} W</td>`).join("")}</tr>`;
   return `<section class="panel">
@@ -910,7 +973,7 @@ function resultsHTML(L, C){
       <div class="head-row"><h3>Add or correct a final</h3><span class="sub">A result you enter by hand replaces the automatic one for that game.</span></div>
       <div class="form-grid">
         <label class="f" for="gDate">Date<input type="date" id="gDate" required value="${todayISO()}"></label>
-        <label class="f" for="gLg">League<select id="gLg"><option value="${C.sp.col}">College</option><option value="${C.sp.pro}">${C.sp.pro}</option></select></label>
+        <label class="f" for="gLg">League<select id="gLg"><option value="${C.sp.col}">College</option>${C.sp.pro?`<option value="${C.sp.pro}">${C.sp.pro}</option>`:""}</select></label>
       </div>
       <div class="form-grid">
         <label class="f" for="gHome">Home team<input type="text" id="gHome" list="teamList" required></label>
@@ -923,11 +986,11 @@ function resultsHTML(L, C){
     </form>` : `<p class="ro">${LIVE.on && !LIVE.err ? "Finals appear here as games end and are saved to the permanent record each morning." : "Results come in automatically each morning."} If a score looks wrong, tell the site's commissioner.</p>`;
 
   const thisWeek = weekStart(todayISO());
-  const missing = C.picks.filter(p=> !(C.rec[pk(L,p)]?.games||[]).some(g=>weekStart(g.date)===thisWeek));
+  const missing = C.cur.filter(p=> !(p.rec.games||[]).some(g=>weekStart(g.date)===thisWeek));
   const pend = C.picks.length ? `<details class="card pend"><summary>${missing.length} drafted team${missing.length===1?"":"s"} with no result yet this week (${fmtShort(thisWeek)}–${fmtShort(weekEnd(thisWeek))})</summary>
       <div class="pend-list">${missing.map(p=>`<span class="pill">${esc(p.team)}</span>`).join("")||`<span class="sub">Every drafted team has a result.</span>`}</div></details>` : "";
 
-  const shown = C.games.filter(g=> !S.onlyMine || C.owner[g.hk] || C.owner[g.ak]);
+  const shown = C.games.filter(g=> !S.onlyMine || C.who(g.hk, g.date) || C.who(g.ak, g.date));
   const weeks = [...new Set(shown.map(g=>weekStart(g.date)))].sort().reverse();
   const visible = new Set(weeks.slice(0, S.weeksShown));
   const byDay = new Map();
@@ -935,7 +998,7 @@ function resultsHTML(L, C){
   const log = [...byDay.keys()].sort().reverse().map(date=>{
     const games = byDay.get(date);
     return `<div class="card day"><div class="day-h"><span>${fmtDay(date)}</span><span class="sub">${games.length} game${games.length===1?"":"s"}</span></div>${games.map(g=>{
-      const hw = g.hs>g.as, aw = g.as>g.hs, ho=C.owner[g.hk], ao=C.owner[g.ak];
+      const hw = g.hs>g.as, aw = g.as>g.hs, ho=C.who(g.hk, g.date), ao=C.who(g.ak, g.date);
       const delId = [g.doc,g.lg,g.rawHome,g.rawAway].join("|");
       return `<div class="game">
         <div class="side ${aw?"won":""}"><span class="nm">${esc(g.away)}</span>${ao?`<span class="own">${esc(ao.owner)}</span>`:""}</div>
@@ -983,7 +1046,7 @@ function draftHTML(L){
     return `<section class="panel">
       <div class="head-row"><h2>Draft Results</h2><p class="sub">${type} draft · ${D.N} managers · ${rounds} rounds · ${D.i} picks</p></div>
       <div class="card scroll"><table class="board rounds"><thead><tr><th>Round</th>${D.owners.map((o,i)=>`<th>${i+1}. ${esc(o)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div>
-      ${!L.mock && canAdmin(L)?`<div class="btns"><button class="btn" id="reopen">Reopen the draft</button><span class="sub">Lets you undo or change the last picks.</span><span class="msg" id="dMsg" role="status"></span></div>`:""}
+      ${!L.mock && canAdmin(L) && !(Array.isArray(L.holds) && L.holds.length)?`<div class="btns"><button class="btn" id="reopen">Reopen the draft</button><span class="sub">Lets you undo or change the last picks.</span><span class="msg" id="dMsg" role="status"></span></div>`:""}
       ${!L.mock && hasV3()?`<div class="btns"><button type="button" class="btn" data-mock="1">Practice draft</button><span class="sub">Try a draft against auto-pick. Nothing is saved.</span></div>`:""}
       ${seatsHTML(L)}
     </section>`;
@@ -1070,7 +1133,7 @@ function tableAt(L, C, endDate){
   const tot = {}; for (const o of L.owners) tot[o] = 0;
   for (const g of C.games){
     if (g.date > endDate) break;
-    const k = winnerKey(g), p = k && C.owner[k];
+    const k = winnerKey(g), p = k && C.who(k, g.date);
     if (p) tot[p.owner] += weightOf(L, p.pool);
   }
   const order = [...L.owners].sort((a,b)=> tot[b]-tot[a]), rank = {};
@@ -1080,14 +1143,14 @@ function tableAt(L, C, endDate){
 
 function recapData(L, C, ws){
   const we = weekEnd(ws);
-  const games = C.games.filter(g=> g.date>=ws && g.date<=we && (C.owner[g.hk] || C.owner[g.ak]));
+  const games = C.games.filter(g=> g.date>=ws && g.date<=we && (C.who(g.hk, g.date) || C.who(g.ak, g.date)));
   if (!games.length) return null;
   const before = tableAt(L, C, addDays(ws,-1)), after = tableAt(L, C, we);
   const started = L.owners.some(o=>before.tot[o]>0);
   const wk = {}; for (const o of L.owners) wk[o] = {w:0, l:0};
   for (const g of games){
     const win = winnerKey(g);
-    for (const k of [g.hk, g.ak]){ const p = C.owner[k]; if (!p || win===null) continue; if (win===k) wk[p.owner].w += weightOf(L,p.pool); else wk[p.owner].l++; }
+    for (const k of [g.hk, g.ak]){ const p = C.who(k, g.date); if (!p || win===null) continue; if (win===k) wk[p.owner].w += weightOf(L,p.pool); else wk[p.owner].l++; }
   }
   const rows = after.order.map(o=>({owner:o, wk:wk[o].w, lost:wk[o].l, total:after.tot[o], rank:after.rank[o], move: started ? before.rank[o]-after.rank[o] : 0}));
   const lead = rows.filter(r=>r.rank===1).map(r=>r.owner), prevLead = L.owners.filter(o=>before.rank[o]===1);
@@ -1104,10 +1167,10 @@ function recapData(L, C, ws){
   else if (lead.length===1 && gap(after)>gap(before)) head = `${lead[0]} stretches the lead to ${fmt(gap(after))}`;
   else if (lead.length===1 && gap(after)<gap(before)) head = `The pack closes to within ${fmt(gap(after))} of ${lead[0]}`;
   else head = `${listNames(winners)} win${winners.length===1?"s":""} the week with ${fmt(best)}`;
-  const label = (g, k) => { const p = C.owner[k]; return (p ? p.owner+"'s " : "") + (k===g.hk ? g.home : g.away); };
+  const label = (g, k) => { const p = C.who(k, g.date); return (p ? p.owner+"'s " : "") + (k===g.hk ? g.home : g.away); };
   const line = g => { const hw = g.hs>g.as, wkk = hw?g.hk:g.ak, lk = hw?g.ak:g.hk; return `${label(g,wkk)} beat ${label(g,lk)}, ${Math.max(g.hs,g.as)}–${Math.min(g.hs,g.as)}`; };
   const decided = games.filter(g=>g.hs!==g.as);
-  const h2h = decided.filter(g=> C.owner[g.hk] && C.owner[g.ak] && C.owner[g.hk].owner!==C.owner[g.ak].owner);
+  const h2h = decided.filter(g=>{ const a = C.who(g.hk, g.date), b = C.who(g.ak, g.date); return a && b && a.owner!==b.owner; });
   const byMargin = [...decided].sort((a,b)=> Math.abs(a.hs-a.as)-Math.abs(b.hs-b.as));
   const notes = [];
   for (const g of h2h.slice(0,4)) notes.push(["Head to head", line(g)]);
@@ -1117,7 +1180,7 @@ function recapData(L, C, ws){
 
 function recapHTML(L, C){
   const latest = latestRecapWeek();
-  const weeks = [...new Set(C.games.filter(g=>C.owner[g.hk]||C.owner[g.ak]).map(g=>weekStart(g.date)))].filter(w=>w<=latest).sort();
+  const weeks = [...new Set(C.games.filter(g=>C.who(g.hk, g.date)||C.who(g.ak, g.date)).map(g=>weekStart(g.date)))].filter(w=>w<=latest).sort();
   if (!weeks.length) return `<article class="card wk"><div class="sport-tag">Weekly recap</div><p class="sub">The first recap arrives the Tuesday morning after this league's teams play.</p></article>`;
   const ws = weeks.includes(S.recapWeek) ? S.recapWeek : weeks[weeks.length-1], ix = weeks.indexOf(ws);
   const R = recapData(L, C, ws), me = mine(L);
@@ -1151,12 +1214,12 @@ function previewHTML(L, C){
   const tag = `<span class="sport-tag">Weekly preview · ${fmtShort(ws)}–${fmtShort(weekEnd(ws))}</span>`;
   if (!schedAll().length) return `<article class="card wk"><div class="wk-top">${tag}</div><p class="sub">${LIVE.on ? (LIVE.tried ? "The preview needs the upcoming schedule, which isn't available right now." : "Loading this week's schedule…") : "The weekly preview is on the website, where the upcoming schedule is available."}</p></article>`;
   if (!previewReady()) return `<article class="card wk"><div class="wk-top">${tag}</div><p class="sub">This week's preview arrives Wednesday morning.</p></article>`;
-  const games = upcoming(L, C, ws).filter(g=> C.owner[g.hk] || C.owner[g.ak]);
+  const games = upcoming(L, C, ws).filter(g=> C.who(g.hk, g.date) || C.who(g.ak, g.date));
   if (!games.length) return `<article class="card wk"><div class="wk-top">${tag}</div><p class="sub">No upcoming games for this league's teams are on the schedule this week.</p></article>`;
   const row = o => C.rows.find(r=>r.owner===o), top = C.rows[0] ? C.rows[0].total : 0;
   const heat = o => Math.max(0, 6 - (top - row(o).total));          // managers near the top make a game matter more
   const scored = games.map(g=>{
-    const ho = C.owner[g.hk], ao = C.owner[g.ak], h2h = !!(ho && ao && ho.owner!==ao.owner);
+    const ho = C.who(g.hk, g.date), ao = C.who(g.ak, g.date), h2h = !!(ho && ao && ho.owner!==ao.owner);
     return {...g, ho, ao, h2h, score: (h2h?100:0) + (ho?heat(ho.owner):0) + (ao?heat(ao.owner):0)};
   }).sort((a,b)=> b.score-a.score || (a.date<b.date?-1:1));
   const watch = scored.slice(0,6), h2hAll = scored.filter(g=>g.h2h), lead = C.rows.filter(r=>r.rank===1).map(r=>r.owner);
@@ -1181,8 +1244,8 @@ function previewHTML(L, C){
 const SEASON_GAMES = {NFL:17, CFB:12, NBA:82, CBB:31};
 function projection(L, C){
   const rows = C.rows.map(r=>{
-    let proj = 0;
-    for (const h of r.holdings){ const gp = h.w+h.l+h.t, left = Math.max(0, SEASON_GAMES[lgOfPool(L,h.pool)] - gp); proj += (h.w + left*(h.w+2)/(gp+4)) * h.wt; }
+    let proj = r.total;
+    for (const h of [...r.holdings.filter(x=>x.state!=="leaving"), ...r.incoming]){ const x = h.rec, gp = x.w+x.l+x.t, left = Math.max(0, SEASON_GAMES[lgOfPool(L,h.pool)] - gp); proj += left*(x.w+2)/(gp+4) * h.wt; }
     return {owner:r.owner, total:r.total, rank:r.rank, proj};
   }).sort((a,b)=> b.proj-a.proj);
   rows.forEach((r,i)=>{ r.projRank = (i>0 && Math.abs(r.proj-rows[i-1].proj)<0.05) ? rows[i-1].projRank : i+1; });
@@ -1194,7 +1257,7 @@ function projectionHTML(L, C){
   return `<div class="head-row"><h2>Projected finish</h2><p class="sub">Where the table ends up if every team keeps its current pace.</p></div>
     <div class="card scroll"><table class="st mini"><thead><tr><th>#</th><th>Manager</th><th class="r">Now</th><th class="r">Projected</th><th class="r hide-sm">Now ranked</th></tr></thead>
     <tbody>${P.map(r=>`<tr><td class="rk num">${r.projRank}</td><td><span class="mgr">${esc(r.owner)}</span>${r.owner===me?` <span class="tag">you</span>`:""}<div class="bar"><i style="width:${(r.proj/max*100).toFixed(1)}%"></i></div></td><td class="r num">${fmt(r.total)}</td><td class="r num tot">${r.proj.toFixed(1)}</td><td class="r num hide-sm">${ordinal(r.rank)}${r.projRank<r.rank?` <span class="delta up">▲${r.rank-r.projRank}</span>`:r.projRank>r.rank?` <span class="mv-dn">▼${r.projRank-r.rank}</span>`:""}</td></tr>`).join("")}</tbody></table></div>
-    <p class="sub">Each team's pace over the rest of its regular season (${SEASON_GAMES[sp.pro]} ${sp.pro} games, ${SEASON_GAMES[sp.col]} college), leaning slightly toward .500 early on. Postseason games aren't projected.</p>`;
+    <p class="sub">Each team's pace over the rest of its regular season (${sp.pro?`${SEASON_GAMES[sp.pro]} ${sp.pro} games, `:""}${SEASON_GAMES[sp.col]} college), leaning slightly toward .500 early on. Postseason games aren't projected.</p>`;
 }
 
 function seasonRecords(L, C){
@@ -1202,7 +1265,7 @@ function seasonRecords(L, C){
   let bw = null;
   for (const ws of weeks){ const R = recapData(L, C, ws); if (R && (!bw || R.best>bw.best)) bw = R; }
   if (bw && bw.best>0) out.push(["Best week", `${listNames(bw.winners)}, ${fmt(bw.best)} wins in Week ${bw.weekNo}`]);
-  const teams = C.rows.flatMap(r=>r.holdings.map(h=>({...h, owner:r.owner}))).filter(h=>h.w+h.l+h.t>0).sort((a,b)=> b.w-a.w || a.l-b.l);
+  const teams = C.cur.map(h=>({...h, w:h.rec.w, l:h.rec.l, t:h.rec.t})).filter(h=>h.w+h.l+h.t>0).sort((a,b)=> b.w-a.w || a.l-b.l);
   if (teams.length) out.push(["Top team", `${teams[0].team} (${teams[0].owner}), ${teams[0].w}-${teams[0].l}${teams[0].t?"-"+teams[0].t:""}`]);
   const un = teams.filter(h=>h.l===0 && h.t===0 && h.w>=3);
   if (un.length) out.push(["Still unbeaten", un.length<=5 ? un.map(h=>`${h.team} (${h.owner})`).join(", ") : `${un.length} drafted teams`]);
@@ -1248,7 +1311,9 @@ function leagueHTML(L, C){
       : (L.status==="drafting" ? "" : `<div class="card empty"><strong>No rosters yet.</strong>This league hasn't drafted.</div>`));
   return `<section class="panel">
     <div class="head-row"><h2>${esc(L.name)}</h2><p class="sub">${SP(L).label} ${seasonLabel(L.year)} · ${L.owners.length} managers · ${esc(slotText(L))}</p></div>
-    ${draftCard}${you}${liveStrip(L, C)}${body}
+    ${draftCard}${you}${offersStrip(L)}${liveStrip(L, C)}${body}
+    ${Array.isArray(L.moves) && L.moves.length ? `<div class="head-row"><h2>Recent activity</h2><button type="button" class="linkbtn" data-tabgo="trades">All activity</button></div>${activityHTML(L, 5)}` : ""}
+    ${settingsCardHTML(L, C)}
     ${historyHTML(L, C)}
   </section>`;
 }
@@ -1357,7 +1422,7 @@ function gameStatus(g){
   return (g.period>4 ? "OT" : g.period ? "Q"+g.period : "") + (g.clock ? " "+esc(g.clock) : "");
 }
 function scoreCard(g, C){
-  const ho = C.owner[g.hk], ao = C.owner[g.ak], fin = g.state==="post", live = g.state==="in";
+  const ho = C.who(g.hk, g.date), ao = C.who(g.ak, g.date), fin = g.state==="post", live = g.state==="in";
   const row = (side) => { const home = side==="home", sc = home?g.hs:g.as, other = home?g.as:g.hs, own = home?ho:ao, rk = home?g.hrank:g.arank, rec = home?g.hrec:g.arec;
     return `<div class="sg-row ${fin && sc>other?"won":""} ${fin && sc<other?"lost":""}">
       <span class="tn">${rk?`<span class="rk">${rk}</span>`:""}${esc(home?g.home:g.away)}${live && g.poss===side?`<span class="ball" role="img" aria-label="has the ball" title="Has the ball"></span>`:""}</span>
@@ -1377,7 +1442,7 @@ function scoresHTML(L, C){
   const ws = weekStart(sbToday()), we = weekEnd(ws), hasPicks = C.picks.length>0;
   const mineOnly = hasPicks && !S.sbAll;
   const all = liveAll().filter(g=> g.date>=ws && g.date<=we);
-  const shown = all.filter(g=> (!mineOnly || C.owner[g.hk] || C.owner[g.ak]) && (S.sbLg==="all" || g.lg===S.sbLg)).sort((a,b)=> a.start-b.start || a.home.localeCompare(b.home));
+  const shown = all.filter(g=> (!mineOnly || C.who(g.hk, g.date) || C.who(g.ak, g.date)) && (S.sbLg==="all" || g.lg===S.sbLg)).sort((a,b)=> a.start-b.start || a.home.localeCompare(b.home));
   const filters = `<div class="btns">${hasPicks?`<div class="seg" role="group" aria-label="Which games"><button type="button" data-sb="mine" aria-pressed="${mineOnly}">This league's teams</button><button type="button" data-sb="all" aria-pressed="${!mineOnly}">All games</button></div>`:""}
       <div class="seg" role="group" aria-label="Which level"><button type="button" data-sblg="all" aria-pressed="${S.sbLg==="all"}">All</button><button type="button" data-sblg="NFL" aria-pressed="${S.sbLg==="NFL"}">NFL</button><button type="button" data-sblg="CFB" aria-pressed="${S.sbLg==="CFB"}">College</button></div></div>`;
   const sub = `<p class="sub">Week of ${fmtShort(ws)}–${fmtShort(we)}${LIVE.at?` · updated ${new Date(LIVE.at).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit",second:"2-digit"})}`:""}</p>`;
@@ -1393,10 +1458,157 @@ function scoresHTML(L, C){
     ${body || `<div class="card empty"><strong>No games to show.</strong>${mineOnly?"None of this league's teams have a game listed this week. Try All games.":"Nothing is on the schedule for this week yet."}</div>`}
     <p class="sub">Live scores come from ESPN's public scoreboard and refresh about every 20 seconds while games are on. A final here counts in the standings straight away.</p>`);
 }
+function offersStrip(L){
+  if (!hasV4() || !meId() || L.status!=="complete") return "";
+  const seat = mine(L); if (!seat) return "";
+  ensureTrades(L);
+  const n = S.trades.list.filter(o=>o.status==="pending" && o.to_owner===seat).length;
+  return n ? `<button type="button" class="card you" data-tabgo="trades"><span class="kv"><b>${n}</b> trade offer${n===1?"":"s"} waiting for you</span><span class="kv"><b>Review ›</b></span></button>` : "";
+}
 function liveStrip(L, C){
   if (!LIVE.on || sportOf(L)!=="football" || !C.picks.length) return "";
-  const n = liveAll().filter(g=> g.state==="in" && (C.owner[g.hk] || C.owner[g.ak])).length;
+  const n = liveAll().filter(g=> g.state==="in" && (C.who(g.hk, g.date) || C.who(g.ak, g.date))).length;
   return n ? `<button type="button" class="card you" data-tabgo="scores"><span><span class="live-pill">Live</span><span class="kv"><b>${n}</b> game${n===1?"":"s"} with this league's teams ${n===1?"is":"are"} on now</span></span><span class="kv"><b>Open the scoreboard ›</b></span></button>` : "";
+}
+
+/* ---------- pickups and trades (website only) ---------- */
+const hasV4 = () => !!(A && S.auth.live && S.auth.dbv>=4);
+const isPast = d => !!d && etDate(new Date()) > d;
+const recTxt = x => `${x.w}-${x.l}${x.t?"-"+x.t:""}`;
+function windowNote(L, field, what){
+  const d = L[field];
+  return !d ? `${what} are open all season.` : isPast(d) ? `${what} closed after ${fmtDay(d)}.` : `${what} are open through ${fmtDay(d)}.`;
+}
+/* The seat this person makes moves for: their own, or (commissioner) whichever they pick. */
+function actingSeat(L){
+  const own = mine(L);
+  if (canAdmin(L)) return (S.actFor && L.owners.includes(S.actFor)) ? S.actFor : (own || L.owners[0]);
+  return own;
+}
+function actForHTML(L){
+  if (!canAdmin(L)) return "";
+  const seat = actingSeat(L);
+  return `<label class="claim" for="actFor">Making moves for <select id="actFor">${L.owners.map(o=>`<option ${o===seat?"selected":""}>${esc(o)}</option>`).join("")}</select><span class="sub">(commissioner)</span></label>`;
+}
+const activeTeams = (C, owner) => C.stints.filter(s=> s.owner===owner && !s.to);
+function flashHTML(where){ const f = S.flash; return f && f.where===where ? `<p class="banner ${f.ok?"":"err-banner"}">${esc(f.text)}</p>` : ""; }
+
+function faHTML(L, C){
+  const sp = C.sp, wrap = inner => `<section class="panel"><div class="head-row"><h2>Free Agents</h2><p class="sub">${esc(windowNote(L, "waiverUntil", "Pickups"))} A team you add starts counting the next Tuesday.</p></div>${inner}</section>`;
+  if (!A) return wrap(`<div class="card empty"><strong>Pickups happen on the website.</strong>Open playtheportfolio.com to add and drop teams.</div>`);
+  if (L.status!=="complete") return wrap(`<div class="card empty"><strong>Pickups open once the draft is finished.</strong></div>`);
+  const pools = sp.pools.filter(p=> slotsOf(L)[p] || (p!==sp.pro && flexOf(L)));
+  const owned = new Set(C.stints.filter(s=>!s.to).map(s=>s.k));
+  const q = S.faQ.trim().toLowerCase();
+  let list = pools.flatMap(p=> sp.teams[p].map(t=>{ const k = tk(t, lgOfPool(L,p)), r = C.rec[k] || {w:0,l:0,t:0,games:[]}, gp = r.w+r.l+r.t; return {t, p, k, r, gp, pct: gp ? (r.w+r.t/2)/gp : 0}; }))
+    .filter(x=> !owned.has(x.k) && (S.faPool==="all" || x.p===S.faPool) && (!q || x.t.toLowerCase().includes(q)));
+  list.sort(S.faSort==="name" ? (a,b)=>a.t.localeCompare(b.t) : S.faSort==="pct" ? (a,b)=> b.pct-a.pct || b.r.w-a.r.w || a.t.localeCompare(b.t) : (a,b)=> b.r.w-a.r.w || b.pct-a.pct || a.t.localeCompare(b.t));
+  const seat = actingSeat(L), open = hasV4() && !!seat && !isPast(L.waiverUntil);
+  const why = !hasV4() ? "Pickups switch on once the site's database is updated." : !meId() ? "Sign in to make pickups." : !seat ? "Join this league to make pickups." : isPast(L.waiverUntil) ? "The pickup deadline has passed." : "";
+  const lastTxt = x => { const g = x.r.games[x.r.games.length-1]; if (!g) return "–"; const isH = g.hk===x.k, m = isH?g.hs:g.as, t = isH?g.as:g.hs; return `${m>t?"W":m<t?"L":"T"} ${m}–${t} ${isH?"vs":"@"} ${esc(isH?g.away:g.home)}`; };
+  const shown = list.slice(0, 200);
+  const nw = nextWeekStart();
+  let panel = "";
+  if (open && S.faAdd){
+    const x = S.faAdd, cands = activeTeams(C, seat).filter(s=> s.slot.startsWith("Any") ? x.p!==sp.pro : s.pool===x.p);
+    panel = `<div class="card form fa-drop" id="faPanel"><div class="head-row"><h3>Add ${esc(x.t)} ${chip(x.p)}</h3><span class="sub">for ${esc(seat)}</span></div>
+      ${cands.length ? `<p class="sub">Choose the ${esc(x.p)} team to drop. Its wins so far stay on ${seat===mine(L)?"your":esc(seat)+"'s"} total; it counts through ${fmtDay(addDays(nw,-1))}, and ${esc(x.t)} starts counting ${fmtDay(nw)}.</p>
+        <div class="seats" role="radiogroup" aria-label="Team to drop">${cands.map((s,i)=>`<label class="check drop-opt"><input type="radio" name="faDrop" value="${esc(s.team)}" ${i===0?"checked":""}> ${chip(s.slot.startsWith("Any")?"Any":s.pool)} <b>${esc(s.team)}</b> <span class="sub">${recTxt(s.rec)} · ${fmt(s.pts)} win${s.pts===1?"":"s"} for ${esc(seat)}</span></label>`).join("")}</div>
+        <div class="btns"><button type="button" class="btn primary" id="faGo">Add ${esc(x.t)}</button><button type="button" class="btn" id="faCancel">Cancel</button><span class="msg" id="faMsg" role="status"></span></div>`
+      : `<p>${esc(seat)} has no ${esc(x.p)} spot to swap. A pickup replaces a team from the same conference.</p><div class="btns"><button type="button" class="btn" id="faCancel">Close</button></div>`}
+    </div>`;
+  }
+  const rows = shown.map(x=>`<tr><td><span class="tn">${esc(x.t)}</span> ${chip(x.p)}</td><td class="r num">${x.gp?recTxt(x.r):"0-0"}</td><td class="r num hide-sm">${x.gp?x.pct.toFixed(3).replace(/^0/,""):"–"}</td><td class="hide-sm sub">${lastTxt(x)}</td>
+      <td class="r">${open?`<button type="button" class="qb add" data-fa="${esc(x.t)}" data-fapool="${esc(x.p)}" aria-label="Add ${esc(x.t)}">+</button>`:""}</td></tr>`).join("");
+  return wrap(`${flashHTML("fa")}${actForHTML(L)}${why?`<p class="ro">${why}</p>`:""}${panel}
+    <div class="card form" style="padding-bottom:12px"><div class="form-grid">
+      <label class="f" for="faPool">Conference<select id="faPool"><option value="all">All conferences</option>${pools.map(p=>`<option value="${esc(p)}" ${S.faPool===p?"selected":""}>${esc(p)}</option>`).join("")}</select></label>
+      <label class="f" for="faQ">Search<input type="text" id="faQ" value="${esc(S.faQ)}" placeholder="Team name"></label>
+      <label class="f" for="faSort">Sort by<select id="faSort"><option value="wins" ${S.faSort==="wins"?"selected":""}>Most wins</option><option value="pct" ${S.faSort==="pct"?"selected":""}>Win %</option><option value="name" ${S.faSort==="name"?"selected":""}>Name</option></select></label>
+    </div></div>
+    <div class="card scroll" data-keep="fa"><table class="st fa"><thead><tr><th>Team</th><th class="r">Record</th><th class="r hide-sm">Pct</th><th class="hide-sm">Last game</th><th class="r">${open?"Add":""}</th></tr></thead>
+      <tbody>${rows || `<tr><td colspan="5" class="sub">No available teams match.</td></tr>`}</tbody></table></div>
+    ${list.length>shown.length?`<p class="sub">Showing ${shown.length} of ${list.length}. Pick a conference or search to narrow the list.</p>`:`<p class="sub">${list.length} available team${list.length===1?"":"s"}.</p>`}`);
+}
+
+function ensureTrades(L){
+  if (S.trades && S.trades.id===L.id) return;
+  if (S.tradeWatch) S.tradeWatch();
+  const T = S.trades = {id:L.id, list:[], loaded:false, err:""};
+  const load = () => A.listTrades(L.id).then(list=>{ if (S.trades!==T) return; const sig = JSON.stringify(list); if (sig!==T.sig || !T.loaded){ T.sig = sig; T.list = list; T.loaded = true; T.err = ""; if (S.view==="league" && (S.tab==="trades" || S.tab==="league")) render(); } })
+    .catch(err=>{ if (S.trades===T){ T.loaded = true; T.err = failText(err); render(); } });
+  T.reload = load; load();
+  S.tradeWatch = A.watchTrades(L.id, load);
+}
+function moveText(m){
+  if (m.kind==="trade") return `<b>${esc(m.a)}</b> traded ${esc((m.aGive||[]).join(", "))} to <b>${esc(m.b)}</b> for ${esc((m.bGive||[]).join(", "))}`;
+  return `<b>${esc(m.owner)}</b> added ${esc(m.add)} and dropped ${esc(m.drop)}`;
+}
+function activityHTML(L, n){
+  const M = (Array.isArray(L.moves) ? L.moves : []).slice().reverse().slice(0, n);
+  if (!M.length) return "";
+  return `<ul class="wk-notes card act" style="padding:12px 14px">${M.map(m=>`<li><span class="k">${new Date(m.at).toLocaleDateString("en-US",{month:"short",day:"numeric"})}</span>${moveText(m)}<span class="sub"> · counts from ${fmtShort(m.eff)}</span></li>`).join("")}</ul>`;
+}
+function offerLine(o, C){
+  const pool = t => { const s = C.stints.find(x=>x.team.toLowerCase()===String(t).toLowerCase() && !x.to) || C.stints.find(x=>x.team.toLowerCase()===String(t).toLowerCase()); return s ? chip(s.slot&&s.slot.startsWith("Any")?s.pool:s.pool) : ""; };
+  const list = a => a.map(t=>`<span class="pill">${pool(t)} ${esc(t)}</span>`).join(" ");
+  return `<div class="offer-side"><span class="sub">${esc(o.from_owner)} gives</span><div class="pend-list" style="margin:4px 0 0">${list(o.give)}</div></div>
+    <div class="offer-side"><span class="sub">${esc(o.to_owner)} gives</span><div class="pend-list" style="margin:4px 0 0">${list(o.get)}</div></div>`;
+}
+function tradesHTML(L, C){
+  const wrap = inner => `<section class="panel"><div class="head-row"><h2>Trades</h2><p class="sub">${esc(windowNote(L, "tradeUntil", "Trades"))} Conference for conference; traded teams start counting for their new manager the next Tuesday.</p></div>${inner}</section>`;
+  if (!A) return wrap(`<div class="card empty"><strong>Trades happen on the website.</strong></div>`);
+  if (!hasV4()) return wrap(`<div class="card empty"><strong>Trades switch on once the site's database is updated.</strong></div>`);
+  if (!meId()) return wrap(`<div class="card empty"><strong>Sign in to trade.</strong><div class="btns" style="justify-content:center;margin-top:12px"><button class="btn primary" data-auth="in">Sign in</button></div></div>`);
+  const seat = actingSeat(L);
+  if (!seat) return wrap(`<div class="card empty"><strong>Trades are for this league's managers.</strong>Join with the commissioner's invite link to trade.</div>${activityHTML(L, 20)}`);
+  if (L.status!=="complete") return wrap(`<div class="card empty"><strong>Trades open once the draft is finished.</strong></div>`);
+  ensureTrades(L);
+  const T = S.trades, admin = canAdmin(L), closed = isPast(L.tradeUntil);
+  const pend = T.list.filter(o=>o.status==="pending");
+  const inc = pend.filter(o=>o.to_owner===seat), out = pend.filter(o=>o.from_owner===seat), others = admin ? pend.filter(o=>o.to_owner!==seat && o.from_owner!==seat) : [];
+  const done = T.list.filter(o=>o.status!=="pending" && (o.from_owner===seat || o.to_owner===seat)).slice(0, 8);
+  const card = (o, btns) => `<div class="card offer">${offerLine(o, C)}<div class="btns">${btns}<span class="sub">${new Date(o.created_at).toLocaleString("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})}</span></div></div>`;
+  const partners = L.owners.filter(o=>o!==seat), to = partners.includes(S.trTo) ? S.trTo : partners[0];
+  const mineT = activeTeams(C, seat), theirT = activeTeams(C, to);
+  const give = mineT.filter(s=>S.trGive.includes(s.team)), get = theirT.filter(s=>S.trGet.includes(s.team));
+  const tally = a => { const c = {}; for (const s of a) c[s.pool] = (c[s.pool]||0)+1; return c; };
+  const tg = tally(give), tt = tally(get), poolsAll = [...new Set([...Object.keys(tg), ...Object.keys(tt)])];
+  const match = give.length>0 && give.length===get.length && poolsAll.every(p=>tg[p]===tt[p]);
+  const sum = c => Object.entries(c).map(([p,n])=>`${n} ${p}`).join(", ") || "nothing";
+  const pick = (teams, sel, attr) => teams.map(s=>`<label class="check drop-opt"><input type="checkbox" ${attr}="${esc(s.team)}" ${sel.includes(s.team)?"checked":""}> ${chip(s.pool)} <b>${esc(s.team)}</b> <span class="sub">${recTxt(s.rec)}</span></label>`).join("") || `<span class="sub">No teams.</span>`;
+  const propose = closed ? `<p class="ro">The trade deadline has passed.</p>` : `<div class="card form" id="trForm"><h3>Propose a trade</h3>
+      <label class="f" for="trTo">Trade with<select id="trTo">${partners.map(o=>`<option ${o===to?"selected":""}>${esc(o)}</option>`).join("")}</select></label>
+      <div class="two even"><div><div class="sub" style="margin-bottom:6px"><b>${esc(seat)}</b> gives</div><div class="seats">${pick(mineT, S.trGive, "data-trgive")}</div></div>
+        <div><div class="sub" style="margin-bottom:6px"><b>${esc(to)}</b> gives</div><div class="seats">${pick(theirT, S.trGet, "data-trget")}</div></div></div>
+      <p class="${give.length||get.length ? (match?"msg ok":"msg err") : "sub"}">${give.length||get.length ? (match ? `Conferences match: ${esc(sum(tg))} each way.` : `${esc(seat)} sends ${esc(sum(tg))}; ${esc(to)} sends ${esc(sum(tt))}. Both sides need the same conferences.`) : "Pick teams on both sides. Each side has to send teams from the same conferences, for example an NFL team and an SEC team for an NFL team and an SEC team."}</p>
+      <div class="btns"><button type="button" class="btn primary" id="trSend" ${match?"":"disabled"}>Send trade offer</button><span class="msg" id="trMsg" role="status"></span></div></div>`;
+  return wrap(`${flashHTML("tr")}${actForHTML(L)}
+    ${!T.loaded ? `<p class="sub">Loading offers…</p>` : T.err ? `<p class="msg err">${esc(T.err)}</p>` : ""}
+    ${inc.length ? `<div class="head-row"><h3>Offers for ${seat===mine(L)?"you":esc(seat)}</h3></div>${inc.map(o=>card(o, closed ? "" : `<button type="button" class="btn primary" data-tracc="${o.id}">Accept</button><button type="button" class="btn danger" data-trdec="${o.id}">Decline</button>`)).join("")}` : ""}
+    ${out.length ? `<div class="head-row"><h3>Offers you've sent</h3></div>${out.map(o=>card(o, `<span class="status">Waiting for ${esc(o.to_owner)}</span><button type="button" class="btn" data-trcan="${o.id}">Withdraw</button>`)).join("")}` : ""}
+    ${others.length ? `<div class="head-row"><h3>Other open offers in the league</h3></div>${others.map(o=>card(o, `<span class="status">Waiting for ${esc(o.to_owner)}</span>`)).join("")}` : ""}
+    ${propose}
+    ${done.length ? `<div class="head-row"><h3>Recent offers</h3></div>${done.map(o=>card(o, `<span class="status ${o.status==="accepted"?"live":""}">${esc(o.status[0].toUpperCase()+o.status.slice(1))}</span>${o.note?`<span class="sub">${esc(o.note)}</span>`:""}`)).join("")}` : ""}
+    <div class="head-row"><h3>League activity</h3></div>${activityHTML(L, 30) || `<p class="sub">No pickups or trades yet.</p>`}`);
+}
+
+/* Commissioner: when pickups and trades close. */
+function deadlineOpts(L, C, cur){
+  const today = etDate(new Date()), ws0 = weekStart(today), opts = [["", "All season (no deadline)"]];
+  if (cur && isPast(cur)) opts.push([cur, `Closed (after ${fmtShort(cur)})`]);
+  opts.push([addDays(today,-1), "Closed from now on"]);
+  for (let i=0; i<30; i++){ const ws = addDays(ws0, 7*i), we = weekEnd(ws), n = C.games.length ? weekNoOf(C, ws) : 0; opts.push([we, `Through ${fmtDay(we)}${n>0?` (week ${n})`:""}`]); }
+  if (cur && !opts.some(o=>o[0]===cur)) opts.push([cur, `Through ${fmtDay(cur)}`]);
+  return opts.map(([v,t])=>`<option value="${v}" ${v===(cur||"")?"selected":""}>${esc(t)}</option>`).join("");
+}
+function settingsCardHTML(L, C){
+  if (!A || !canAdmin(L) || !hasV4()) return "";
+  return `<form class="card form" id="dlForm" autocomplete="off"><h3>Pickups and trades</h3>
+    <div class="form-grid"><label class="f" for="dlWaiver">Pickups allowed<select id="dlWaiver">${deadlineOpts(L, C, L.waiverUntil)}</select></label>
+      <label class="f" for="dlTrade">Trades allowed<select id="dlTrade">${deadlineOpts(L, C, L.tradeUntil)}</select></label></div>
+    <div class="btns"><button type="submit" class="btn">Save</button><span class="msg" id="dlMsg" role="status"></span></div>
+    <p class="sub">A pickup or trade made during a week starts counting the following Tuesday. Wins a team earned before it moved stay with the manager who had it.</p></form>`;
 }
 
 /* ---------- chat ---------- */
@@ -1750,6 +1962,32 @@ function bind(){
   document.querySelectorAll("[data-pick]").forEach(b=> b.onclick=()=> makePick(b.dataset.pick, b.dataset.pool));
   const cAdd=$("#cAdd"); if(cAdd) cAdd.onclick=()=>{ const t=$("#cT").value.trim(); if(t) makePick(t, $("#cP").value); };
   const u=$("#undoPick"); if(u) u.onclick=undoPick;
+  // pickups and trades
+  const af=$("#actFor"); if(af) af.onchange=()=>{ S.actFor=af.value; S.faAdd=null; S.trGive=[]; S.trGet=[]; S.flash=null; S.reset.add("actFor"); render(); };
+  const fp=$("#faPool"); if(fp) fp.onchange=()=>{ S.faPool=fp.value; render(); };
+  const fq=$("#faQ"); if(fq) fq.oninput=()=>{ S.faQ=fq.value; render(); };
+  const fs=$("#faSort"); if(fs) fs.onchange=()=>{ S.faSort=fs.value; render(); };
+  document.querySelectorAll("[data-fa]").forEach(b=> b.onclick=()=>{ S.faAdd={t:b.dataset.fa, p:b.dataset.fapool}; S.flash=null; render(); const pn=$("#faPanel"); if(pn) try{ pn.scrollIntoView({block:"nearest"}); }catch(_){} });
+  const fc=$("#faCancel"); if(fc) fc.onclick=()=>{ S.faAdd=null; render(); };
+  const fgo=$("#faGo"); if(fgo) fgo.onclick=async()=>{ const L=league(), x=S.faAdd, d=document.querySelector('input[name="faDrop"]:checked'); if(!x||!d) return;
+    fgo.disabled=true; setMsg("#faMsg","Saving…",true);
+    const wasIncoming = compute(L).stints.some(s=> s.owner===actingSeat(L) && s.team===d.value && s.state==="incoming");
+    try{ const r = await A.addDrop(L.id, actingSeat(L), x.t, d.value);
+      S.faAdd=null; S.flash={where:"fa", ok:true, text: `Done. ${r.add} starts counting ${fmtDay(r.eff)}; ` + (wasIncoming ? `${r.drop} won't join after all.` : `${r.drop} counts through ${fmtDay(addDays(r.eff,-1))} and its wins stay on the total.`)}; render(); }
+    catch(err){ fgo.disabled=false; setMsg("#faMsg",failText(err)); } };
+  const tt=$("#trTo"); if(tt) tt.onchange=()=>{ S.trTo=tt.value; S.trGet=[]; S.reset.add("trTo"); render(); };
+  document.querySelectorAll("[data-trgive]").forEach(c=> c.onchange=()=>{ const t=c.dataset.trgive; S.trGive = c.checked ? [...S.trGive, t] : S.trGive.filter(x=>x!==t); render(); });
+  document.querySelectorAll("[data-trget]").forEach(c=> c.onchange=()=>{ const t=c.dataset.trget; S.trGet = c.checked ? [...S.trGet, t] : S.trGet.filter(x=>x!==t); render(); });
+  const ts2=$("#trSend"); if(ts2) ts2.onclick=async()=>{ const L=league(), seat=actingSeat(L), to=$("#trTo").value; ts2.disabled=true;
+    try{ await A.proposeTrade(L.id, seat, to, S.trGive, S.trGet); S.trGive=[]; S.trGet=[]; S.flash={where:"tr", ok:true, text:`Offer sent to ${to}.`}; if(S.trades) S.trades.reload(); render(); }
+    catch(err){ ts2.disabled=false; setMsg("#trMsg",failText(err)); } };
+  const tradeAct = async (fn, okText) => { try{ const r = await fn(); S.flash={where:"tr", ok:!(r && r.status==="failed"), text: r && r.status==="failed" ? "That trade can't go through: a team in it has moved since the offer was made." : okText(r)}; if(S.trades) S.trades.reload(); render(); }catch(err){ S.flash={where:"tr", ok:false, text:failText(err)}; render(); } };
+  document.querySelectorAll("[data-tracc]").forEach(b=> b.onclick=()=>{ b.disabled=true; tradeAct(()=>A.respondTrade(+b.dataset.tracc, true), r=>`Trade accepted. The teams switch over ${fmtDay(r.eff)}.`); });
+  document.querySelectorAll("[data-trdec]").forEach(b=> b.onclick=()=>{ b.disabled=true; tradeAct(()=>A.respondTrade(+b.dataset.trdec, false), ()=>"Offer declined."); });
+  document.querySelectorAll("[data-trcan]").forEach(b=> b.onclick=()=>{ b.disabled=true; tradeAct(()=>A.cancelTrade(+b.dataset.trcan), ()=>"Offer withdrawn."); });
+  const dl=$("#dlForm"); if(dl) dl.onsubmit=async e=>{ e.preventDefault(); const L=league();
+    try{ await S.db.doc(`leagues/${L.id}`).update({waiverUntil:$("#dlWaiver").value, tradeUntil:$("#dlTrade").value}); ["dlWaiver","dlTrade"].forEach(id=>S.reset.add(id)); setMsg("#dlMsg","Saved.",true); }
+    catch(err){ setMsg("#dlMsg",failText(err)); } };
   document.querySelectorAll("[data-sb]").forEach(b=> b.onclick=()=>{ S.sbAll = b.dataset.sb==="all"; render(); });
   document.querySelectorAll("[data-sblg]").forEach(b=> b.onclick=()=>{ S.sbLg = b.dataset.sblg; render(); });
   document.querySelectorAll("[data-tabgo]").forEach(b=> b.onclick=()=>{ S.tab=b.dataset.tabgo; render(); try{ window.scrollTo(0,0); }catch(_){} });
@@ -1896,14 +2134,16 @@ async function delLeague(id){
 }
 
 /* ---------- boot ---------- */
-document.querySelectorAll(".tab").forEach(b=> b.onclick=()=>{ S.tab=b.dataset.tab; S.confirmDel=S.confirmLg=null; render(); if (A) A.refresh(); });
+document.querySelectorAll(".tab").forEach(b=> b.onclick=()=>{ S.tab=b.dataset.tab; S.confirmDel=S.confirmLg=null; S.flash=null; render(); if (A) A.refresh(); if (S.tab==="trades" && S.trades && S.trades.reload) S.trades.reload(); });
+// Trade offers: re-check every 20 seconds while the Trades tab is open, in case the live feed is unavailable.
+setInterval(()=>{ if (S.view==="league" && S.tab==="trades" && S.trades && S.trades.reload && document.visibilityState==="visible") S.trades.reload(); }, 20000);
 $("#leagueSel").onchange=e=>{ e.target.value ? go("league", e.target.value) : go("home"); };
 $("#brandLink").onclick=e=>{ e.preventDefault(); go("home"); };
 $("#gearBtn").onclick=()=> go(S.view==="settings" ? "home" : "settings");
 $("#signBtn").onclick=()=>{ S.authMode="in"; go("auth"); };
 if (A) A.onChange(st=>{
   const was = meId();
-  S.auth = {user:st.user, profile:st.profile, live:st.live, timer:!!st.timer, level:st.level||1, google:!!st.google};
+  S.auth = {user:st.user, profile:st.profile, live:st.live, timer:!!st.timer, level:st.level||1, google:!!st.google, dbv:st.dbv||0};
   if (st.recovery){ S.view="auth"; S.authMode="newpw"; }
   else if (!was && meId() && (S.view==="auth")) return afterSignIn();
   else if (!was && meId() && S.view==="home" && !S.join){
@@ -1915,7 +2155,7 @@ if (A) A.onChange(st=>{
   render();
 });
 loadLocal(); applyTheme(); applyHash();
-window.addEventListener("hashchange", ()=>{ applyHash(); settleLeague(); render(); if (A && S.view==="league") A.refresh(); });
+window.addEventListener("hashchange", ()=>{ applyHash(); settleLeague(); render(); if (A && S.view==="league"){ A.refresh(); if (S.trades && S.trades.id===S.leagueId && S.trades.reload) S.trades.reload(); } });
 
 (async function boot(){
   const db = await (window.claude?.use ? window.claude.use("db") : null);

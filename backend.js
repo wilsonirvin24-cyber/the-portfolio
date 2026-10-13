@@ -16,7 +16,7 @@
 
   const sb = window.supabase.createClient(CFG.url, CFG.key);
   // level: which database update the project has had. 1 = accounts only, 2 = pick timer, 3 = queue, chat, scheduled drafts.
-  const state = { user: null, profile: null, live: true, recovery: false, timer: true, level: 3, offset: 0, google: false };
+  const state = { user: null, profile: null, live: true, recovery: false, timer: true, level: 3, offset: 0, google: false, dbv: 0 };
   const SELECTS = { 3: ",pick_seconds,clock_at,draft_at", 2: ",pick_seconds,clock_at", 1: "" };
   const authSubs = new Set(), leagueSubs = new Set();
   const tellAuth = () => authSubs.forEach(f => { try { f(state); } catch (_) {} });
@@ -32,6 +32,8 @@
   }
   const ready = sb.auth.getSession().then(async ({ data }) => { setSession(data && data.session); await loadProfile(); }).catch(() => {});
   ready.then(() => syncClock()).catch(() => {});
+  // Which version of the database script the project has run (4 adds pickups and trades).
+  ready.then(() => sb.rpc("pf_status")).then(({ data }) => { if (data && data.version){ state.dbv = +data.version; tellAuth(); } }).catch(() => {});
   sb.auth.onAuthStateChange((event, session) => {
     // Supabase asks that no other client calls run inside this callback, so the work is deferred.
     setTimeout(async () => {
@@ -206,6 +208,21 @@
         .then(({ data, error }) => { if (error){ delete rankCache[sport]; throw fail(error); } return data || []; }));
     },
     openChat,
+    // Pickups and trades
+    async addDrop(id, owner, add, drop){ const r = await rpc("add_drop", { p_id: id, p_owner: owner, p_add: add, p_drop: drop }); await fetchLeagues(); return r; },
+    async listTrades(id){
+      const { data, error } = await sb.from("trade_offers").select("id,from_owner,to_owner,give,get,status,note,created_at,decided_at").eq("league_id", id).order("id", { ascending: false }).limit(60);
+      if (error) throw fail(error);
+      return data || [];
+    },
+    async proposeTrade(id, from, to, give, get){ return await rpc("propose_trade", { p_id: id, p_from: from, p_to: to, p_give: give, p_get: get }); },
+    async respondTrade(offer, accept){ const r = await rpc("respond_trade", { p_offer: offer, p_accept: !!accept }); await fetchLeagues(); return r; },
+    async cancelTrade(offer){ await rpc("cancel_trade", { p_offer: offer }); },
+    watchTrades(id, cb){
+      let ch = null;
+      try { ch = sb.channel("offers-" + id).on("postgres_changes", { event: "*", schema: "public", table: "trade_offers", filter: "league_id=eq." + id }, () => cb()).subscribe(); } catch (_) {}
+      return () => { try { if (ch) sb.removeChannel(ch); } catch (_) {} };
+    },
     async sendMessage(id, body){ await rpc("post_message", { p_id: id, p_body: body }); if (chatOpen && chatOpen.id === id) chatOpen.reload(); },
     async deleteMessage(msgId){ await rpc("delete_message", { p_msg: msgId }); if (chatOpen) chatOpen.reload(); },
     async setClock(id, seconds, running){ await rpc("set_clock", { p_id: id, p_seconds: seconds, p_running: !!running }); await syncClock().catch(() => {}); await fetchLeagues(); },

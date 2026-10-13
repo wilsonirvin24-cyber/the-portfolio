@@ -10,6 +10,7 @@
 --   alerts_outbox   text alerts waiting to be sent ("you're on the clock"); unused unless a text provider is connected
 --   draft_queues    each manager's private wish list, used first when their pick timer runs out
 --   league_messages league chat, readable only by that league's managers
+--   trade_offers    trade proposals, readable only by the two managers involved and the commissioner
 
 -- ---------------------------------------------------------------- profiles
 create table if not exists public.profiles (
@@ -282,6 +283,9 @@ begin
   select * into l from public.leagues where id = p_id for update;
   if not found then raise exception 'League not found.'; end if;
   if not public.pf_can_run(l) then raise exception 'Only the commissioner can change this league.'; end if;
+  if (p_patch ? 'picks' or p_patch->>'status' = 'drafting') and jsonb_typeof(l.doc->'holds') = 'array' and jsonb_array_length(l.doc->'holds') > 0 then
+    raise exception 'The draft can''t be changed after pickups or trades have been made.';
+  end if;
   d := l.doc || (p_patch - 'pickSeconds' - 'clockAt');
   if pg_column_size(d) > 120000 then raise exception 'That league is too large.'; end if;
   -- Undoing a pick or reopening the draft restarts a running clock; a finished draft stops it.
@@ -592,7 +596,7 @@ begin
     execute 'select exists (select 1 from cron.job where jobname = ''portfolio-autopick'')' into s;
   exception when others then s := false;
   end;
-  return jsonb_build_object('version', 3, 'scheduler', s);
+  return jsonb_build_object('version', 4, 'scheduler', s);
 end $$;
 
 -- Run by the scheduler every minute, so picks still happen when nobody has the draft room open.
@@ -676,6 +680,237 @@ do $$ begin
   end if;
 end $$;
 
+-- ------------------------------------------------ pickups and trades
+-- Rosters change over time. Once the first pickup or trade happens, the league keeps "holds": one entry per
+-- team a manager has held, with the league week it started counting ("from") and the week it stopped ("to").
+-- A change made during a week takes effect at the start of the next league week (Tuesday, Eastern time).
+create table if not exists public.trade_offers (
+  id          bigint generated always as identity primary key,
+  league_id   text not null references public.leagues(id) on delete cascade,
+  from_owner  text not null,
+  to_owner    text not null,
+  give        jsonb not null,          -- team names the proposer sends
+  get         jsonb not null,          -- team names the proposer receives
+  status      text not null default 'pending',   -- pending, accepted, declined, canceled, failed
+  note        text,
+  created_by  uuid,
+  created_at  timestamptz not null default now(),
+  decided_at  timestamptz
+);
+create index if not exists trade_offers_by_league on public.trade_offers (league_id, id desc);
+do $$ begin
+  if exists (select 1 from pg_publication where pubname = 'supabase_realtime')
+     and not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'trade_offers') then
+    alter publication supabase_realtime add table public.trade_offers;     -- offers update live
+  end if;
+end $$;
+alter table public.trade_offers enable row level security;
+revoke all on public.trade_offers from anon, authenticated;
+grant select on public.trade_offers to authenticated;
+
+-- Start of the league week (Tuesday) containing a date.
+create or replace function public.pf_week_start(d date) returns date
+language sql immutable as $$ select d - ((extract(dow from d)::int + 5) % 7) $$;
+-- Today in Eastern time, and the date a change made now takes effect.
+create or replace function public.pf_today() returns date
+language sql stable as $$ select (now() at time zone 'America/New_York')::date $$;
+create or replace function public.pf_next_week() returns date
+language sql stable as $$ select public.pf_week_start(public.pf_today()) + 7 $$;
+
+-- The league's holds, built from the draft the first time they're needed.
+create or replace function public.pf_holds(d jsonb) returns jsonb
+language sql immutable as $$
+  select case when jsonb_typeof(d->'holds') = 'array' and jsonb_array_length(d->'holds') > 0 then d->'holds'
+    else coalesce((select jsonb_agg(jsonb_build_object('owner', e->>'owner', 'team', e->>'team', 'pool', e->>'pool', 'slot', e->>'slot', 'n', e->'n')
+                     order by (e->>'n')::int) from jsonb_array_elements(coalesce(d->'picks', '[]'::jsonb)) e), '[]'::jsonb) end;
+$$;
+
+-- Is this person allowed to act for this seat (they hold it, or they run the league)?
+create or replace function public.pf_acts_for(l public.leagues, p_owner text) returns boolean
+language sql stable security definer set search_path = public as $$
+  select auth.uid() is not null and (l.doc->'owners') ? p_owner
+     and (coalesce(l.members->>p_owner, '') = auth.uid()::text or public.pf_can_run(l));
+$$;
+
+-- Can the signed-in person see this trade offer? The two managers involved and the commissioner can.
+create or replace function public.pf_trade_visible(p_league text, p_from text, p_to text) returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (select 1 from public.leagues l where l.id = p_league
+    and (public.pf_can_run(l) or coalesce(l.members->>p_from, '') = auth.uid()::text or coalesce(l.members->>p_to, '') = auth.uid()::text));
+$$;
+drop policy if exists "involved can read offers" on public.trade_offers;
+create policy "involved can read offers" on public.trade_offers for select to authenticated
+  using (public.pf_trade_visible(league_id, from_owner, to_owner));
+
+-- Offers that include a team which has since moved can no longer go through.
+create or replace function public.pf_fail_offers(p_id text, p_teams text[], p_except bigint) returns void
+language sql security definer set search_path = public as $$
+  update public.trade_offers set status = 'failed', note = 'A team in this offer has moved since it was made.', decided_at = now()
+   where league_id = p_id and status = 'pending' and id is distinct from p_except
+     and (give ?| p_teams or get ?| p_teams);
+$$;
+
+-- Pick up a free agent and drop a team from the same conference (or the same "any" spot).
+create or replace function public.add_drop(p_id text, p_owner text, p_add text, p_drop text) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare
+  l public.leagues; h jsonb; i int; drop_ix int := -1; dropped jsonb; v_sport text; v_pro text;
+  v_team text; v_pool text; eff date := public.pf_next_week(); until text; moves jsonb;
+begin
+  if auth.uid() is null then raise exception 'Sign in first.'; end if;
+  select * into l from public.leagues where id = p_id for update;
+  if not found then raise exception 'League not found.'; end if;
+  if not public.pf_acts_for(l, p_owner) then raise exception 'You can only make moves for your own team.'; end if;
+  if coalesce(l.doc->>'status', '') <> 'complete' then raise exception 'Pickups open once the draft is finished.'; end if;
+  until := l.doc->>'waiverUntil';
+  if coalesce(until, '') <> '' and public.pf_today() > until::date then raise exception 'The pickup deadline has passed.'; end if;
+  h := public.pf_holds(l.doc);
+  for i in 0 .. jsonb_array_length(h) - 1 loop
+    if h->i->>'owner' = p_owner and lower(h->i->>'team') = lower(trim(p_drop)) and coalesce(h->i->>'to', '') = '' then drop_ix := i; end if;
+  end loop;
+  if drop_ix < 0 then raise exception '% isn''t on %''s roster.', trim(p_drop), p_owner; end if;
+  dropped := h->drop_ix;
+  v_sport := coalesce(l.doc->>'sport', 'football');
+  v_pro := case v_sport when 'basketball' then 'NBA' when 'football' then 'NFL' else '' end;
+  select t.team, t.pool into v_team, v_pool from public.pf_teams t where t.sport = v_sport and lower(t.team) = lower(trim(p_add));
+  if v_team is null then raise exception '% isn''t a team in this league''s pool.', trim(p_add); end if;
+  if dropped->>'slot' like 'Any%' then
+    if v_pool = v_pro then raise exception 'That spot is for a college team.'; end if;
+  elsif v_pool <> dropped->>'pool' then
+    raise exception 'Replace % with another % team.', dropped->>'team', dropped->>'pool';
+  end if;
+  if exists (select 1 from jsonb_array_elements(h) e where lower(e->>'team') = lower(v_team) and coalesce(e->>'to', '') = '') then
+    raise exception '% is already on a roster.', v_team;
+  end if;
+  h := jsonb_set(h, array[drop_ix::text], dropped || jsonb_build_object('to', eff::text));
+  h := h || jsonb_build_array(jsonb_build_object('owner', p_owner, 'team', v_team, 'pool', v_pool, 'slot', dropped->>'slot', 'from', eff::text, 'via', 'add'));
+  moves := coalesce(l.doc->'moves', '[]'::jsonb) || jsonb_build_array(jsonb_build_object(
+    'at', to_char(now() at time zone 'utc', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'), 'eff', eff::text, 'kind', 'add',
+    'owner', p_owner, 'add', v_team, 'drop', dropped->>'team', 'pool', v_pool));
+  if pg_column_size(l.doc || jsonb_build_object('holds', h, 'moves', moves)) > 200000 then raise exception 'This league has too many moves to store.'; end if;
+  update public.leagues set doc = l.doc || jsonb_build_object('holds', h, 'moves', moves), updated_at = now() where id = p_id;
+  perform public.pf_fail_offers(p_id, array[dropped->>'team'], null);
+  return jsonb_build_object('eff', eff::text, 'add', v_team, 'drop', dropped->>'team');
+end $$;
+
+-- Propose a trade. Each side sends the same number of teams from the same conferences.
+create or replace function public.propose_trade(p_id text, p_from text, p_to text, p_give jsonb, p_get jsonb) returns bigint
+language plpgsql security definer set search_path = public as $$
+declare l public.leagues; h jsonb; until text; a text[]; b text[]; pa text[]; pb text[]; t text; p text; new_id bigint;
+begin
+  if auth.uid() is null then raise exception 'Sign in first.'; end if;
+  select * into l from public.leagues where id = p_id;
+  if not found then raise exception 'League not found.'; end if;
+  if not public.pf_acts_for(l, p_from) then raise exception 'You can only offer trades for your own team.'; end if;
+  if not (l.doc->'owners') ? p_to or p_to = p_from then raise exception 'Choose another manager to trade with.'; end if;
+  if coalesce(l.doc->>'status', '') <> 'complete' then raise exception 'Trades open once the draft is finished.'; end if;
+  until := l.doc->>'tradeUntil';
+  if coalesce(until, '') <> '' and public.pf_today() > until::date then raise exception 'The trade deadline has passed.'; end if;
+  if jsonb_typeof(p_give) <> 'array' or jsonb_typeof(p_get) <> 'array' then raise exception 'That trade is not valid.'; end if;
+  select array_agg(x) into a from jsonb_array_elements_text(p_give) x;
+  select array_agg(x) into b from jsonb_array_elements_text(p_get) x;
+  if a is null or b is null or cardinality(a) = 0 then raise exception 'Choose at least one team on each side.'; end if;
+  if cardinality(a) <> cardinality(b) or cardinality(a) > 8 then raise exception 'Each side has to send the same number of teams.'; end if;
+  h := public.pf_holds(l.doc);
+  pa := '{}'; pb := '{}';
+  foreach t in array a loop
+    select e->>'pool' into p from jsonb_array_elements(h) e where e->>'owner' = p_from and lower(e->>'team') = lower(t) and coalesce(e->>'to', '') = '';
+    if p is null then raise exception '% isn''t on %''s roster.', t, p_from; end if;
+    pa := pa || p;
+  end loop;
+  foreach t in array b loop
+    select e->>'pool' into p from jsonb_array_elements(h) e where e->>'owner' = p_to and lower(e->>'team') = lower(t) and coalesce(e->>'to', '') = '';
+    if p is null then raise exception '% isn''t on %''s roster.', t, p_to; end if;
+    pb := pb || p;
+  end loop;
+  if (select array_agg(x order by x) from unnest(pa) x) is distinct from (select array_agg(x order by x) from unnest(pb) x) then
+    raise exception 'Trades are conference for conference: both sides must send teams from the same conferences.';
+  end if;
+  if (select count(distinct lower(x)) from unnest(a) x) <> cardinality(a) or (select count(distinct lower(x)) from unnest(b) x) <> cardinality(b) then
+    raise exception 'A team is listed twice.';
+  end if;
+  insert into public.trade_offers (league_id, from_owner, to_owner, give, get, created_by)
+  values (p_id, p_from, p_to, to_jsonb(a), to_jsonb(b), auth.uid()) returning id into new_id;
+  return new_id;
+end $$;
+
+-- Accept or decline. Accepting swaps the teams, effective at the start of next week.
+create or replace function public.respond_trade(p_offer bigint, p_accept boolean) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare
+  o public.trade_offers; l public.leagues; h jsonb; eff date := public.pf_next_week(); until text;
+  pools text[]; pool text; ga int[]; gb int[]; k int; ia int; ib int; ea jsonb; eb jsonb; moves jsonb; ok boolean := true; j int;
+begin
+  if auth.uid() is null then raise exception 'Sign in first.'; end if;
+  select * into o from public.trade_offers where id = p_offer for update;
+  if not found then raise exception 'That offer no longer exists.'; end if;
+  select * into l from public.leagues where id = o.league_id for update;
+  if not public.pf_acts_for(l, o.to_owner) then raise exception 'Only % can answer this offer.', o.to_owner; end if;
+  if o.status <> 'pending' then raise exception 'This offer is no longer open.'; end if;
+  if not p_accept then
+    update public.trade_offers set status = 'declined', decided_at = now() where id = p_offer;
+    return jsonb_build_object('status', 'declined');
+  end if;
+  until := l.doc->>'tradeUntil';
+  if coalesce(until, '') <> '' and public.pf_today() > until::date then raise exception 'The trade deadline has passed.'; end if;
+  h := public.pf_holds(l.doc);
+  select array_agg(distinct e->>'pool') into pools from jsonb_array_elements(h) e;
+  -- Pair the teams conference by conference, then swap each pair.
+  for pool in select distinct hh->>'pool' from jsonb_array_elements(h) hh loop
+    ga := '{}'; gb := '{}';
+    for j in 0 .. jsonb_array_length(h) - 1 loop
+      if h->j->>'pool' = pool and coalesce(h->j->>'to', '') = '' then
+        if h->j->>'owner' = o.from_owner and exists (select 1 from jsonb_array_elements_text(o.give) x where lower(x) = lower(h->j->>'team')) then ga := ga || j; end if;
+        if h->j->>'owner' = o.to_owner and exists (select 1 from jsonb_array_elements_text(o.get) x where lower(x) = lower(h->j->>'team')) then gb := gb || j; end if;
+      end if;
+    end loop;
+    if coalesce(cardinality(ga), 0) <> coalesce(cardinality(gb), 0) then ok := false; end if;
+    for k in 1 .. coalesce(cardinality(ga), 0) loop
+      if k > coalesce(cardinality(gb), 0) then exit; end if;
+      ia := ga[k]; ib := gb[k]; ea := h->ia; eb := h->ib;
+      h := jsonb_set(h, array[ia::text], ea || jsonb_build_object('to', eff::text));
+      h := jsonb_set(h, array[ib::text], eb || jsonb_build_object('to', eff::text));
+      h := h || jsonb_build_array(
+        jsonb_build_object('owner', o.to_owner, 'team', ea->>'team', 'pool', pool, 'slot', eb->>'slot', 'from', eff::text, 'via', 'trade'),
+        jsonb_build_object('owner', o.from_owner, 'team', eb->>'team', 'pool', pool, 'slot', ea->>'slot', 'from', eff::text, 'via', 'trade'));
+    end loop;
+  end loop;
+  -- Every team in the offer must still be where it was when the offer was made.
+  if not ok or (select count(*) from jsonb_array_elements(h) e where coalesce(e->>'from', '') = eff::text and coalesce(e->>'to', '') = ''
+                 and exists (select 1 from jsonb_array_elements_text(o.give || o.get) x where lower(x) = lower(e->>'team'))) * 1
+                 < jsonb_array_length(o.give) + jsonb_array_length(o.get) then
+    update public.trade_offers set status = 'failed', note = 'A team in this offer has moved since it was made.', decided_at = now() where id = p_offer;
+    return jsonb_build_object('status', 'failed');
+  end if;
+  moves := coalesce(l.doc->'moves', '[]'::jsonb) || jsonb_build_array(jsonb_build_object(
+    'at', to_char(now() at time zone 'utc', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'), 'eff', eff::text, 'kind', 'trade',
+    'a', o.from_owner, 'b', o.to_owner, 'aGive', o.give, 'bGive', o.get));
+  update public.leagues set doc = l.doc || jsonb_build_object('holds', h, 'moves', moves), updated_at = now() where id = l.id;
+  update public.trade_offers set status = 'accepted', decided_at = now() where id = p_offer;
+  perform public.pf_fail_offers(l.id, (select array_agg(x) from jsonb_array_elements_text(o.give || o.get) x), p_offer);
+  return jsonb_build_object('status', 'accepted', 'eff', eff::text);
+end $$;
+
+create or replace function public.cancel_trade(p_offer bigint) returns void
+language plpgsql security definer set search_path = public as $$
+declare o public.trade_offers; l public.leagues;
+begin
+  if auth.uid() is null then raise exception 'Sign in first.'; end if;
+  select * into o from public.trade_offers where id = p_offer for update;
+  if not found then return; end if;
+  select * into l from public.leagues where id = o.league_id;
+  if not public.pf_acts_for(l, o.from_owner) then raise exception 'Only % can withdraw this offer.', o.from_owner; end if;
+  if o.status = 'pending' then update public.trade_offers set status = 'canceled', decided_at = now() where id = p_offer; end if;
+end $$;
+
+revoke execute on function public.add_drop(text, text, text, text), public.propose_trade(text, text, text, jsonb, jsonb),
+  public.respond_trade(bigint, boolean), public.cancel_trade(bigint) from public, anon;
+grant execute on function public.add_drop(text, text, text, text), public.propose_trade(text, text, text, jsonb, jsonb),
+  public.respond_trade(bigint, boolean), public.cancel_trade(bigint) to authenticated;
+grant execute on function public.pf_trade_visible(text, text, text), public.pf_week_start(date), public.pf_today(), public.pf_next_week() to anon, authenticated;
+revoke execute on function public.pf_fail_offers(text, text[], bigint), public.pf_acts_for(public.leagues, text) from public, anon, authenticated;
+grant execute on function public.pf_acts_for(public.leagues, text) to authenticated;
+
 -- Scheduler: checks every minute for picks whose time has run out. If the scheduler can't be switched on,
 -- auto-pick still runs whenever a signed-in person has the draft room open.
 do $$ begin
@@ -715,6 +950,25 @@ insert into public.pf_teams (sport, pool, team, rank) values
 ('basketball','Other','Purdue Fort Wayne',335),('basketball','Other','Radford',336),('basketball','Other','Rice',337),('basketball','Other','Rider',338),('basketball','Other','SIU Edwardsville',339),('basketball','Other','Sacramento State',340),('basketball','Other','Sacred Heart',341),('basketball','Other','Saint Peter''s',342),('basketball','Other','Sam Houston',343),('basketball','Other','San Diego',344),('basketball','Other','San Jose State',345),('basketball','Other','Seattle',346),('basketball','Other','South Alabama',347),('basketball','Other','South Carolina State',348),('basketball','Other','South Dakota',349),('basketball','Other','Southeast Missouri State',350),('basketball','Other','Southeastern Louisiana',351),('basketball','Other','Southern Illinois',352),('basketball','Other','Southern Indiana',353),('basketball','Other','Southern Miss',354),
 ('basketball','Other','Southern Utah',355),('basketball','Other','St. Bonaventure',356),('basketball','Other','Stetson',357),('basketball','Other','Stonehill',358),('basketball','Other','Stony Brook',359),('basketball','Other','Tarleton State',360),('basketball','Other','Tennessee Tech',361),('basketball','Other','Texas A&M-Corpus Christi',362),('basketball','Other','Texas Southern',363),('basketball','Other','Texas State',364),('basketball','Other','The Citadel',365),('basketball','Other','Towson',366),('basketball','Other','Tulane',367),('basketball','Other','UC Davis',368),('basketball','Other','UC Riverside',369),('basketball','Other','UIC',370),('basketball','Other','UMBC',371),('basketball','Other','UMass',372),('basketball','Other','UMass Lowell',373),('basketball','Other','UNC Asheville',374),('basketball','Other','UNC Greensboro',375),('basketball','Other','USC Upstate',376),
 ('basketball','Other','UT Arlington',377),('basketball','Other','UT Martin',378),('basketball','Other','UTEP',379),('basketball','Other','UTRGV',380),('basketball','Other','UTSA',381),('basketball','Other','Utah Tech',382),('basketball','Other','VMI',383),('basketball','Other','Valparaiso',384),('basketball','Other','Wagner',385),('basketball','Other','Weber State',386),('basketball','Other','West Florida',387),('basketball','Other','West Georgia',388),('basketball','Other','Western Carolina',389),('basketball','Other','Western Illinois',390),('basketball','Other','Western Kentucky',391),('basketball','Other','Western Michigan',392),('basketball','Other','William & Mary',393),('basketball','Other','Wofford',394),('basketball','Other','Youngstown State',395)
+on conflict (sport, pool, team) do nothing;
+
+-- College basketball leagues: every Division I team in its 2026-27 conference, ranked like the basketball list.
+insert into public.pf_teams (sport, pool, team, rank) values
+('cbb','SEC','Florida',1),('cbb','Big Ten','Michigan',2),('cbb','Big 12','Arizona',3),('cbb','ACC','Duke',4),('cbb','Big East','UConn',5),('cbb','Pac-12','Gonzaga',6),('cbb','SEC','Alabama',7),('cbb','Big Ten','Purdue',8),('cbb','Big 12','Houston',9),('cbb','ACC','Louisville',10),('cbb','Big East','St. John''s',11),('cbb','WCC','Saint Mary''s',12),('cbb','MAC','Miami (OH)',13),('cbb','Pac-12','Utah State',14),('cbb','Atlantic 10','Saint Louis',15),('cbb','Atlantic 10','VCU',16),('cbb','SEC','Tennessee',17),('cbb','Big Ten','Michigan State',18),('cbb','Big 12','Iowa State',19),('cbb','ACC','Virginia',20),('cbb','Big East','Villanova',21),('cbb','Pac-12','San Diego State',22),('cbb','WCC','Santa Clara',23),('cbb','American','Memphis',24),('cbb','Atlantic 10','Dayton',25),('cbb','Mountain West','New Mexico',26),('cbb','Pac-12','Boise State',27),('cbb','SEC','Arkansas',28),
+('cbb','Big Ten','Illinois',29),('cbb','Big 12','Kansas',30),('cbb','ACC','North Carolina',31),('cbb','Big East','Creighton',32),('cbb','Southland','McNeese',33),('cbb','Big South','High Point',34),('cbb','MAC','Akron',35),('cbb','American','South Florida',36),('cbb','Conference USA','Liberty',37),('cbb','SEC','Vanderbilt',38),('cbb','Big Ten','Nebraska',39),('cbb','Big 12','Texas Tech',40),('cbb','ACC','Clemson',41),('cbb','Big East','Seton Hall',42),('cbb','Mountain West','Grand Canyon',43),('cbb','Ivy','Yale',44),('cbb','American','Tulsa',45),('cbb','Missouri Valley','Belmont',46),('cbb','Atlantic 10','George Mason',47),('cbb','Missouri Valley','Northern Iowa',48),('cbb','SEC','Kentucky',49),('cbb','Big Ten','Wisconsin',50),('cbb','Big 12','BYU',51),('cbb','ACC','NC State',52),('cbb','Big East','Marquette',53),('cbb','Big West','UC Irvine',54),('cbb','Big West','UC San Diego',55),
+('cbb','Pac-12','Colorado State',56),('cbb','Mountain West','Nevada',57),('cbb','American','Wichita State',58),('cbb','SEC','Auburn',59),('cbb','Big Ten','UCLA',60),('cbb','Big 12','Baylor',61),('cbb','ACC','Miami',62),('cbb','Big East','Georgetown',63),('cbb','American','North Texas',64),('cbb','Missouri Valley','Drake',65),('cbb','Missouri Valley','Bradley',66),('cbb','Missouri Valley','Murray State',67),('cbb','Atlantic 10','Loyola Chicago',68),('cbb','Atlantic 10','Saint Joseph''s',69),('cbb','SEC','Texas A&M',70),('cbb','Big Ten','Iowa',71),('cbb','Big 12','TCU',72),('cbb','ACC','SMU',73),('cbb','Big East','Butler',74),('cbb','Atlantic 10','Davidson',75),('cbb','WCC','San Francisco',76),('cbb','Ivy','Princeton',77),('cbb','America East','Vermont',78),('cbb','CAA','Charleston',79),('cbb','SEC','Georgia',80),('cbb','Big Ten','Ohio State',81),('cbb','Big 12','UCF',82),
+('cbb','ACC','Virginia Tech',83),('cbb','Big East','Xavier',84),('cbb','CAA','UNC Wilmington',85),('cbb','MAC','Kent State',86),('cbb','MAC','Toledo',87),('cbb','CAA','Hofstra',88),('cbb','Big West','Utah Valley',89),('cbb','American','Florida Atlantic',90),('cbb','SEC','Missouri',91),('cbb','Big Ten','Indiana',92),('cbb','Big 12','Cincinnati',93),('cbb','ACC','Wake Forest',94),('cbb','Big East','Providence',95),('cbb','American','UAB',96),('cbb','Missouri Valley','Illinois State',97),('cbb','Southland','Stephen F. Austin',98),('cbb','Sun Belt','Troy',99),('cbb','Sun Belt','Arkansas State',100),('cbb','SEC','Texas',101),('cbb','Big Ten','USC',102),('cbb','Big 12','West Virginia',103),('cbb','ACC','Syracuse',104),('cbb','Big East','DePaul',105),('cbb','Sun Belt','James Madison',106),('cbb','Sun Belt','Marshall',107),('cbb','Pac-12','Oregon State',108),
+('cbb','Pac-12','Washington State',109),('cbb','SoCon','Chattanooga',110),('cbb','SoCon','Furman',111),('cbb','SEC','Ole Miss',112),('cbb','Big Ten','Oregon',113),('cbb','Big 12','Kansas State',114),('cbb','ACC','Notre Dame',115),('cbb','SoCon','Samford',116),('cbb','ASUN','Lipscomb',117),('cbb','Big South','Winthrop',118),('cbb','Big Sky','Montana',119),('cbb','Big Sky','Northern Colorado',120),('cbb','SEC','Oklahoma',121),('cbb','Big Ten','Washington',122),('cbb','Big 12','Oklahoma State',123),('cbb','ACC','California',124),('cbb','Summit','South Dakota State',125),('cbb','Summit','North Dakota State',126),('cbb','Summit','St. Thomas',127),('cbb','Horizon','Robert Morris',128),('cbb','Horizon','Wright State',129),('cbb','Horizon','Oakland',130),('cbb','SEC','LSU',131),('cbb','Big Ten','Minnesota',132),('cbb','Big 12','Colorado',133),('cbb','ACC','Stanford',134),
+('cbb','Big West','Cal Baptist',135),('cbb','Mountain West','Hawaii',136),('cbb','Big West','UC Santa Barbara',137),('cbb','MAAC','Quinnipiac',138),('cbb','MAAC','Siena',139),('cbb','MAAC','Merrimack',140),('cbb','SEC','Mississippi State',141),('cbb','Big Ten','Northwestern',142),('cbb','Big 12','Arizona State',143),('cbb','ACC','Florida State',144),('cbb','America East','Bryant',145),('cbb','Patriot','Colgate',146),('cbb','Patriot','Navy',147),('cbb','MEAC','Norfolk State',148),('cbb','SWAC','Southern',149),('cbb','SEC','South Carolina',150),('cbb','Big Ten','Maryland',151),('cbb','Big 12','Utah',152),('cbb','ACC','Pittsburgh',153),('cbb','SWAC','Bethune-Cookman',154),('cbb','MEAC','Howard',155),('cbb','NEC','LIU',156),('cbb','OVC','Tennessee State',157),('cbb','ASUN','Queens',158),('cbb','Big Ten','Rutgers',159),('cbb','ACC','Georgia Tech',160),('cbb','Atlantic 10','Duquesne',161),
+('cbb','Atlantic 10','Rhode Island',162),('cbb','Atlantic 10','George Washington',163),('cbb','Atlantic 10','Richmond',164),('cbb','American','Temple',165),('cbb','Mountain West','UNLV',166),('cbb','Big Ten','Penn State',167),('cbb','ACC','Boston College',168),('cbb','Mountain West','Wyoming',169),('cbb','UAC','Abilene Christian',170),('cbb','Mountain West','Air Force',171),('cbb','SWAC','Alabama A&M',172),('cbb','SWAC','Alabama State',173),('cbb','America East','Albany',174),('cbb','SWAC','Alcorn State',175),('cbb','Patriot','American',176),('cbb','Sun Belt','Appalachian State',177),('cbb','SWAC','Arkansas-Pine Bluff',178),('cbb','Patriot','Army',179),('cbb','UAC','Austin Peay',180),('cbb','MAC','Ball State',181),('cbb','ASUN','Bellarmine',182),('cbb','America East','Binghamton',183),('cbb','Patriot','Boston University',184),('cbb','MAC','Bowling Green',185),('cbb','Ivy','Brown',186),
+('cbb','Patriot','Bucknell',187),('cbb','MAC','Buffalo',188),('cbb','Big West','Cal Poly',189),('cbb','Big West','Cal State Bakersfield',190),('cbb','Big West','Cal State Fullerton',191),('cbb','Big West','Cal State Northridge',192),('cbb','CAA','Campbell',193),('cbb','MAAC','Canisius',194),('cbb','UAC','Central Arkansas',195),('cbb','NEC','Central Connecticut',196),('cbb','MAC','Central Michigan',197),('cbb','Big South','Charleston Southern',198),('cbb','American','Charlotte',199),('cbb','NEC','Chicago State',200),('cbb','Horizon','Cleveland State',201),('cbb','Sun Belt','Coastal Carolina',202),('cbb','Ivy','Columbia',203),('cbb','MEAC','Coppin State',204),('cbb','Ivy','Cornell',205),('cbb','Ivy','Dartmouth',206),('cbb','Conference USA','Delaware',207),('cbb','MEAC','Delaware State',208),('cbb','WCC','Denver',209),('cbb','Horizon','Detroit Mercy',210),('cbb','CAA','Drexel',211),
+('cbb','American','East Carolina',212),('cbb','SoCon','East Tennessee State',213),('cbb','Southland','East Texas A&M',214),('cbb','OVC','Eastern Illinois',215),('cbb','UAC','Eastern Kentucky',216),('cbb','MAC','Eastern Michigan',217),('cbb','Big Sky','Eastern Washington',218),('cbb','CAA','Elon',219),('cbb','Missouri Valley','Evansville',220),('cbb','Conference USA','FIU',221),('cbb','MAAC','Fairfield',222),('cbb','NEC','Fairleigh Dickinson',223),('cbb','SWAC','Florida A&M',224),('cbb','ASUN','Florida Gulf Coast',225),('cbb','Atlantic 10','Fordham',226),('cbb','Pac-12','Fresno State',227),('cbb','Big South','Gardner-Webb',228),('cbb','Sun Belt','Georgia Southern',229),('cbb','Sun Belt','Georgia State',230),('cbb','SWAC','Grambling State',231),('cbb','Horizon','Green Bay',232),('cbb','CAA','Hampton',233),('cbb','Ivy','Harvard',234),('cbb','Patriot','Holy Cross',235),
+('cbb','Southland','Houston Christian',236),('cbb','Horizon','IU Indy',237),('cbb','Big Sky','Idaho',238),('cbb','Big Sky','Idaho State',239),('cbb','Southland','Incarnate Word',240),('cbb','Missouri Valley','Indiana State',241),('cbb','MAAC','Iona',242),('cbb','SWAC','Jackson State',243),('cbb','ASUN','Jacksonville',244),('cbb','Conference USA','Jacksonville State',245),('cbb','Summit','Kansas City',246),('cbb','Conference USA','Kennesaw State',247),('cbb','Atlantic 10','La Salle',248),('cbb','Patriot','Lafayette',249),('cbb','Southland','Lamar',250),('cbb','NEC','Le Moyne',251),('cbb','Patriot','Lehigh',252),('cbb','OVC','Lindenwood',253),('cbb','UAC','Little Rock',254),('cbb','Big West','Long Beach State',255),('cbb','Big South','Longwood',256),('cbb','Sun Belt','Louisiana',257),('cbb','Sun Belt','Louisiana Tech',258),('cbb','Sun Belt','Louisiana-Monroe',259),
+('cbb','WCC','Loyola Marymount',260),('cbb','Patriot','Loyola Maryland',261),('cbb','America East','Maine',262),('cbb','MAAC','Manhattan',263),('cbb','MAAC','Marist',264),('cbb','MEAC','Maryland Eastern Shore',265),('cbb','SoCon','Mercer',266),('cbb','NEC','Mercyhurst',267),('cbb','Conference USA','Middle Tennessee',268),('cbb','Horizon','Milwaukee',269),('cbb','SWAC','Mississippi Valley State',270),('cbb','Conference USA','Missouri State',271),('cbb','CAA','Monmouth',272),('cbb','Big Sky','Montana State',273),('cbb','OVC','Morehead State',274),('cbb','MEAC','Morgan State',275),('cbb','MAAC','Mount St. Mary''s',276),('cbb','America East','NJIT',277),('cbb','America East','New Hampshire',278),('cbb','NEC','New Haven',279),('cbb','Conference USA','New Mexico State',280),('cbb','Southland','New Orleans',281),('cbb','MAAC','Niagara',282),('cbb','Southland','Nicholls',283),
+('cbb','UAC','North Alabama',284),('cbb','CAA','North Carolina A&T',285),('cbb','MEAC','North Carolina Central',286),('cbb','Summit','North Dakota',287),('cbb','ASUN','North Florida',288),('cbb','CAA','Northeastern',289),('cbb','Big Sky','Northern Arizona',290),('cbb','Horizon','Northern Illinois',291),('cbb','Horizon','Northern Kentucky',292),('cbb','Southland','Northwestern State',293),('cbb','MAC','Ohio',294),('cbb','Sun Belt','Old Dominion',295),('cbb','Summit','Omaha',296),('cbb','Summit','Oral Roberts',297),('cbb','WCC','Pacific',298),('cbb','Ivy','Penn',299),('cbb','WCC','Pepperdine',300),('cbb','WCC','Portland',301),('cbb','Big Sky','Portland State',302),('cbb','SWAC','Prairie View A&M',303),('cbb','Big South','Presbyterian',304),('cbb','Horizon','Purdue Fort Wayne',305),('cbb','Big South','Radford',306),('cbb','American','Rice',307),('cbb','MAAC','Rider',308),
+('cbb','OVC','SIU Edwardsville',309),('cbb','Big West','Sacramento State',310),('cbb','MAAC','Sacred Heart',311),('cbb','MAAC','Saint Peter''s',312),('cbb','Conference USA','Sam Houston',313),('cbb','WCC','San Diego',314),('cbb','Mountain West','San Jose State',315),('cbb','WCC','Seattle',316),('cbb','Sun Belt','South Alabama',317),('cbb','MEAC','South Carolina State',318),('cbb','Summit','South Dakota',319),('cbb','OVC','Southeast Missouri State',320),('cbb','Southland','Southeastern Louisiana',321),('cbb','Missouri Valley','Southern Illinois',322),('cbb','OVC','Southern Indiana',323),('cbb','Sun Belt','Southern Miss',324),('cbb','Big Sky','Southern Utah',325),('cbb','Atlantic 10','St. Bonaventure',326),('cbb','ASUN','Stetson',327),('cbb','NEC','Stonehill',328),('cbb','CAA','Stony Brook',329),('cbb','UAC','Tarleton State',330),('cbb','SoCon','Tennessee Tech',331),
+('cbb','Southland','Texas A&M-Corpus Christi',332),('cbb','SWAC','Texas Southern',333),('cbb','Pac-12','Texas State',334),('cbb','SoCon','The Citadel',335),('cbb','CAA','Towson',336),('cbb','American','Tulane',337),('cbb','Mountain West','UC Davis',338),('cbb','Big West','UC Riverside',339),('cbb','Missouri Valley','UIC',340),('cbb','America East','UMBC',341),('cbb','MAC','UMass',342),('cbb','America East','UMass Lowell',343),('cbb','Big South','UNC Asheville',344),('cbb','SoCon','UNC Greensboro',345),('cbb','Big South','USC Upstate',346),('cbb','UAC','UT Arlington',347),('cbb','OVC','UT Martin',348),('cbb','Mountain West','UTEP',349),('cbb','Southland','UTRGV',350),('cbb','American','UTSA',351),('cbb','Big Sky','Utah Tech',352),('cbb','SoCon','VMI',353),('cbb','Missouri Valley','Valparaiso',354),('cbb','NEC','Wagner',355),('cbb','Big Sky','Weber State',356),
+('cbb','ASUN','West Florida',357),('cbb','UAC','West Georgia',358),('cbb','SoCon','Western Carolina',359),('cbb','OVC','Western Illinois',360),('cbb','Conference USA','Western Kentucky',361),('cbb','MAC','Western Michigan',362),('cbb','CAA','William & Mary',363),('cbb','SoCon','Wofford',364),('cbb','Horizon','Youngstown State',365)
 on conflict (sport, pool, team) do nothing;
 
 -- ------------------------------------------------ the existing league
