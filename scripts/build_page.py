@@ -26,10 +26,15 @@ HEAD = """<!doctype html>
 <link rel="manifest" href="manifest.webmanifest">
 <style>:root{padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}
 .pubnote{max-width:1080px;margin:0 auto;padding:0 16px 28px;font-size:12.5px;color:var(--muted)}</style>
-<script src="vendor/supabase.js"></script>
-<script src="backend.js"></script>
+<script src="vendor/supabase.js?v=__SBV__"></script>
+<script src="backend.js?v=__BEV__"></script>
 </head>
 <body>
 """
+# Version the script addresses by their contents, so a browser holding an old copy fetches the new one.
+import hashlib, os
+root = os.path.dirname(os.path.abspath(out))
+ver = lambda f: hashlib.sha1(open(os.path.join(root, f), "rb").read()).hexdigest()[:10] if os.path.exists(os.path.join(root, f)) else "1"
+HEAD = HEAD.replace("__SBV__", ver("vendor/supabase.js")).replace("__BEV__", ver("backend.js"))
 open(out, "w").write(HEAD + page + "\n</body>\n</html>\n")
 print(out, len(HEAD + page))

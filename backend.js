@@ -33,7 +33,10 @@
   const ready = sb.auth.getSession().then(async ({ data }) => { setSession(data && data.session); await loadProfile(); }).catch(() => {});
   ready.then(() => syncClock()).catch(() => {});
   // Which version of the database script the project has run (4 adds pickups and trades).
-  ready.then(() => sb.rpc("pf_status")).then(({ data }) => { if (data && data.version){ state.dbv = +data.version; tellAuth(); } }).catch(() => {});
+  const checkVersion = () => sb.rpc("pf_status").then(({ data }) => { if (data && data.version && +data.version !== state.dbv){ state.dbv = +data.version; tellAuth(); } }).catch(() => {});
+  ready.then(checkVersion);
+  // Pick up a database update without needing a reload: check again whenever the page comes back into view.
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") checkVersion(); });
   sb.auth.onAuthStateChange((event, session) => {
     // Supabase asks that no other client calls run inside this callback, so the work is deferred.
     setTimeout(async () => {
