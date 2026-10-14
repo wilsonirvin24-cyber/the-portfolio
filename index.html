@@ -434,6 +434,63 @@ dl.lgfacts div:last-child{border-bottom:0}
 dl.lgfacts dt{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700}
 dl.lgfacts dd{margin:0}
 @media (max-width:520px){dl.lgfacts div{grid-template-columns:1fr;gap:2px}.tabs .wrap{gap:0;justify-content:space-between}.tab{padding:12px 4px 10px;font-size:14.5px;letter-spacing:.02em}.daynav .dn-mid{min-width:0;flex:1}}
+/* v15: home dashboard, styled like a market terminal */
+.dash{--d-bg:#0e1813;--d-panel:#13201a;--d-line:#25362d;--d-fg:#e8f1eb;--d-mut:#8ea597;--d-up:#5fe0a0;--d-dn:#ff8f84;--d-gold:#e3c06a;
+  display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:12px;background:var(--d-bg);color:var(--d-fg);border-radius:12px;padding:12px;border:1px solid #0a120e}
+.dash .sub{color:var(--d-mut)}
+.dash-sum,.dash-box{background:var(--d-panel);border:1px solid var(--d-line);border-radius:9px;padding:16px;min-width:0}
+.dash-side{display:flex;flex-direction:column;gap:12px;min-width:0}
+.dash-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.dash-lbl{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--d-mut)}
+.dash-val-row{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:6px 0 12px}
+.dash-val{font-family:var(--mono);font-size:54px;font-weight:600;line-height:1;letter-spacing:-.02em}
+.dash-unit{font-size:14px;color:var(--d-mut)}
+.dash-chg{font-family:var(--mono);font-size:15px;font-weight:600}
+.dash .up{color:var(--d-up)}.dash .dn{color:var(--d-dn)}.dash .flat{color:var(--d-mut)}
+.dash-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--d-line);border:1px solid var(--d-line);border-radius:7px;overflow:hidden;margin-bottom:14px}
+.dash-stats>div{background:var(--d-panel);padding:9px 10px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.dash-stats .k{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--d-mut);font-weight:700}
+.dash-stats .v{font-family:var(--mono);font-size:16px;font-weight:600;white-space:nowrap}
+.dash-stats .of{color:var(--d-mut);font-size:12px;font-weight:500}
+.dash-chart{width:100%;height:auto;display:block}
+.dash-chart text{fill:var(--d-mut);font:500 10px var(--mono)}
+.dash-chart .gl{stroke:var(--d-line);stroke-width:1}
+.dash-chart .ln{fill:none;stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
+.dash-chart .ln.me{stroke:var(--d-up);stroke-width:3}
+.dash-chart .ln.avg{stroke:var(--d-mut);stroke-dasharray:5 4}
+.dash-chart .ln.lead{stroke:var(--d-gold)}
+.dash-chart .dot-me{fill:var(--d-up);stroke:var(--d-panel);stroke-width:2}
+.dash-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--d-mut);margin-top:6px;align-items:center}
+.dash-legend .k::before{content:"";display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:6px;vertical-align:3px;background:currentColor}
+.dash-legend .k.me{color:var(--d-up)}.dash-legend .k.lead{color:var(--d-gold)}.dash-legend .k.avg{color:var(--d-mut)}
+.dash-legend .sub{margin-left:auto;font-size:11px}
+.dash-open,.dash-more{appearance:none;background:none;border:0;color:var(--d-up);font:inherit;font-weight:600;cursor:pointer;padding:10px 0 0;text-align:left}
+.dash-open:hover,.dash-more:hover{text-decoration:underline}
+.dash-h{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--d-fg);margin-bottom:10px}
+.dash details.info>summary{background:transparent;border-color:var(--d-line);color:var(--d-mut)}
+.dash-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px}
+.dash-tabs button{appearance:none;border:1px solid var(--d-line);background:transparent;color:var(--d-mut);border-radius:999px;padding:6px 11px;font:600 12.5px var(--body);cursor:pointer;min-height:34px}
+.dash-tabs button[aria-pressed="true"]{background:var(--d-fg);color:var(--d-bg);border-color:var(--d-fg)}
+.mv-list{list-style:none;margin:0;padding:0}
+.mv-list li{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--d-line);min-width:0}
+.mv-list li:last-child{border-bottom:0}
+.mv-list .tl{margin-right:0;width:24px;height:24px}
+.mv-list .tl.mono{width:24px;height:24px;font-size:9px}
+.mv-t{display:flex;flex-direction:column;min-width:0;flex:1;line-height:1.25}
+.mv-t b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mv-o{font-size:12px;color:var(--d-mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mv-r{font-family:var(--mono);font-weight:600;font-size:14px;white-space:nowrap}
+.mv-list li.mv-sep,.mv-list li.cal-day{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--d-mut);font-weight:700;padding:10px 0 4px;border-bottom:0}
+.cal-time{color:var(--d-mut);font-size:13px}
+.cal-live{color:var(--d-up);font-size:13px}
+.dash-pick{margin-bottom:-8px}
+.pos-h{margin:16px 0 2px;justify-content:space-between}
+.pos-h .sub{font-size:11px;letter-spacing:0;text-transform:none;font-weight:500}
+.mv-list.pos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:18px}
+.mv-list.pos li:nth-last-child(2):nth-child(odd){border-bottom:0}
+@media (max-width:520px){.mv-list.pos{grid-template-columns:1fr}.mv-list.pos li:nth-last-child(2):nth-child(odd){border-bottom:1px solid var(--d-line)}}
+@media (max-width:860px){.dash{grid-template-columns:1fr}}
+@media (max-width:520px){.dash{padding:8px;border-radius:10px}.dash-sum,.dash-box{padding:13px}.dash-val{font-size:44px}.dash-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.dash-legend .sub{display:none}}
 </style>
 
 <header class="mast">
@@ -509,7 +566,7 @@ const S = { db:null, canWrite:false, leagues:[], leaguesLoaded:false, leagueId:n
   view:"home", tab:"standings", wantLeague:null, wantTab:null, open:new Set(), onlyMine:true, weeksShown:2, draftPool:"all", draftQ:"",
   confirmDel:null, confirmLg:null, newMgrs:[], newSport:"football", sportFilter:"all", me:{}, theme:"system", reset:new Set(),
   auth:{user:null, profile:null, live:true, timer:false, level:1, google:false, dbv:0}, authMode:"in", authNote:"", join:null, invites:{},
-  schedDocs:[], faPool:"all", faQ:"", faSort:"wins", faAdd:null, actFor:null, flash:null, trades:null, tradeWatch:null, trTo:null, trGive:[], trGet:[], sbAll:false, sbLg:"all", sbDay:null, sbWeek:null, showPending:false, movesView:"fa", infoView:"history", showOther:false, showCreate:false, recapWeek:null, chat:null, chatConn:null, queue:null, queueShut:false, mock:null, dAtDirty:false, leagueSig:"" };
+  schedDocs:[], faPool:"all", faQ:"", faSort:"wins", faAdd:null, actFor:null, flash:null, trades:null, tradeWatch:null, trTo:null, trGive:[], trGet:[], sbAll:false, sbLg:"all", sbDay:null, sbWeek:null, showPending:false, movesView:"fa", infoView:"history", showOther:false, showCreate:false, homeLg:null, mvView:"up", recapWeek:null, chat:null, chatConn:null, queue:null, queueShut:false, mock:null, dAtDirty:false, leagueSig:"" };
 
 /* Accounts exist on the website (window.portfolioAuth). Inside Claude there are none, and the owner manages everything. */
 const A = window.portfolioAuth || null;
@@ -575,7 +632,7 @@ function logoOf(team, lg){
 }
 const initials = t => String(t).replace(/[^A-Za-z0-9& ]/g,"").split(/\s+/).filter(Boolean).map(w=>w[0]).join("").slice(0,3).toUpperCase() || "?";
 const tlogo = (team, lg) => { const d = logoOf(team, lg);
-  return d && d.logo ? `<img class="tl" src="${d.logo}" alt="" width="20" height="20" loading="lazy" decoding="async">`
+  return d && d.logo ? `<img class="tl" src="${d.logo}" alt="" width="20" height="20" loading="lazy" decoding="async" onerror="this.style.visibility='hidden'">`
     : `<span class="tl mono" aria-hidden="true"${d && d.color ? ` style="--tc:#${d.color}"` : ""}>${esc(initials(team))}</span>`; };
 const tcolor = (team, lg) => { const d = logoOf(team, lg); return d && d.color ? `style="--tc:#${d.color}"` : ""; };
 
@@ -859,6 +916,137 @@ function renderTickerAll(){
   paintTicker(allGames(), k=> own.has(k) ? "" : null, pool.length ? (my.length ? "No results yet for your teams." : "No results yet for drafted teams.") : "Results appear here once a league has drafted.");
 }
 
+/* ---------- home dashboard: your portfolio as a stock, the market's movers, your teams' calendar ---------- */
+// Wins each manager had banked at the end of every league week (Tuesday to Monday), for the chart and rank moves.
+function weeklyWins(L, C){
+  if (!C.games.length) return {weeks:[], by:{}};
+  const first = weekStart(C.games[0].date), last = weekStart(C.lastDate);
+  const weeks = []; for (let w = first; w <= last; w = addDays(w, 7)) weeks.push(w);
+  const by = {}; for (const o of L.owners) by[o] = weeks.map(()=>0);
+  for (const g of C.games){
+    const win = winnerKey(g); if (win===null) continue;
+    const st = C.who(win, g.date); if (!st || !by[st.owner]) continue;
+    const i = weeks.indexOf(weekStart(g.date)); if (i<0) continue;
+    by[st.owner][i] += st.wt;
+  }
+  for (const o in by){ let t = 0; by[o] = by[o].map(v=> t += v); }
+  return {weeks, by};
+}
+function streakOf(C, k){
+  const gs = (C.rec[k]||{games:[]}).games; let type = "", n = 0;
+  for (let i = gs.length-1; i>=0; i--){ const w = winnerKey(gs[i]), r = w===null ? "T" : w===k ? "W" : "L"; if (!type) type = r; if (r!==type) break; n++; }
+  return {type, n};
+}
+// A line chart: you, the league average and the leader, week by week.
+function dashChart(W, me){
+  const n = W.weeks.length; if (n<2) return "";
+  const owners = Object.keys(W.by), avg = W.weeks.map((_,i)=> owners.reduce((t,o)=>t+W.by[o][i],0)/owners.length);
+  const leader = owners.reduce((a,b)=> W.by[b][n-1] > W.by[a][n-1] ? b : a, owners[0]);
+  const max = Math.max(1, ...owners.map(o=>W.by[o][n-1]));
+  const w = 600, h = 170, px = 34, py = 14, X = i => px + i*(w-px-10)/(n-1), Y = v => h-py-18 - v*(h-2*py-18)/max;
+  const path = vals => vals.map((v,i)=>`${i?"L":"M"}${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join("");
+  const ticks = [0, Math.round(max/2), Math.round(max)].filter((v,i,a)=>a.indexOf(v)===i);
+  const lab = W.weeks.map((_,i)=> (i===0 || i===n-1 || n<=10 || i%2===0) ? `<text x="${X(i).toFixed(1)}" y="${h-4}" text-anchor="middle">${i+1}</text>` : "").join("");
+  const mine = W.by[me];
+  return `<svg class="dash-chart" viewBox="0 0 ${w} ${h}" role="img" aria-label="Wins by week: you ${fmt(mine[n-1])}, league average ${avg[n-1].toFixed(1)}${leader!==me?`, leader ${fmt(W.by[leader][n-1])}`:""}">
+    ${ticks.map(v=>`<line class="gl" x1="${px}" x2="${w-10}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}"/><text class="yl" x="${px-6}" y="${(Y(v)+4).toFixed(1)}" text-anchor="end">${v}</text>`).join("")}
+    ${lab}
+    <path class="ln avg" d="${path(avg)}"/>
+    ${leader!==me ? `<path class="ln lead" d="${path(W.by[leader])}"/>` : ""}
+    <path class="ln me" d="${path(mine)}"/>
+    <circle class="dot-me" cx="${X(n-1).toFixed(1)}" cy="${Y(mine[n-1]).toFixed(1)}" r="4"/>
+  </svg>
+  <div class="dash-legend"><span class="k me">You</span>${leader!==me?`<span class="k lead">Leader (${esc(leader)})</span>`:""}<span class="k avg">League average</span><span class="sub">Week of the season →</span></div>`;
+}
+function dashHTML(my){
+  if (!my.length) return "";
+  const L = my.find(l=>l.id===S.homeLg) || my[0], C = compute(L), me = mine(L), r = C.rows.find(x=>x.owner===me);
+  if (!r) return "";
+  const pick = my.length>1 ? `<div class="seg wide dash-pick" role="group" aria-label="Portfolio">${my.map(l=>`<button type="button" data-homelg="${esc(l.id)}" aria-pressed="${l.id===L.id}">${esc(l.name)}</button>`).join("")}</div>` : "";
+  const sp = SP(L), lgs = [sp.pro, sp.col].filter(Boolean), today = sbToday();
+  if (!C.picks.length) return `${pick}<div class="dash"><div class="dash-sum"><div class="dash-lbl">${esc(L.name)}</div><div class="dash-val">—</div><div class="dash-sub">Your portfolio opens after the draft.</div></div></div>`;
+  // ---- summary
+  const W = weeklyWins(L, C), n = W.weeks.length;
+  let dw = 0, dl = 0, dpts = 0;
+  for (const g of C.games) if (g.date===today) for (const k of [g.hk, g.ak]){ const st = C.who(k, g.date); if (!st || st.owner!==me) continue; const win = winnerKey(g); if (win===k){ dw++; dpts += st.wt; } else if (win!==null) dl++; }
+  const base = r.total - r.wk, pct = base>0 ? r.wk/base*100 : null;
+  const rankAt = i => { if (i<0) return null; const tot = L.owners.map(o=>W.by[o][i]).sort((a,b)=>b-a); return tot.indexOf(W.by[me][i])+1; };
+  const prevRank = n>1 ? rankAt(n-2) : null, rk = r.rank, rkMove = prevRank ? prevRank - rk : 0;
+  const tied = C.rows.filter(x=>x.rank===rk).length>1, P = C.games.length ? projection(L, C).find(x=>x.owner===me) : null;
+  const liveNow = LIVE.on ? liveAll().filter(g=> g.state==="in" && lgs.includes(g.lg) && [g.hk,g.ak].some(k=>{ const x = C.who(k, g.date); return x && x.owner===me; })).length : 0;
+  const chg = (v, txt) => `<span class="${v>0?"up":v<0?"dn":"flat"}">${v>0?"▲ ":v<0?"▼ ":""}${txt}</span>`;
+  const summary = `<div class="dash-sum">
+      <div class="dash-top"><span class="dash-lbl">${esc(L.name)} · ${esc(me)}</span>${liveNow?`<span class="live-pill">${liveNow} live</span>`:""}</div>
+      <div class="dash-val-row"><span class="dash-val">${fmt(r.total)}</span><span class="dash-unit">wins</span>
+        <span class="dash-chg">${chg(r.wk, `+${fmt(r.wk)} this week${pct!==null && r.wk ? ` (${pct.toFixed(1)}%)` : ""}`)}</span></div>
+      <div class="dash-stats">
+        <div><span class="k">Today</span><span class="v">${dw||dl ? chg(dpts, `${dw}-${dl}`) : `<span class="flat">—</span>`}</span></div>
+        <div><span class="k">Rank</span><span class="v">${tied?"T-":""}${ordinal(rk)} <span class="of">of ${L.owners.length}</span> ${rkMove ? chg(rkMove, String(Math.abs(rkMove))) : ""}</span></div>
+        <div><span class="k">Back of 1st</span><span class="v">${r.gb ? fmt(r.gb) : "Leading"}</span></div>
+        ${P ? `<div><span class="k">Projected</span><span class="v">${P.proj.toFixed(1)} <span class="of">${ordinal(P.projRank)}</span></span></div>` : ""}
+      </div>
+      ${dashChart(W, me)}
+      <div class="dash-h pos-h"><span>Your holdings</span><span class="sub">Record · wins for you</span></div>
+      <ul class="mv-list pos">${[...r.holdings].sort((a,b)=> b.pts-a.pts || b.rec.w-a.rec.w).map(h=>{ const st = streakOf(C, h.k), lg = lgOfPool(L, h.pool);
+        return `<li>${tlogo(h.team, lg)}<span class="mv-t"><b>${esc(h.team)}</b><span class="mv-o">${esc(h.pool)}${h.state==="leaving"?" · leaving":""}${st.n>1?` · <span class="${st.type==="W"?"up":st.type==="L"?"dn":""}">${st.type}${st.n}</span>`:""}</span></span><span class="mv-r"><span class="flat">${recTxt(h.rec)}</span> ${fmt(h.pts)}</span></li>`; }).join("")}</ul>
+      <button type="button" class="dash-open" data-go="${esc(L.id)}">Open ${esc(L.name)} ›</button>
+    </div>`;
+  // ---- market movers (this league's drafted teams)
+  const teams = C.cur.map(s=>{ const rec = s.rec, gp = rec.w+rec.l+rec.t; let ww = 0, wl = 0;
+      for (const g of rec.games) if (weekStart(g.date)===weekStart(today)){ const win = winnerKey(g); if (win===s.k) ww++; else if (win!==null) wl++; }
+      return {s, rec, gp, pct: gp ? (rec.w + rec.t/2)/gp : 0, st: streakOf(C, s.k), ww, wl, lg: lgOfPool(L, s.pool)}; });
+  const sameSport = S.leagues.filter(l=> sportOf(l)===sportOf(L) && l.status==="complete");
+  const views = [["up","Top gainers"],["down","Biggest losers"],["value","Draft value"]].concat(sameSport.length>1 ? [["owned","Most owned"]] : []);
+  const mv = views.some(v=>v[0]===S.mvView) ? S.mvView : "up";
+  const row = (t, right, sub) => `<li>${tlogo(t.s.team, t.lg)}<span class="mv-t"><b>${esc(t.s.team)}</b><span class="mv-o">${esc(t.s.owner)}${sub?` · ${sub}`:""}</span></span><span class="mv-r">${right}</span></li>`;
+  let list = [];
+  if (mv==="up") list = teams.filter(t=>t.st.type==="W" && t.gp).sort((a,b)=> b.st.n-a.st.n || b.pct-a.pct || b.rec.w-a.rec.w).slice(0,5)
+      .map(t=> row(t, `<span class="up">W${t.st.n}</span>`, `${recTxt(t.rec)}${t.ww+t.wl?` · ${t.ww}-${t.wl} this week`:""}`));
+  else if (mv==="down") list = teams.filter(t=>t.st.type==="L" && t.gp).sort((a,b)=> b.st.n-a.st.n || a.pct-b.pct || b.rec.l-a.rec.l).slice(0,5)
+      .map(t=> row(t, `<span class="dn">L${t.st.n}</span>`, `${recTxt(t.rec)}${t.ww+t.wl?` · ${t.ww}-${t.wl} this week`:""}`));
+  else if (mv==="value"){
+    const drafted = teams.filter(t=>t.s.n && t.gp>=2), total = Math.max(1, ...C.cur.map(s=>s.n||0));
+    const byPct = [...drafted].sort((a,b)=> b.pct-a.pct || b.rec.w-a.rec.w);
+    byPct.forEach((t,i)=> { t.now = i+1; t.val = t.s.n/total - (i+1)/byPct.length; });
+    const steals = [...byPct].sort((a,b)=> b.val-a.val).slice(0,3), busts = [...byPct].sort((a,b)=> a.val-b.val).slice(0,3);
+    list = steals.map(t=> row(t, `<span class="up">#${t.s.n} → #${t.now}</span>`, recTxt(t.rec)))
+      .concat(busts.length ? [`<li class="mv-sep">Underperforming their draft spot</li>`] : [])
+      .concat(busts.map(t=> row(t, `<span class="dn">#${t.s.n} → #${t.now}</span>`, recTxt(t.rec))));
+  } else {
+    const cnt = new Map();
+    for (const l of sameSport) for (const s of stintsOf(l)) if (!s.to){ const k = tk(s.team, lgOfPool(l, s.pool)); const x = cnt.get(k) || {team:s.team, lg:lgOfPool(l, s.pool), n:0, rec:(C.rec[k]||{w:0,l:0,t:0})}; x.n++; cnt.set(k, x); }
+    list = [...cnt.values()].sort((a,b)=> b.n-a.n || b.rec.w-a.rec.w).slice(0,5)
+      .map(x=> `<li>${tlogo(x.team, x.lg)}<span class="mv-t"><b>${esc(x.team)}</b><span class="mv-o">${recTxt(x.rec)}</span></span><span class="mv-r">${x.n} of ${sameSport.length}</span></li>`);
+  }
+  const movers = `<div class="dash-box">
+      <div class="dash-h"><span>Market movers</span>${info("movers", "Teams drafted in this league. Gainers and losers are ranked by their current winning or losing streak. Draft value compares where a team was picked with where its record ranks among drafted teams now (#pick → #now). Most owned counts how many of the site's leagues hold the team.")}</div>
+      <div class="dash-tabs" role="group" aria-label="Movers">${views.map(([k,t])=>`<button type="button" data-mover="${k}" aria-pressed="${mv===k}">${t}</button>`).join("")}</div>
+      <ul class="mv-list">${list.join("") || `<li class="mv-sep">${mv==="value" ? "Draft value shows once teams have played two games." : "No streaks to show yet."}</li>`}</ul>
+    </div>`;
+  // ---- calendar: your teams' games still to come (and live)
+  if (LIVE.on && sportOf(L)!=="football") lgs.forEach(lg=> loadDay(lg, addDays(today, 1)));
+  const pool = LIVE.on ? [...liveAll(), ...(sportOf(L)!=="football" ? lgs.flatMap(lg=> (LIVE.days[lg+"|"+addDays(today,1)]||{}).games || []) : [])] : [];
+  const seen = new Set();
+  const cal = pool.filter(g=> lgs.includes(g.lg) && g.state!=="post" && !seen.has(g.lg+g.id) && seen.add(g.lg+g.id))
+    .map(g=>{ const h = C.who(g.hk, g.date), a = C.who(g.ak, g.date), mh = h && h.owner===me, ma = a && a.owner===me; return (mh||ma) ? {g, side: mh ? "home" : "away", opp: mh ? a : h} : null; })
+    .filter(Boolean).sort((x,y)=> x.g.start-y.g.start).slice(0, 8);
+  let lastDay = "";
+  const calRows = cal.map(({g, side, opp})=>{
+    const mineT = side==="home" ? g.home : g.away, other = side==="home" ? g.away : g.home;
+    const d = new Date(g.start), day = d.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});
+    const head = day!==lastDay ? `<li class="cal-day">${day===new Date().toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"})?"Today":day}</li>` : ""; lastDay = day;
+    const right = g.state==="in" ? `<span class="cal-live">${side==="home"?g.hs:g.as}–${side==="home"?g.as:g.hs} · ${g.sname==="STATUS_HALFTIME"?"Half":periodText(g)}</span>`
+      : `<span class="cal-time">${d.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"})}</span>`;
+    return `${head}<li>${tlogo(mineT, g.lg)}<span class="mv-t"><b>${esc(mineT)}</b><span class="mv-o">${side==="home"?"vs":"at"} ${esc(other)}${opp?` (${esc(opp.owner)})`:""}${g.tv?` · ${esc(g.tv)}`:""}</span></span><span class="mv-r">${right}</span></li>`;
+  }).join("");
+  const calendar = `<div class="dash-box">
+      <div class="dash-h"><span>Your calendar</span>${info("cal", "Upcoming and live games for the teams in your portfolio, from the live scoreboard. Like an earnings calendar: these are the dates your holdings report.")}</div>
+      <ul class="mv-list">${!LIVE.on ? `<li class="mv-sep">The calendar is on the website.</li>` : !LIVE.tried ? `<li class="mv-sep">Loading the schedule…</li>` : (calRows || `<li class="mv-sep">No more games for your teams ${sportOf(L)==="football"?"this week":"today or tomorrow"}.</li>`)}</ul>
+      ${LIVE.on ? `<button type="button" class="dash-more" data-go="${esc(L.id)}" data-gotab="scores">Full scoreboard ›</button>` : ""}
+    </div>`;
+  return `${pick}<div class="dash">${summary}<div class="dash-side">${movers}${calendar}</div></div>`;
+}
+
 /* ---------- home ---------- */
 function homeHTML(){
   if (new Set(S.leagues.map(sportOf)).size < 2) S.sportFilter = "all";     // the sport filter only shows when there's a choice
@@ -921,6 +1109,7 @@ function homeHTML(){
     ${A ? (meId() ? "" : hero + `<div class="btns"><button class="btn primary" data-auth="up">Create an account</button><button class="btn" data-auth="in">Sign in</button>${hasV3()?`<button class="btn" data-mock="new">Try a practice draft</button>`:""}</div>`) : (my.length || Object.keys(S.me).length ? "" : hero)}
     ${A && meId() && !my.length ? `<div class="card empty"><strong>Welcome${S.auth.profile?", "+esc(S.auth.profile.username):""}.</strong>You don't have a portfolio yet. Open an invite link from a commissioner to join a league, or create your own below.</div>` : ""}
     ${new Set(S.leagues.map(sportOf)).size > 1 ? sports : ""}
+    ${dashHTML(my)}
     ${my.length ? `<div class="head-row"><h2>My leagues</h2></div><div class="pf-grid">${myCards}</div>` : ""}
     ${rest.length ? (my.length
       ? `<div class="btns"><button type="button" class="btn" id="otherBtn" aria-expanded="${S.showOther}">${S.showOther?"Hide other leagues":`Other leagues (${rest.length})`}</button></div>${S.showOther?`<div class="lg-grid">${restCards}</div>`:""}`
@@ -2228,7 +2417,7 @@ function bind(){
   });
   document.querySelectorAll("[data-only]").forEach(b=> b.onclick=()=>{ S.onlyMine = b.dataset.only==="1"; render(); });
   document.querySelectorAll("[data-sport]").forEach(b=> b.onclick=()=>{ S.sportFilter = b.dataset.sport; render(); });
-  document.querySelectorAll("[data-go]").forEach(b=> b.onclick=()=> go("league", b.dataset.go));
+  document.querySelectorAll("[data-go]").forEach(b=> b.onclick=()=> go("league", b.dataset.go, b.dataset.gotab));
   document.querySelectorAll("[data-claim]").forEach(s=> s.onchange=()=>{
     const id=s.dataset.claim; if (s.value) S.me[id]=s.value; else delete S.me[id]; saveMe(); S.reset.add(s.id);
     if (S.view==="league") S.tab="team"; render();
@@ -2272,6 +2461,8 @@ function bind(){
     try{ await S.db.doc(`leagues/${L.id}`).update({waiverUntil:$("#dlWaiver").value, tradeUntil:$("#dlTrade").value}); ["dlWaiver","dlTrade"].forEach(id=>S.reset.add(id)); setMsg("#dlMsg","Saved.",true); }
     catch(err){ setMsg("#dlMsg",failText(err)); } };
   document.querySelectorAll("[data-sb]").forEach(b=> b.onclick=()=>{ S.sbAll = b.dataset.sb==="all"; render(); });
+  document.querySelectorAll("[data-homelg]").forEach(b=> b.onclick=()=>{ S.homeLg=b.dataset.homelg; render(); });
+  document.querySelectorAll("[data-mover]").forEach(b=> b.onclick=()=>{ S.mvView=b.dataset.mover; render(); });
   const ob=$("#otherBtn"); if(ob) ob.onclick=()=>{ S.showOther=!S.showOther; render(); };
   const cb=$("#createBtn"); if(cb) cb.onclick=()=>{ S.showCreate=true; render(); const f=$("#lgForm"); if(f) try{ f.scrollIntoView({block:"start"}); }catch(_){} };
   const pb=$("#pendBtn"); if(pb) pb.onclick=()=>{ S.showPending=!S.showPending; S.flash=null; render(); if (S.showPending && S.trades && S.trades.reload) S.trades.reload(); };
