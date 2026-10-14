@@ -1,5 +1,6 @@
 /* The Portfolio website backend.
-   Accounts and leagues live in Supabase. Game scores come from data.json, which is refreshed each morning.
+   Accounts and leagues live in Supabase. Football results come from data.json, which is refreshed each morning;
+   basketball results come from the database (score_days), which collects them from ESPN every few minutes.
    The page talks to this file through window.claude (data) and window.portfolioAuth (accounts). */
 (function(){
   const CFG = window.PORTFOLIO_BACKEND || {
@@ -99,12 +100,43 @@
     if (!error && data) state.offset = new Date(data).getTime() - (t0 + Date.now()) / 2;
   }
 
+  /* ---- basketball results: the database collects every NBA and college final from ESPN (score_days) ---- */
+  const bbRows = new Map(), gameSubs = new Set();
+  let bbAt = null, bbTimer = null, bbBusy = null;
+  const seasonFrom = () => { const n = new Date(), y = n.getMonth() >= 6 ? n.getFullYear() : n.getFullYear() - 1; return y + "-08-01"; };
+  function fetchScores(){
+    if (bbBusy) return bbBusy;
+    return bbBusy = (async () => {
+      let q = sb.from("score_days").select("lg,day,games,updated_at").gte("day", seasonFrom());
+      if (bbAt) q = q.gt("updated_at", bbAt);
+      const { data, error } = await q.order("updated_at").limit(1000);
+      if (error || !data || !data.length) return false;      // nothing new, or the database hasn't had this update yet
+      for (const r of data){ bbRows.set(r.lg + "-" + r.day, r); if (!bbAt || r.updated_at > bbAt) bbAt = r.updated_at; }
+      return true;
+    })().catch(() => false).finally(() => { bbBusy = null; });
+  }
+  const scoreDocs = () => [...bbRows.values()].sort((a, b) => a.day < b.day ? -1 : 1).map(r => snapDoc("sb-" + r.lg + "-" + r.day,
+    { lg: r.lg, date: r.day, src: "auto", games: (r.games || []).map(g => ({ home: g.h, away: g.a, hs: g.hs, as: g.as })) }));
+  async function emitGames(){
+    const d = await loadStatic();
+    const docs = Object.keys(d.docs || {}).filter(k => k.startsWith("games/") && k.split("/").length === 2).sort()
+      .map(k => snapDoc(k.split("/").pop(), d.docs[k])).concat(scoreDocs());
+    gameSubs.forEach(f => { try { f({ docs, size: docs.length, empty: !docs.length }); } catch (_) {} });
+  }
+  function watchScores(){
+    if (bbTimer) return;
+    const tick = () => fetchScores().then(changed => { if (changed) emitGames(); });
+    bbTimer = setInterval(() => { if (document.visibilityState === "visible") tick(); }, 5 * 60e3);
+    document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") tick(); });
+  }
+
   /* ---- the data interface the page expects ---- */
   function collection(name){
     const q = {
       path: name, limit: () => q, doc: id => doc(name + "/" + id),
       onSnapshot(next){
         if (name === "leagues"){ leagueSubs.add(next); fetchLeagues(); startLive(); return () => leagueSubs.delete(next); }
+        if (name === "games"){ gameSubs.add(next); emitGames(); fetchScores().then(changed => { if (changed) emitGames(); }); watchScores(); return () => gameSubs.delete(next); }
         loadStatic().then(d => {
           const n = name.split("/").length + 1;
           const docs = Object.keys(d.docs || {}).filter(k => k.startsWith(name + "/") && k.split("/").length === n).sort().map(k => snapDoc(k.split("/").pop(), d.docs[k]));
@@ -130,7 +162,7 @@
   window.addEventListener("DOMContentLoaded", () => loadStatic().then(d => {
     if (!d.generated) return;
     const p = document.createElement("p"); p.className = "pubnote";
-    p.textContent = "Football scores are live during games. Results were last saved to the permanent record " +
+    p.textContent = "Scores are live during games. Football results were last saved to the permanent record " +
       new Date(d.generated).toLocaleString("en-US", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + ".";
     document.body.appendChild(p);
   }));

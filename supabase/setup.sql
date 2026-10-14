@@ -11,6 +11,7 @@
 --   draft_queues    each manager's private wish list, used first when their pick timer runs out
 --   league_messages league chat, readable only by that league's managers
 --   trade_offers    trade proposals, readable only by the two managers involved and the commissioner
+--   score_days      every NBA and college basketball final, collected from ESPN's public scoreboard every few minutes
 
 -- ---------------------------------------------------------------- profiles
 create table if not exists public.profiles (
@@ -590,13 +591,19 @@ end $$;
 -- What this database has switched on. Lets the website (and support) check the setup without any private data.
 create or replace function public.pf_status() returns jsonb
 language plpgsql stable security definer set search_path = public as $$
-declare s boolean := false;
+declare s boolean := false; sc jsonb := null;
 begin
   begin
     execute 'select exists (select 1 from cron.job where jobname = ''portfolio-autopick'')' into s;
   exception when others then s := false;
   end;
-  return jsonb_build_object('version', 4, 'scheduler', s);
+  begin   -- basketball results: when ESPN was last read and how many days of finals are stored
+    execute 'select jsonb_build_object(''last'', (select max(at) from public.score_log where status = 200),
+      ''days'', (select count(*) from public.score_days), ''net'', exists (select 1 from pg_extension where extname = ''pg_net''))' into sc;
+    execute 'select $1 || jsonb_build_object(''job'', exists (select 1 from cron.job where jobname = ''portfolio-scores''))' into sc using sc;
+  exception when others then null;
+  end;
+  return jsonb_build_object('version', 5, 'scheduler', s, 'scores', sc);
 end $$;
 
 -- Run by the scheduler every minute, so picks still happen when nobody has the draft room open.
@@ -910,6 +917,239 @@ grant execute on function public.add_drop(text, text, text, text), public.propos
 grant execute on function public.pf_trade_visible(text, text, text), public.pf_week_start(date), public.pf_today(), public.pf_next_week() to anon, authenticated;
 revoke execute on function public.pf_fail_offers(text, text[], bigint), public.pf_acts_for(public.leagues, text) from public, anon, authenticated;
 grant execute on function public.pf_acts_for(public.leagues, text) to authenticated;
+
+-- ------------------------------------------------ basketball scores
+-- Every 5 minutes during the season the database asks ESPN's public scoreboard for today's NBA and college
+-- basketball games (and, before noon Eastern, yesterday's late finishers) and keeps every final in score_days.
+-- Nothing here needs a key or account. The website reads score_days; browsers fill in live scores themselves.
+--   NBA counts the regular season only (no preseason, NBA Cup final, play-in or playoffs).
+--   College counts every Division I game except exhibitions, including conference tournaments and March Madness.
+create table if not exists public.score_days (
+  lg          text not null check (lg in ('NBA','CBB')),
+  day         date not null,
+  games       jsonb not null default '[]'::jsonb,    -- [{i: ESPN id, h: home, a: away, hs, as}]
+  updated_at  timestamptz not null default now(),
+  primary key (lg, day)
+);
+alter table public.score_days enable row level security;
+drop policy if exists "Scores are public" on public.score_days;
+create policy "Scores are public" on public.score_days for select to anon, authenticated using (true);
+grant select on public.score_days to anon, authenticated;
+
+create table if not exists public.score_fetch (       -- requests sent and not yet read
+  request_id  bigint primary key,
+  lg          text not null,
+  day         date not null,
+  created_at  timestamptz not null default now()
+);
+create table if not exists public.score_log (         -- one line per response read, kept two weeks
+  id          bigint generated always as identity primary key,
+  at          timestamptz not null default now(),
+  lg          text not null,
+  day         date not null,
+  status      int,
+  events      int,
+  finals      int,
+  note        text
+);
+alter table public.score_fetch enable row level security;
+alter table public.score_log enable row level security;
+revoke all on public.score_fetch, public.score_log from anon, authenticated;
+
+create or replace function public.pf_espn_url(p_lg text, p_day date) returns text
+language sql immutable as $$
+  select case p_lg
+    when 'NBA' then 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=' || to_char(p_day, 'YYYYMMDD')
+    else 'https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?groups=50&limit=500&dates=' || to_char(p_day, 'YYYYMMDD')
+  end $$;
+
+-- Finished games that count, from one ESPN scoreboard response.
+create or replace function public.pf_parse_scoreboard(p_lg text, p_body jsonb) returns jsonb
+language sql immutable as $$
+  select coalesce(jsonb_agg(jsonb_build_object(
+           'i', e->>'id',
+           'h', case when p_lg = 'NBA' then h->'team'->>'name' else h->'team'->>'location' end,
+           'a', case when p_lg = 'NBA' then w->'team'->>'name' else w->'team'->>'location' end,
+           'hs', (h->>'score')::int, 'as', (w->>'score')::int) order by e->>'id'), '[]'::jsonb)
+  from jsonb_array_elements(coalesce(p_body->'events', '[]'::jsonb)) e
+  cross join lateral (select e->'competitions'->0 as c) c
+  cross join lateral (select (select x from jsonb_array_elements(c.c->'competitors') x where x->>'homeAway' = 'home' limit 1) as h,
+                             (select x from jsonb_array_elements(c.c->'competitors') x where x->>'homeAway' = 'away' limit 1) as w) t
+  where coalesce((c.c->'status'->'type'->>'completed')::boolean, (e->'status'->'type'->>'completed')::boolean, false)
+    and h is not null and w is not null
+    and (h->>'score') ~ '^\d+$' and (w->>'score') ~ '^\d+$'
+    and (h->>'score')::int <> (w->>'score')::int
+    and case when p_lg = 'NBA'
+          then coalesce(e->'season'->>'type', '2') = '2'
+               and coalesce((select string_agg(n->>'headline', ' ') from jsonb_array_elements(coalesce(c.c->'notes', '[]'::jsonb)) n), '') !~* 'cup.*(final|championship)'
+          else coalesce(e->'season'->>'type', '2') <> '1'
+               and coalesce((select string_agg(n->>'headline', ' ') from jsonb_array_elements(coalesce(c.c->'notes', '[]'::jsonb)) n), '') !~* 'exhibition'
+        end
+$$;
+
+-- Other spellings ESPN and others use for college teams. Add a row here if score_unmatched lists a Division I team.
+create table if not exists public.pf_aliases (alias text primary key, team text not null);
+alter table public.pf_aliases enable row level security;
+drop policy if exists "Aliases are public" on public.pf_aliases;
+create policy "Aliases are public" on public.pf_aliases for select to anon, authenticated using (true);
+grant select on public.pf_aliases to anon, authenticated;
+insert into public.pf_aliases (alias, team) values
+('app state','Appalachian State'),('american university','American'),('seattle u','Seattle'),('seattle university','Seattle'),('st. thomas-minnesota','St. Thomas'),('st. thomas (mn)','St. Thomas'),('st. thomas minnesota','St. Thomas'),('iu indianapolis','IU Indy'),
+('iupui','IU Indy'),('hawai''i','Hawaii'),('long island university','LIU'),('long island','LIU'),('ualbany','Albany'),('se louisiana','Southeastern Louisiana'),('southeastern la.','Southeastern Louisiana'),('se missouri state','Southeast Missouri State'),
+('southeast missouri','Southeast Missouri State'),('semo','Southeast Missouri State'),('ul monroe','Louisiana-Monroe'),('ut rio grande valley','UTRGV'),('texas rio grande valley','UTRGV'),('texas a&m-cc','Texas A&M-Corpus Christi'),('texas a&m corpus christi','Texas A&M-Corpus Christi'),('a&m-corpus christi','Texas A&M-Corpus Christi'),
+('siue','SIU Edwardsville'),('southern illinois-edwardsville','SIU Edwardsville'),('csun','Cal State Northridge'),('csu northridge','Cal State Northridge'),('csu bakersfield','Cal State Bakersfield'),('csu fullerton','Cal State Fullerton'),('queens university','Queens'),('queens (nc)','Queens'),
+('grambling','Grambling State'),('florida international','FIU'),('san josé state','San Jose State'),('mcneese state','McNeese'),('nicholls state','Nicholls'),('nebraska omaha','Omaha'),('umkc','Kansas City'),('fort wayne','Purdue Fort Wayne'),
+('detroit','Detroit Mercy'),('loyola (md)','Loyola Maryland'),('loyola (chi)','Loyola Chicago'),('loyola-chicago','Loyola Chicago'),('loyola marymount university','Loyola Marymount'),('lmu','Loyola Marymount'),('fdu','Fairleigh Dickinson'),('pitt','Pittsburgh'),
+('ucsb','UC Santa Barbara'),('college of charleston','Charleston'),('citadel','The Citadel'),('texas a&m-commerce','East Texas A&M'),('tennessee-martin','UT Martin'),('arkansas-little rock','Little Rock'),('ualr','Little Rock'),('southern university','Southern'),
+('prairie view','Prairie View A&M'),('md eastern shore','Maryland Eastern Shore'),('maryland-eastern shore','Maryland Eastern Shore'),('umes','Maryland Eastern Shore'),('mississippi valley','Mississippi Valley State'),('bethune cookman','Bethune-Cookman'),('n.c. a&t','North Carolina A&T'),('nc a&t','North Carolina A&T'),
+('nc central','North Carolina Central'),('n.c. central','North Carolina Central'),('gardner webb','Gardner-Webb'),('sc upstate','USC Upstate'),('south carolina upstate','USC Upstate'),('stephen f austin','Stephen F. Austin'),('sfa','Stephen F. Austin'),('texas-arlington','UT Arlington'),
+('california baptist','Cal Baptist'),('tarleton','Tarleton State'),('dixie state','Utah Tech'),('st. joseph''s','Saint Joseph''s'),('st. peter''s','Saint Peter''s'),('st. mary''s','Saint Mary''s'),('st. louis','Saint Louis'),('saint john''s','St. John''s'),
+('boston u','Boston University'),('william and mary','William & Mary'),('houston baptist','Houston Christian'),('etsu','East Tennessee State'),('uncg','UNC Greensboro'),('unc-wilmington','UNC Wilmington'),('uncw','UNC Wilmington'),('unc-asheville','UNC Asheville'),
+('unc-greensboro','UNC Greensboro'),('sacramento st.','Sacramento State'),('csu sacramento','Sacramento State'),('mount st. marys','Mount St. Mary''s'),('miami (fla.)','Miami'),('miami (oh)','Miami (OH)'),('uconn','UConn'),('connecticut','UConn'),
+('massachusetts','UMass'),('ole miss','Ole Miss'),('mississippi','Ole Miss'),('nc state','NC State'),('n.c. state','NC State'),('usc','USC'),('southern california','USC'),('lsu','LSU'),
+('tcu','TCU'),('smu','SMU'),('ucf','UCF'),('byu','BYU'),('vcu','VCU'),('ucla','UCLA'),('unlv','UNLV'),('utep','UTEP'),
+('utsa','UTSA'),('uab','UAB'),('uic','UIC'),('umbc','UMBC'),('njit','NJIT'),('fiu','FIU'),('liu','LIU'),('vmi','VMI'),
+('army west point','Army'),('southern miss','Southern Miss'),('southern mississippi','Southern Miss'),('sam houston state','Sam Houston'),('louisiana-lafayette','Louisiana'),('ul lafayette','Louisiana'),('louisiana monroe','Louisiana-Monroe'),('ulm','Louisiana-Monroe')
+on conflict (alias) do nothing;
+
+create or replace function public.pf_cbb_name(p_name text) returns text
+language sql stable set search_path = public as $$
+  select coalesce((select team from public.pf_teams where sport = 'cbb' and lower(team) = lower(p_name) limit 1),
+                  (select team from public.pf_aliases where alias = lower(p_name)), p_name) $$;
+create or replace function public.pf_canon_cbb(p_games jsonb) returns jsonb
+language sql stable set search_path = public as $$
+  select coalesce(jsonb_agg(g || jsonb_build_object('h', public.pf_cbb_name(g->>'h'), 'a', public.pf_cbb_name(g->>'a')) order by g->>'i'), '[]'::jsonb)
+  from jsonb_array_elements(p_games) g $$;
+
+-- Adds finals to a day, replacing any earlier copy of the same game. Returns how many finals the day now holds.
+create or replace function public.pf_store_scores(p_lg text, p_day date, p_games jsonb) returns int
+language plpgsql security definer set search_path = public as $$
+declare merged jsonb;
+begin
+  if jsonb_array_length(p_games) = 0 then
+    return coalesce((select jsonb_array_length(games) from public.score_days where lg = p_lg and day = p_day), 0);
+  end if;
+  select coalesce(jsonb_agg(g order by g->>'i'), '[]'::jsonb) into merged from (
+    select distinct on (g->>'i') g from (
+      select g, 0 as pri from jsonb_array_elements(p_games) g
+      union all
+      select g, 1 from public.score_days s, jsonb_array_elements(s.games) g where s.lg = p_lg and s.day = p_day
+    ) x order by g->>'i', pri) y;
+  insert into public.score_days (lg, day, games, updated_at) values (p_lg, p_day, merged, now())
+  on conflict (lg, day) do update set games = excluded.games, updated_at = now()
+    where public.score_days.games is distinct from excluded.games;
+  return jsonb_array_length(merged);
+end $$;
+
+-- Asks ESPN for one league-day. Does nothing if that request is already waiting.
+create or replace function public.pf_request_scores(p_lg text, p_day date) returns bigint
+language plpgsql security definer set search_path = public as $$
+declare rid bigint;
+begin
+  if exists (select 1 from public.score_fetch where lg = p_lg and day = p_day and created_at > now() - interval '10 minutes') then return null; end if;
+  delete from public.score_fetch where lg = p_lg and day = p_day;
+  execute 'select net.http_get(url := $1, timeout_milliseconds := 25000)' into rid using public.pf_espn_url(p_lg, p_day);
+  insert into public.score_fetch (request_id, lg, day) values (rid, p_lg, p_day);
+  return rid;
+end $$;
+
+-- The scheduled job: read whatever ESPN has sent back, then ask again for the days that are in play.
+create or replace function public.pf_scores_tick() returns void
+language plpgsql security definer set search_path = public as $$
+declare
+  f record; r record; body jsonb; got jsonb; n int;
+  et timestamp := now() at time zone 'America/New_York';
+  today date := (now() at time zone 'America/New_York')::date;
+  md int := extract(month from today)::int * 100 + extract(day from today)::int;
+  lgs text[] := '{}';
+begin
+  for f in select * from public.score_fetch order by created_at loop
+    begin
+      execute 'select status_code, content, timed_out, error_msg from net._http_response where id = $1' into r using f.request_id;
+    exception when others then r := null;
+    end;
+    if r is null then
+      if f.created_at < now() - interval '30 minutes' then
+        delete from public.score_fetch where request_id = f.request_id;
+        insert into public.score_log (lg, day, note) values (f.lg, f.day, 'no response');
+      end if;
+      continue;
+    end if;
+    begin
+      if r.status_code = 200 then
+        body := r.content::jsonb;
+        got := public.pf_parse_scoreboard(f.lg, body);
+        if f.lg = 'CBB' then got := public.pf_canon_cbb(got); end if;
+        n := public.pf_store_scores(f.lg, f.day, got);
+        insert into public.score_log (lg, day, status, events, finals)
+          values (f.lg, f.day, r.status_code, jsonb_array_length(coalesce(body->'events', '[]'::jsonb)), jsonb_array_length(got));
+      else
+        insert into public.score_log (lg, day, status, note)
+          values (f.lg, f.day, r.status_code, left(coalesce(r.error_msg, case when r.timed_out then 'timed out' end, 'error'), 200));
+      end if;
+    exception when others then
+      insert into public.score_log (lg, day, status, note) values (f.lg, f.day, r.status_code, left('could not read: ' || sqlerrm, 200));
+    end;
+    delete from public.score_fetch where request_id = f.request_id;
+    begin
+      execute 'delete from net._http_response where id = $1' using f.request_id;
+    exception when others then null;
+    end;
+  end loop;
+
+  -- In season: NBA October through April, college November through the first days of April.
+  if md >= 1001 or md <= 430 then lgs := lgs || 'NBA'::text; end if;
+  if md >= 1101 or md <= 410 then lgs := lgs || 'CBB'::text; end if;
+  for i in 1 .. coalesce(array_length(lgs, 1), 0) loop
+    if not exists (select 1 from public.score_log where lg = lgs[i] and day = today and at > now() - interval '9 minutes') then
+      perform public.pf_request_scores(lgs[i], today);
+    end if;
+    -- Late games finish after midnight Eastern, so keep checking yesterday until noon.
+    if extract(hour from et) < 12
+       and not exists (select 1 from public.score_log where lg = lgs[i] and day = today - 1 and at > now() - interval '29 minutes') then
+      perform public.pf_request_scores(lgs[i], today - 1);
+    end if;
+  end loop;
+  delete from public.score_log where at < now() - interval '14 days';
+end $$;
+
+-- Fill in past days (for example after switching this on mid-season). Run in the SQL editor:
+--   select public.pf_scores_backfill('2026-11-02', '2026-11-30');
+-- Results arrive over the next few minutes as the job reads them.
+create or replace function public.pf_scores_backfill(p_from date, p_to date) returns int
+language plpgsql security definer set search_path = public as $$
+declare d date; n int := 0;
+begin
+  if p_to - p_from > 200 then raise exception 'Pick at most 200 days at a time.'; end if;
+  for d in select generate_series(p_from, p_to, interval '1 day')::date loop
+    if public.pf_request_scores('NBA', d) is not null then n := n + 1; end if;
+    if public.pf_request_scores('CBB', d) is not null then n := n + 1; end if;
+  end loop;
+  return n;
+end $$;
+
+-- College team names ESPN uses that don't match a team on the list. Should be empty, or only non-Division I opponents.
+create or replace view public.score_unmatched with (security_invoker = true) as
+  select x.name, count(*) as games, max(s.day) as last_seen
+  from public.score_days s
+  cross join lateral jsonb_array_elements(s.games) g
+  cross join lateral (values (g->>'h'), (g->>'a')) as x(name)
+  where s.lg = 'CBB' and not exists (select 1 from public.pf_teams t where t.sport = 'cbb' and lower(t.team) = lower(x.name))
+  group by x.name;
+
+revoke execute on function public.pf_store_scores(text, date, jsonb), public.pf_request_scores(text, date),
+  public.pf_scores_tick(), public.pf_scores_backfill(date, date) from public, anon, authenticated;
+
+do $$ begin
+  create extension if not exists pg_net;
+exception when others then
+  raise notice 'Web requests (pg_net) not switched on (%). Basketball results will not be collected.', sqlerrm;
+end $$;
+do $$ begin
+  perform cron.schedule('portfolio-scores', '*/5 * * * *', 'select public.pf_scores_tick()');
+exception when others then
+  raise notice 'Basketball score job not scheduled (%).', sqlerrm;
+end $$;
 
 -- Scheduler: checks every minute for picks whose time has run out. If the scheduler can't be switched on,
 -- auto-pick still runs whenever a signed-in person has the draft room open.

@@ -14,7 +14,7 @@
 <style>:root{padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}
 .pubnote{max-width:1080px;margin:0 auto;padding:0 16px 28px;font-size:12.5px;color:var(--muted)}</style>
 <script src="vendor/supabase.js?v=16aeff365b"></script>
-<script src="backend.js?v=8214d67166"></script>
+<script src="backend.js?v=06d1cbe0ae"></script>
 </head>
 <body>
 <title>The Portfolio</title>
@@ -347,6 +347,9 @@ input[type=datetime-local]{background:var(--bg);border:1px solid var(--line);bor
 .sg.in{border-color:var(--accent)}
 .sg-top{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12.5px;color:var(--muted)}
 .sg-st{font-family:var(--mono);font-weight:600;color:var(--fg)}
+.daynav{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.daynav .arrow{min-width:38px;height:36px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:6px;font-size:18px;font-weight:700;cursor:pointer;line-height:1}
+.daynav .arrow:hover{border-color:var(--accent)}
 .sg.pre .sg-st,.sg.post .sg-st{color:var(--muted);font-weight:500}
 .live-pill{display:inline-flex;align-items:center;gap:5px;font-family:var(--body);font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--down);margin-right:4px}
 .live-pill::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--down);animation:pulse 1.6s ease-in-out infinite}
@@ -462,7 +465,7 @@ const S = { db:null, canWrite:false, leagues:[], leaguesLoaded:false, leagueId:n
   view:"home", tab:"standings", wantLeague:null, wantTab:null, open:new Set(), onlyMine:true, weeksShown:2, draftPool:"all", draftQ:"",
   confirmDel:null, confirmLg:null, newMgrs:[], newSport:"football", sportFilter:"all", me:{}, theme:"system", reset:new Set(),
   auth:{user:null, profile:null, live:true, timer:false, level:1, google:false, dbv:0}, authMode:"in", authNote:"", join:null, invites:{},
-  schedDocs:[], faPool:"all", faQ:"", faSort:"wins", faAdd:null, actFor:null, flash:null, trades:null, tradeWatch:null, trTo:null, trGive:[], trGet:[], sbAll:false, sbLg:"all", recapWeek:null, chat:null, chatConn:null, queue:null, queueShut:false, mock:null, dAtDirty:false, leagueSig:"" };
+  schedDocs:[], faPool:"all", faQ:"", faSort:"wins", faAdd:null, actFor:null, flash:null, trades:null, tradeWatch:null, trTo:null, trGive:[], trGet:[], sbAll:false, sbLg:"all", sbDay:null, recapWeek:null, chat:null, chatConn:null, queue:null, queueShut:false, mock:null, dAtDirty:false, leagueSig:"" };
 
 /* Accounts exist on the website (window.portfolioAuth). Inside Claude there are none, and the owner manages everything. */
 const A = window.portfolioAuth || null;
@@ -558,13 +561,14 @@ function allGames(){
     if (!prev || G.rank>prev.rank) seen.set(k, G);   // a hand-entered result outranks an automatic one
   });
   if (LIVE.on){
-    // Live finals fill in until the morning archive has the game. A football team plays once a week,
-    // so a live final is skipped when either team already has a stored result that week.
+    // Live finals fill in until the stored record has the game. A football team plays once a week and a basketball
+    // team once a day, so a live final is skipped when either team already has a stored result that week (or day).
+    const span = G => BB(G.lg) ? G.date : weekStart(G.date);
     const have = new Set();
-    for (const G of seen.values()){ const w = weekStart(G.date); have.add(w+"|"+G.hk); have.add(w+"|"+G.ak); }
-    for (const g of liveWithPrev()){
-      if (!g.done) continue;
-      const w = weekStart(g.date); if (have.has(w+"|"+g.hk) || have.has(w+"|"+g.ak)) continue;
+    for (const G of seen.values()){ const w = span(G); have.add(w+"|"+G.hk); have.add(w+"|"+G.ak); }
+    for (const g of liveFinals()){
+      if (!g.done || !g.counts) continue;
+      const w = span(g); if (have.has(w+"|"+g.hk) || have.has(w+"|"+g.ak)) continue;
       have.add(w+"|"+g.hk); have.add(w+"|"+g.ak);
       seen.set("live|"+g.id, {doc:"live", lg:g.lg, date:g.date, home:g.home, away:g.away, rawHome:g.home, rawAway:g.away, rawLg:g.lg, hs:g.hs, as:g.as, rank:0, hk:g.hk, ak:g.ak});
     }
@@ -756,7 +760,7 @@ function paintTicker(games, label, emptyText){
     items.push(`<span class="tk"><b>${esc(g[side].toUpperCase())}</b> <span class="${res==="W"?"w":res==="L"?"l":"o"}">${res==="W"?"▲":res==="L"?"▼":"■"} ${res} ${m}–${t}</span>${who?` <span class="o">${esc(who)}</span>`:""}</span>`);
   }
   const liveItems = LIVE.on ? liveAll().filter(g=> g.state==="in" && (label(g.hk, g)!==null || label(g.ak, g)!==null)).map(g=>
-    `<span class="tk"><span class="l">● LIVE</span> <b>${esc(g.away.toUpperCase())} ${g.as}</b> @ <b>${esc(g.home.toUpperCase())} ${g.hs}</b> <span class="o">${g.period>4?"OT":g.period?"Q"+g.period:""}</span></span>`) : [];
+    `<span class="tk"><span class="l">● LIVE</span> <b>${esc(g.away.toUpperCase())} ${g.as}</b> @ <b>${esc(g.home.toUpperCase())} ${g.hs}</b> <span class="o">${g.sname==="STATUS_HALFTIME" || /^half/i.test(g.detail) ? "Half" : periodText(g)}</span></span>`) : [];
   items.unshift(...liveItems);
   const html = items.length ? items.join("") : `<span class="tk o">${emptyText}</span>`;
   const track = $("#tickerTrack"), full = items.length ? html+html : html;
@@ -983,7 +987,7 @@ function resultsHTML(L, C){
       </div>
       <datalist id="teamList">${teamOptions(L, C).map(t=>`<option value="${esc(t)}">`).join("")}</datalist>
       <div class="btns"><button class="btn primary" type="submit">Save game</button><span class="msg" id="gMsg" role="status"></span></div>
-    </form>` : `<p class="ro">${LIVE.on && !LIVE.err ? "Finals appear here as games end and are saved to the permanent record each morning." : "Results come in automatically each morning."} If a score looks wrong, tell the site's commissioner.</p>`;
+    </form>` : `<p class="ro">${LIVE.on && !LIVE.err ? "Finals appear here as games end and are saved to the permanent record (football each morning, basketball within minutes)." : "Results come in automatically each morning."} If a score looks wrong, tell the site's commissioner.</p>`;
 
   const thisWeek = weekStart(todayISO());
   const missing = C.cur.filter(p=> !(p.rec.games||[]).some(g=>weekStart(g.date)===thisWeek));
@@ -1319,25 +1323,45 @@ function leagueHTML(L, C){
 }
 
 /* ---------- live scores (website only) ---------- */
-/* Each visitor's browser reads ESPN's public scoreboard directly. Football for now.
-   Finals from here count in the standings right away; the morning archive remains the permanent record. */
-const LIVE = { on: !!window.PORTFOLIO_PUBLIC, by:{NFL:[], CFB:[]}, prev:{NFL:[], CFB:[]}, cur:{}, ws:null, at:0, err:"", tried:false, busy:false, timer:null, coarse:"", fine:"" };
-const ESPN_PATH = { NFL:"football/nfl", CFB:"football/college-football" };
-const ESPN_Q = { NFL:"limit=100", CFB:"groups=80&limit=300" };
-const espnURL = (lg, wk) => `https://site.api.espn.com/apis/site/v2/sports/${ESPN_PATH[lg]}/scoreboard?${ESPN_Q[lg]}${wk ? `&seasontype=${wk.type}&week=${wk.n}` : ""}`;
+/* Each visitor's browser reads ESPN's public scoreboard directly: football by week, NBA and college basketball by day.
+   Finals from here count in the standings right away; the stored record (football each morning, basketball every
+   few minutes from the database) remains the permanent one. */
+const LIVE = { on: !!window.PORTFOLIO_PUBLIC, by:{NFL:[], CFB:[], NBA:[], CBB:[]}, prev:{NFL:[], CFB:[], NBA:[], CBB:[]}, days:{}, cur:{}, ws:null, at:0, err:"", tried:false, busy:false, timer:null, coarse:"", fine:"", lgs:[] };
+const ESPN_PATH = { NFL:"football/nfl", CFB:"football/college-football", NBA:"basketball/nba", CBB:"basketball/mens-college-basketball" };
+const ESPN_Q = { NFL:"limit=100", CFB:"groups=80&limit=300", NBA:"limit=100", CBB:"groups=50&limit=500" };
+const BB = lg => lg==="NBA" || lg==="CBB";
+const LG_NAME = { NFL:"NFL", CFB:"College", NBA:"NBA", CBB:"College" };
+const espnURL = (lg, wk, day) => `https://site.api.espn.com/apis/site/v2/sports/${ESPN_PATH[lg]}/scoreboard?${ESPN_Q[lg]}${wk ? `&seasontype=${wk.type}&week=${wk.n}` : ""}${day ? `&dates=${day.replace(/-/g,"")}` : ""}`;
 function etDate(d){
   try{ const p = Object.fromEntries(new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(d).map(x=>[x.type,x.value])); return `${p.year}-${p.month}-${p.day}`; }
   catch(_){ return iso(new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()))); }
 }
 const sbToday = () => etDate(new Date(Date.now() - 4*3600e3));      // the scoreboard's day turns over at 4 AM Eastern
-const liveAll = () => [...LIVE.by.NFL, ...LIVE.by.CFB];
-const liveWithPrev = () => [...LIVE.prev.NFL, ...LIVE.prev.CFB, ...liveAll()];
+const liveAll = () => LIVE.lgs.flatMap(lg=> LIVE.by[lg]);
+const liveWithPrev = () => [...LIVE.lgs.flatMap(lg=> LIVE.prev[lg]), ...liveAll()];
+// Every final the browser has seen, including basketball days opened on the scoreboard.
+function liveFinals(){
+  const m = new Map();
+  for (const k in LIVE.days) for (const g of LIVE.days[k].games) m.set(g.lg+g.id, g);
+  for (const g of liveWithPrev()) m.set(g.lg+g.id, g);
+  return [...m.values()];
+}
+// Which scoreboards to follow: the sports of this person's leagues (football when there are none).
+function liveLgs(){
+  const sp = new Set(S.leagues.map(sportOf)), L = league(); if (L) sp.add(sportOf(L));
+  if (!sp.size) sp.add("football");
+  const out = []; for (const k of SPORT_KEYS) if (sp.has(k)) for (const lg of [SPORTS[k].pro, SPORTS[k].col]) if (lg && !out.includes(lg)) out.push(lg);
+  return out;
+}
 
-function parseEvent(e, lg){
+function parseEvent(e, lg, day){
   const c = (e.competitions||[])[0]; if (!c || !Array.isArray(c.competitors)) return null;
   const H = c.competitors.find(x=>x.homeAway==="home"), W = c.competitors.find(x=>x.homeAway==="away");
   if (!H || !W || !H.team || !W.team) return null;
-  const nm = t => lg==="NFL" ? (t.team.name || t.team.shortDisplayName || t.team.displayName || "") : (t.team.location || t.team.shortDisplayName || t.team.displayName || "");
+  const nm = t => (lg==="NFL" || lg==="NBA") ? (t.team.name || t.team.shortDisplayName || t.team.displayName || "") : (t.team.location || t.team.shortDisplayName || t.team.displayName || "");
+  const notes = (c.notes||[]).map(n=>n.headline||"").join(" "), stype = +((e.season||{}).type) || 2;
+  // NBA: regular season only (not preseason, the NBA Cup final, play-in or playoffs). College basketball: no exhibitions.
+  const counts = lg==="NBA" ? (stype===2 && !/cup.*(final|championship)/i.test(notes)) : lg==="CBB" ? (stype!==1 && !/exhibition/i.test(notes)) : true;
   const st = c.status || e.status || {}, ty = st.type || {}, sit = c.situation || null, start = new Date(e.date || c.date);
   if (isNaN(start)) return null;
   const home = canonName(nm(H), lg), away = canonName(nm(W), lg);
@@ -1346,26 +1370,34 @@ function parseEvent(e, lg){
   const state = ty.state==="in" ? "in" : ty.state==="post" ? "post" : "pre";
   return { id:String(e.id), lg, home, away, hk:tk(home,lg), ak:tk(away,lg), hs:+H.score||0, as:+W.score||0,
     hab:H.team.abbreviation||"", aab:W.team.abbreviation||"", hrank:rank(H), arank:rank(W), hrec:rec(H), arec:rec(W),
-    state, done: state==="post" && !!ty.completed, detail: ty.shortDetail || ty.detail || ty.description || "", period:+st.period||0, clock: st.displayClock||"",
-    start: start.getTime(), date: etDate(start), tv: ((c.broadcasts||[]).flatMap(b=>b.names||[]).slice(0,2).join(", ")) || "",
+    state, done: state==="post" && !!ty.completed, detail: ty.shortDetail || ty.detail || ty.description || "", sname: ty.name || "", period:+st.period||0, clock: st.displayClock||"",
+    start: start.getTime(), date: day || etDate(start), counts, note: counts ? "" : (stype===1 ? "Preseason" : /exhibition/i.test(notes) ? "Exhibition" : stype===3 || stype===5 ? "Postseason" : "Doesn't count"), tv: ((c.broadcasts||[]).flatMap(b=>b.names||[]).slice(0,2).join(", ")) || "",
     poss: sit && sit.possession ? (String(sit.possession)===String(H.team.id) ? "home" : String(sit.possession)===String(W.team.id) ? "away" : "") : "",
     dd: sit ? (sit.downDistanceText || [sit.shortDownDistanceText, sit.possessionText].filter(Boolean).join(" at ") || "") : "",
     rz: !!(sit && sit.isRedZone), last: sit && sit.lastPlay && sit.lastPlay.text ? String(sit.lastPlay.text) : "" };
 }
-async function espnGet(lg, wk){
-  const r = await fetch(espnURL(lg, wk), {cache:"no-store"});
+async function espnGet(lg, wk, day){
+  const r = await fetch(espnURL(lg, wk, day), {cache:"no-store"});
   if (!r.ok) throw new Error("HTTP "+r.status);
   const j = await r.json();
-  return { week: j.week && j.season && j.week.number ? {n:+j.week.number, type:+j.season.type||2} : null, games:(j.events||[]).map(e=>parseEvent(e,lg)).filter(Boolean) };
+  return { week: j.week && j.season && j.week.number ? {n:+j.week.number, type:+j.season.type||2} : null, games:(j.events||[]).map(e=>parseEvent(e,lg,day)).filter(Boolean) };
 }
 async function loadLive(){
-  if (!LIVE.on || LIVE.busy) return;
+  if (!LIVE.on) return;
+  if (LIVE.busy){ LIVE.again = true; return; }
   LIVE.busy = true;
   const today = sbToday(), ws = weekStart(today), we = weekEnd(ws), early = (toD(today)-toD(ws))/864e5 <= 1;
-  if (LIVE.ws!==ws){ LIVE.ws = ws; LIVE.cur = {}; LIVE.prev = {NFL:[], CFB:[]}; }      // a new week: work out which ESPN week to ask for again
+  if (LIVE.ws!==ws){ LIVE.ws = ws; LIVE.cur = {}; LIVE.prev = {NFL:[], CFB:[], NBA:[], CBB:[]}; }      // a new week: work out which ESPN week to ask for again
+  LIVE.lgs = liveLgs();
   let failed = 0;
-  await Promise.all(["NFL","CFB"].map(async lg=>{
+  await Promise.all(LIVE.lgs.map(async lg=>{
     try{
+      if (BB(lg)){
+        // Basketball goes by day (earlier days stay in LIVE.days, so their finals still count).
+        const R = await espnGet(lg, null, today);
+        LIVE.by[lg] = R.games; LIVE.days[lg+"|"+today] = {games:R.games, at:Date.now()};
+        return;
+      }
       const known = LIVE.cur[lg];
       let R = await espnGet(lg, known || null);
       if (!known){
@@ -1388,11 +1420,12 @@ async function loadLive(){
     }catch(_){ failed++; }
   }));
   LIVE.busy = false; LIVE.tried = true;
-  LIVE.err = failed===2 ? "unreachable" : "";
-  if (failed<2) LIVE.at = Date.now();
+  if (LIVE.again){ LIVE.again = false; if (liveLgs().join()!==LIVE.lgs.join()) return loadLive(); }
+  LIVE.err = failed && failed===LIVE.lgs.length ? "unreachable" : "";
+  if (failed<LIVE.lgs.length) LIVE.at = Date.now();
   const all = liveWithPrev();
   const coarse = LIVE.err + all.map(g=>[g.id,g.state,g.hs,g.as,g.done].join(":")).join("|");
-  const fine = all.map(g=>[g.id,g.clock,g.period,g.dd,g.poss].join(":")).join("|");
+  const fine = all.map(g=>[g.id,g.clock,g.period,g.dd,g.poss,g.detail].join(":")).join("|");
   const onBoard = S.view==="league" && S.tab==="scores";
   // Other pages only redraw when a score or a game's state changes; the scoreboard also follows the clock.
   if (coarse!==LIVE.coarse || (onBoard && fine!==LIVE.fine)){ LIVE.coarse = coarse; LIVE.fine = fine; render(); }
@@ -1400,12 +1433,23 @@ async function loadLive(){
 }
 function liveLoop(){
   clearTimeout(LIVE.timer); if (!LIVE.on) return;
-  const now = Date.now(), all = liveAll();
-  const anyLive = all.some(g=>g.state==="in"), soon = all.some(g=>g.state==="pre" && g.start-now < 15*60e3 && g.start-now > -4*3600e3);
-  const wait = anyLive ? 20000 : soon ? 60000 : LIVE.err ? 120000 : 300000;
+  const now = Date.now(), all = liveAll(), onBoard = S.view==="league" && S.tab==="scores";
+  // Football and anything on the open scoreboard refresh every 20 seconds while live; basketball elsewhere every minute
+  // (a full college slate is a large download).
+  const anyLive = all.some(g=>g.state==="in"), fbLive = all.some(g=>g.state==="in" && !BB(g.lg)), soon = all.some(g=>g.state==="pre" && g.start-now < 15*60e3 && g.start-now > -4*3600e3);
+  const wait = anyLive ? (fbLive || onBoard ? 20000 : 60000) : soon ? 60000 : LIVE.err ? 120000 : 300000;
   LIVE.timer = setTimeout(async()=>{ if (document.visibilityState==="visible") await loadLive(); liveLoop(); }, wait);
 }
 if (LIVE.on) document.addEventListener("visibilitychange", ()=>{ if (document.visibilityState==="visible" && Date.now()-LIVE.at > 20000) loadLive().then(liveLoop); });
+// A basketball day other than today, opened on the scoreboard. Past days are read again at most every 10 minutes.
+function loadDay(lg, day){
+  const k = lg+"|"+day, c = LIVE.days[k];
+  if (c && (c.busy || Date.now()-c.at < (day < sbToday() ? 600e3 : 120e3))) return;
+  LIVE.days[k] = {games: c ? c.games : [], at: c ? c.at : 0, busy:true};
+  espnGet(lg, null, day).then(R=> LIVE.days[k] = {games:R.games, at:Date.now()})
+    .catch(()=> LIVE.days[k] = {games: c ? c.games : [], at:Date.now(), err:true})
+    .then(()=> { if (S.view==="league" && S.tab==="scores") render(); });
+}
 
 /* Upcoming games for the weekly preview: the stored schedule (if any) plus whatever the live feed lists as not finished. */
 function schedAll(){
@@ -1414,12 +1458,19 @@ function schedAll(){
   return up.length ? [...S.schedDocs, {_id:"live", games:up}] : S.schedDocs;
 }
 
+// Q1–Q4 for the NFL and NBA, 1st/2nd half for college basketball, then OT, 2OT…
+function periodText(g){
+  const p = g.period; if (!p) return "";
+  const reg = g.lg==="CBB" ? 2 : 4;
+  if (p>reg) return (p-reg>1 ? (p-reg) : "") + "OT";
+  return g.lg==="CBB" ? (p===1 ? "1st" : "2nd") : "Q"+p;
+}
 function gameStatus(g){
   if (g.state==="pre") return new Date(g.start).toLocaleString("en-US",{weekday:"short",hour:"numeric",minute:"2-digit"}) + (g.tv ? ` · ${esc(g.tv)}` : "");
   if (g.state==="post") return esc(g.done ? (/final/i.test(g.detail) ? g.detail : "Final") : (g.detail || "Ended"));
-  if (/half/i.test(g.detail)) return "Halftime";
-  if (/^end/i.test(g.detail)) return esc(g.detail);
-  return (g.period>4 ? "OT" : g.period ? "Q"+g.period : "") + (g.clock ? " "+esc(g.clock) : "");
+  if (g.sname==="STATUS_HALFTIME" || /^half/i.test(g.detail)) return "Halftime";
+  if (g.sname==="STATUS_END_PERIOD" || /^end/i.test(g.detail)) return esc(g.detail);
+  return periodText(g) + (g.clock ? " "+esc(g.clock) : "");
 }
 function scoreCard(g, C){
   const ho = C.who(g.hk, g.date), ao = C.who(g.ak, g.date), fin = g.state==="post", live = g.state==="in";
@@ -1430,7 +1481,7 @@ function scoreCard(g, C){
       <span class="sc num">${g.state==="pre"?"":sc}</span></div>`; };
   const sit = live && g.dd ? `<div class="sg-sit ${g.rz?"rz":""}">${g.poss?`${esc(g.poss==="home"?g.home:g.away)} ball · `:""}${esc(g.dd)}</div>` : "";
   return `<div class="card sg ${g.state}">
-    <div class="sg-top"><span class="sg-st">${live?`<span class="live-pill">Live</span> `:""}${gameStatus(g)}</span><span class="lg">${g.lg==="CFB"?"College":g.lg}</span></div>
+    <div class="sg-top"><span class="sg-st">${live?`<span class="live-pill">Live</span> `:""}${gameStatus(g)}</span><span class="lg">${g.note?`<span class="tag" title="This game doesn't count toward anyone's wins">${esc(g.note)}</span> `:""}${LG_NAME[g.lg]||g.lg}</span></div>
     ${row("away")}${row("home")}${sit}
     ${live && g.last ? `<div class="sg-last">${esc(g.last.length>130 ? g.last.slice(0,127)+"…" : g.last)}</div>` : ""}
   </div>`;
@@ -1438,25 +1489,42 @@ function scoreCard(g, C){
 function scoresHTML(L, C){
   const wrap = (sub, inner) => `<section class="panel"><div class="head-row"><h2>Scoreboard</h2>${sub}</div>${inner}</section>`;
   if (!LIVE.on) return wrap("", `<div class="card empty"><strong>The live scoreboard is on the website.</strong>Open playtheportfolio.com to follow games as they happen.</div>`);
-  if (sportOf(L)!=="football") return wrap("", `<div class="card empty"><strong>Live scores cover football for now.</strong>Basketball scores arrive when that season starts.</div>`);
-  const ws = weekStart(sbToday()), we = weekEnd(ws), hasPicks = C.picks.length>0;
-  const mineOnly = hasPicks && !S.sbAll;
-  const all = liveAll().filter(g=> g.date>=ws && g.date<=we);
-  const shown = all.filter(g=> (!mineOnly || C.who(g.hk, g.date) || C.who(g.ak, g.date)) && (S.sbLg==="all" || g.lg===S.sbLg)).sort((a,b)=> a.start-b.start || a.home.localeCompare(b.home));
+  const sp = SP(L), bb = sportOf(L)!=="football", lgs = [sp.pro, sp.col].filter(Boolean), hasPicks = C.picks.length>0;
+  const mineOnly = hasPicks && !S.sbAll, lgPick = lgs.includes(S.sbLg) ? S.sbLg : "all";
+  const today = sbToday();
+  let all, sub;
+  const upd = LIVE.at ? ` · updated ${new Date(LIVE.at).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit",second:"2-digit"})}` : "";
+  if (bb){
+    // Basketball: one day at a time, with arrows to step back and forward.
+    const day = S.sbDay || today;
+    if (day!==today) lgs.forEach(lg=> loadDay(lg, day));
+    all = lgs.flatMap(lg=> day===today ? LIVE.by[lg] : ((LIVE.days[lg+"|"+day]||{}).games || []));
+    const loading = day!==today && lgs.some(lg=> !(LIVE.days[lg+"|"+day]||{}).at);
+    sub = `<div class="daynav"><button type="button" class="arrow" data-sbday="-1" aria-label="Day before">‹</button>
+      <span class="sub"><b>${day===today?"Today":day===addDays(today,-1)?"Yesterday":day===addDays(today,1)?"Tomorrow":""}</b> ${fmtDay(day)}${day===today?upd:""}</span>
+      <button type="button" class="arrow" data-sbday="1" aria-label="Day after">›</button>${day!==today?`<button type="button" class="linkbtn" data-sbday="0">Today</button>`:""}</div>`;
+    if (loading) return wrap(sub, `<div class="card empty"><strong>Loading ${fmtDay(day)}…</strong></div>`);
+  } else {
+    const ws = weekStart(today), we = weekEnd(ws);
+    all = liveAll().filter(g=> (g.lg==="NFL"||g.lg==="CFB") && g.date>=ws && g.date<=we);
+    sub = `<p class="sub">Week of ${fmtShort(ws)}–${fmtShort(we)}${upd}</p>`;
+  }
+  const shown = all.filter(g=> (!mineOnly || C.who(g.hk, g.date) || C.who(g.ak, g.date)) && (lgPick==="all" || g.lg===lgPick)).sort((a,b)=> a.start-b.start || a.home.localeCompare(b.home));
   const filters = `<div class="btns">${hasPicks?`<div class="seg" role="group" aria-label="Which games"><button type="button" data-sb="mine" aria-pressed="${mineOnly}">This league's teams</button><button type="button" data-sb="all" aria-pressed="${!mineOnly}">All games</button></div>`:""}
-      <div class="seg" role="group" aria-label="Which level"><button type="button" data-sblg="all" aria-pressed="${S.sbLg==="all"}">All</button><button type="button" data-sblg="NFL" aria-pressed="${S.sbLg==="NFL"}">NFL</button><button type="button" data-sblg="CFB" aria-pressed="${S.sbLg==="CFB"}">College</button></div></div>`;
-  const sub = `<p class="sub">Week of ${fmtShort(ws)}–${fmtShort(we)}${LIVE.at?` · updated ${new Date(LIVE.at).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit",second:"2-digit"})}`:""}</p>`;
+      ${lgs.length>1?`<div class="seg" role="group" aria-label="Which level"><button type="button" data-sblg="all" aria-pressed="${lgPick==="all"}">All</button>${lgs.map(lg=>`<button type="button" data-sblg="${lg}" aria-pressed="${lgPick===lg}">${LG_NAME[lg]}</button>`).join("")}</div>`:""}</div>`;
   if (!LIVE.tried) return wrap(sub, `<div class="card empty"><strong>Loading the scoreboard…</strong></div>`);
-  if (LIVE.err && !all.length) return wrap(sub, `<div class="card empty"><strong>Live scores can't be reached right now.</strong>Standings still update from the morning results. This page keeps trying.</div>`);
+  if (LIVE.err && !all.length) return wrap(sub, `<div class="card empty"><strong>Live scores can't be reached right now.</strong>Standings still update from the stored results. This page keeps trying.</div>`);
   const live = shown.filter(g=>g.state==="in"), pre = shown.filter(g=>g.state==="pre"), post = shown.filter(g=>g.state==="post").reverse();
   const grid = gs => `<div class="sg-grid">${gs.map(g=>scoreCard(g, C)).join("")}</div>`;
   const days = [...new Set(pre.map(g=>g.date))];
   const body = (live.length ? `<div class="head-row"><h3>Live now</h3><span class="sub">${live.length} game${live.length===1?"":"s"}</span></div>${grid(live)}` : "")
-    + days.map(d=>`<div class="head-row"><h3>${fmtDay(d)}</h3><span class="sub">${pre.filter(g=>g.date===d).length} upcoming</span></div>${grid(pre.filter(g=>g.date===d))}`).join("")
+    + (bb ? (pre.length ? `<div class="head-row"><h3>Upcoming</h3><span class="sub">${pre.length} game${pre.length===1?"":"s"}</span></div>${grid(pre)}` : "")
+          : days.map(d=>`<div class="head-row"><h3>${fmtDay(d)}</h3><span class="sub">${pre.filter(g=>g.date===d).length} upcoming</span></div>${grid(pre.filter(g=>g.date===d))}`).join(""))
     + (post.length ? `<div class="head-row"><h3>Final</h3><span class="sub">${post.length} game${post.length===1?"":"s"}</span></div>${grid(post)}` : "");
+  const none = mineOnly ? `None of this league's teams play ${bb?"on this day":"this week"}. Try All games.` : `Nothing is on the schedule for ${bb?"this day":"this week"}${bb && all.length===0 ? " (or the season hasn't started)" : ""}.`;
   return wrap(sub, `${filters}${LIVE.err?`<p class="ro">Some scores couldn't be refreshed just now. Showing the last ones received.</p>`:""}
-    ${body || `<div class="card empty"><strong>No games to show.</strong>${mineOnly?"None of this league's teams have a game listed this week. Try All games.":"Nothing is on the schedule for this week yet."}</div>`}
-    <p class="sub">Live scores come from ESPN's public scoreboard and refresh about every 20 seconds while games are on. A final here counts in the standings straight away.</p>`);
+    ${body || `<div class="card empty"><strong>No games to show.</strong>${none}</div>`}
+    <p class="sub">Live scores come from ESPN's public scoreboard and refresh about every 20 seconds while games are on. A final here counts in the standings straight away.${bb?" Preseason and exhibition games are shown but don't count.":""}</p>`);
 }
 function offersStrip(L){
   if (!hasV4() || !meId() || L.status!=="complete") return "";
@@ -1466,8 +1534,9 @@ function offersStrip(L){
   return n ? `<button type="button" class="card you" data-tabgo="trades"><span class="kv"><b>${n}</b> trade offer${n===1?"":"s"} waiting for you</span><span class="kv"><b>Review ›</b></span></button>` : "";
 }
 function liveStrip(L, C){
-  if (!LIVE.on || sportOf(L)!=="football" || !C.picks.length) return "";
-  const n = liveAll().filter(g=> g.state==="in" && (C.who(g.hk, g.date) || C.who(g.ak, g.date))).length;
+  if (!LIVE.on || !C.picks.length) return "";
+  const lgs = [SP(L).pro, SP(L).col];
+  const n = liveAll().filter(g=> g.state==="in" && lgs.includes(g.lg) && (C.who(g.hk, g.date) || C.who(g.ak, g.date))).length;
   return n ? `<button type="button" class="card you" data-tabgo="scores"><span><span class="live-pill">Live</span><span class="kv"><b>${n}</b> game${n===1?"":"s"} with this league's teams ${n===1?"is":"are"} on now</span></span><span class="kv"><b>Open the scoreboard ›</b></span></button>` : "";
 }
 
@@ -1746,7 +1815,7 @@ function settingsHTML(){
       <p>Alert choices are part of your account on the website version.</p></div>`}
     <div class="card set"><h3>Help</h3>
       <details><summary>How does scoring work?</summary><p>Every win by a team in your portfolio adds to your total. Football: ${SPORTS.football.counts} Basketball: ${SPORTS.basketball.counts}</p></details>
-      <details><summary>When do scores update?</summary><p>${LIVE.on?"On the website, football scores are live: the Scoreboard tab follows every game, and a final counts in the standings as soon as the game ends. Results are also saved to the permanent record each morning.":"Scores are pulled once each morning. A game that ends tonight shows up tomorrow morning. The website version also has live football scores."}</p></details>
+      <details><summary>When do scores update?</summary><p>${LIVE.on?"On the website, scores are live: the Scoreboard tab follows every NFL, college football, NBA and college basketball game, and a final counts in the standings as soon as the game ends. Football results are also saved to the permanent record each morning; basketball results are saved within about ten minutes of the final buzzer. NBA preseason, the NBA Cup final, the play-in and playoffs, and college exhibitions don't count.":"Scores are pulled once each morning. A game that ends tonight shows up tomorrow morning. The website version also has live scores."}</p></details>
       <details><summary>How do I see my team?</summary><p>${A?"Join a league with the invite link from its commissioner. It then appears under My Portfolios on Home, and you can switch between portfolios from the menu at the top.":"Open a league and pick your name on the My Team tab. That league then appears under My Portfolios on Home, and you can switch between portfolios from the menu at the top."}</p></details>
       <details><summary>A score looks wrong. What now?</summary><p>Tell your commissioner. They can enter a correction, and a corrected result always replaces the automatic one.</p></details>
       <details><summary>How do I start a league?</summary><p>${A?"Sign in and use Create a league on Home. You become its commissioner: you set the managers and draft order, share the invite link, and can make or undo picks for anyone.":"New leagues are set up by the commissioner, who also runs the draft."}</p></details>
@@ -1990,6 +2059,7 @@ function bind(){
     catch(err){ setMsg("#dlMsg",failText(err)); } };
   document.querySelectorAll("[data-sb]").forEach(b=> b.onclick=()=>{ S.sbAll = b.dataset.sb==="all"; render(); });
   document.querySelectorAll("[data-sblg]").forEach(b=> b.onclick=()=>{ S.sbLg = b.dataset.sblg; render(); });
+  document.querySelectorAll("[data-sbday]").forEach(b=> b.onclick=()=>{ const n = +b.dataset.sbday, t = sbToday(); S.sbDay = n ? addDays(S.sbDay || t, n) : null; if (S.sbDay===t) S.sbDay = null; render(); });
   document.querySelectorAll("[data-tabgo]").forEach(b=> b.onclick=()=>{ S.tab=b.dataset.tabgo; render(); try{ window.scrollTo(0,0); }catch(_){} });
   document.querySelectorAll("[data-recap]").forEach(b=> b.onclick=()=>{ if (b.dataset.recap){ S.recapWeek=b.dataset.recap; render(); } });
   // league history
@@ -2176,6 +2246,7 @@ window.addEventListener("hashchange", ()=>{ applyHash(); settleLeague(); render(
       if (!location.hash && standalone && my.length===1){ S.view="league"; S.wantLeague=my[0].id; S.wantTab="league"; }
     }
     settleLeague(); render();
+    if (LIVE.on && liveLgs().join()!==LIVE.lgs.join()) loadLive();    // a basketball league showed up: follow its scoreboard too
   }, ()=>{});
   db.collection("games").limit(1000).onSnapshot(q=>{ S.gameDocs = q.docs.map(d=>({_id:d.id, ...d.data()})); render(); }, ()=>{});
   db.doc("meta/sync").onSnapshot(s=>{ S.sync = s.exists ? s.data() : null; render(); }, ()=>{});
