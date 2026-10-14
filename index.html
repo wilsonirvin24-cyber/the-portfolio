@@ -435,8 +435,8 @@ dl.lgfacts dt{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color
 dl.lgfacts dd{margin:0}
 @media (max-width:520px){dl.lgfacts div{grid-template-columns:1fr;gap:2px}.tabs .wrap{gap:0;justify-content:space-between}.tab{padding:12px 4px 10px;font-size:14.5px;letter-spacing:.02em}.daynav .dn-mid{min-width:0;flex:1}}
 /* v15: home dashboard, styled like a market terminal */
-.dash{--d-bg:#0e1813;--d-panel:#13201a;--d-line:#25362d;--d-fg:#e8f1eb;--d-mut:#8ea597;--d-up:#5fe0a0;--d-dn:#ff8f84;--d-gold:#e3c06a;
-  display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:12px;background:var(--d-bg);color:var(--d-fg);border-radius:12px;padding:12px;border:1px solid #0a120e}
+.dash{--d-bg:var(--bg);--d-panel:var(--surface);--d-line:var(--line);--d-fg:var(--fg);--d-mut:var(--muted);--d-up:var(--up);--d-dn:var(--down);--d-gold:var(--gold);
+  display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:12px;color:var(--d-fg)}
 .dash .sub{color:var(--d-mut)}
 .dash-sum,.dash-box{background:var(--d-panel);border:1px solid var(--d-line);border-radius:9px;padding:16px;min-width:0}
 .dash-side{display:flex;flex-direction:column;gap:12px;min-width:0}
@@ -456,15 +456,15 @@ dl.lgfacts dd{margin:0}
 .dash-chart text{fill:var(--d-mut);font:500 10px var(--mono)}
 .dash-chart .gl{stroke:var(--d-line);stroke-width:1}
 .dash-chart .ln{fill:none;stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
-.dash-chart .ln.me{stroke:var(--d-up);stroke-width:3}
+.dash-chart .ln.me{stroke:var(--accent);stroke-width:3}
 .dash-chart .ln.avg{stroke:var(--d-mut);stroke-dasharray:5 4}
 .dash-chart .ln.lead{stroke:var(--d-gold)}
-.dash-chart .dot-me{fill:var(--d-up);stroke:var(--d-panel);stroke-width:2}
+.dash-chart .dot-me{fill:var(--accent);stroke:var(--d-panel);stroke-width:2}
 .dash-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--d-mut);margin-top:6px;align-items:center}
 .dash-legend .k::before{content:"";display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:6px;vertical-align:3px;background:currentColor}
-.dash-legend .k.me{color:var(--d-up)}.dash-legend .k.lead{color:var(--d-gold)}.dash-legend .k.avg{color:var(--d-mut)}
+.dash-legend .k.me{color:var(--accent)}.dash-legend .k.lead{color:var(--d-gold)}.dash-legend .k.avg{color:var(--d-mut)}
 .dash-legend .sub{margin-left:auto;font-size:11px}
-.dash-open,.dash-more{appearance:none;background:none;border:0;color:var(--d-up);font:inherit;font-weight:600;cursor:pointer;padding:10px 0 0;text-align:left}
+.dash-open,.dash-more{appearance:none;background:none;border:0;color:var(--accent);font:inherit;font-weight:600;cursor:pointer;padding:10px 0 0;text-align:left}
 .dash-open:hover,.dash-more:hover{text-decoration:underline}
 .dash-h{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--d-fg);margin-bottom:10px}
 .dash details.info>summary{background:transparent;border-color:var(--d-line);color:var(--d-mut)}
@@ -490,7 +490,7 @@ dl.lgfacts dd{margin:0}
 .mv-list.pos li:nth-last-child(2):nth-child(odd){border-bottom:0}
 @media (max-width:520px){.mv-list.pos{grid-template-columns:1fr}.mv-list.pos li:nth-last-child(2):nth-child(odd){border-bottom:1px solid var(--d-line)}}
 @media (max-width:860px){.dash{grid-template-columns:1fr}}
-@media (max-width:520px){.dash{padding:8px;border-radius:10px}.dash-sum,.dash-box{padding:13px}.dash-val{font-size:44px}.dash-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.dash-legend .sub{display:none}}
+@media (max-width:520px){.dash-sum,.dash-box{padding:13px}.dash-val{font-size:44px}.dash-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.dash-legend .sub{display:none}}
 </style>
 
 <header class="mast">
@@ -1109,8 +1109,8 @@ function homeHTML(){
     ${A ? (meId() ? "" : hero + `<div class="btns"><button class="btn primary" data-auth="up">Create an account</button><button class="btn" data-auth="in">Sign in</button>${hasV3()?`<button class="btn" data-mock="new">Try a practice draft</button>`:""}</div>`) : (my.length || Object.keys(S.me).length ? "" : hero)}
     ${A && meId() && !my.length ? `<div class="card empty"><strong>Welcome${S.auth.profile?", "+esc(S.auth.profile.username):""}.</strong>You don't have a portfolio yet. Open an invite link from a commissioner to join a league, or create your own below.</div>` : ""}
     ${new Set(S.leagues.map(sportOf)).size > 1 ? sports : ""}
-    ${dashHTML(my)}
     ${my.length ? `<div class="head-row"><h2>My leagues</h2></div><div class="pf-grid">${myCards}</div>` : ""}
+    ${dashHTML(my)}
     ${rest.length ? (my.length
       ? `<div class="btns"><button type="button" class="btn" id="otherBtn" aria-expanded="${S.showOther}">${S.showOther?"Hide other leagues":`Other leagues (${rest.length})`}</button></div>${S.showOther?`<div class="lg-grid">${restCards}</div>`:""}`
       : `<div class="head-row">${ttl("Leagues", "lgs", A?"Anyone can view a league. Joining one takes an invite link from its commissioner.":"Pick your name in a league to add it to My leagues on this device.")}</div><div class="lg-grid">${restCards}</div>`) : ""}
