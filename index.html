@@ -14,7 +14,7 @@
 <style>:root{padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}
 .pubnote{max-width:1080px;margin:0 auto;padding:0 16px 28px;font-size:12.5px;color:var(--muted)}</style>
 <script src="vendor/supabase.js?v=16aeff365b"></script>
-<script src="backend.js?v=06d1cbe0ae"></script>
+<script src="backend.js?v=8c759f0e24"></script>
 </head>
 <body>
 <title>The Portfolio</title>
@@ -386,6 +386,54 @@ input[type=datetime-local]{background:var(--bg);border:1px solid var(--line);bor
 .check input{width:18px;height:18px;accent-color:var(--accent)}
 input[type=email],input[type=password],input[type=tel]{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:9px 10px;width:100%;min-width:0;color:var(--fg)}
 @media (max-width:520px){.me-head{grid-template-columns:1fr}.me-head .n,.me-head .lbl{text-align:left}}
+/* v14: cleaner league pages */
+.tab.has-dot::after{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--down);margin-left:6px;vertical-align:4px}
+.ttl{display:flex;align-items:center;gap:8px;min-width:0}
+.note-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+details.info{display:inline-block;position:relative;flex-shrink:0}
+details.info>summary{list-style:none;cursor:pointer;width:22px;height:22px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--muted);font:italic 700 12px/20px Georgia,serif;text-align:center;user-select:none}
+details.info>summary::-webkit-details-marker{display:none}
+details.info>summary:hover,details.info[open]>summary{border-color:var(--accent);color:var(--accent)}
+details.info>summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.info-pop{position:absolute;z-index:30;top:28px;left:-10px;width:min(300px,calc(100vw - 40px));background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font:400 13px/1.45 var(--body);color:var(--fg);text-transform:none;letter-spacing:normal;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+.head-row .info-pop{left:-10px}
+.lg-head{align-items:center}
+.btn.sm{padding:7px 12px;font-size:13.5px}
+.attn{padding:0;overflow:hidden}
+.attn-row{appearance:none;width:100%;display:flex;justify-content:space-between;align-items:center;gap:12px;background:none;border:0;border-bottom:1px solid var(--line);padding:13px 16px;font:inherit;color:inherit;text-align:left;cursor:pointer;min-height:48px}
+.attn-row:last-child{border-bottom:0}
+.attn-row:hover{background:var(--sunk)}
+.attn-row.hot{box-shadow:inset 4px 0 0 var(--down)}
+.attn-row .go{color:var(--muted);font-weight:700;font-size:18px}
+.hot-txt{color:var(--down);font-weight:600}
+.tl{width:20px;height:20px;object-fit:contain;flex-shrink:0;vertical-align:-5px;margin-right:7px}
+.tl.mono{--tc:var(--muted);display:inline-flex;align-items:center;justify-content:center;border-radius:50%;font:700 8.5px/1 var(--body);letter-spacing:0;color:#fff;background:var(--tc);vertical-align:-4px}
+.h-item .tl,.ld .tl{margin-right:0}
+.team td .tn{display:inline-flex;align-items:center;gap:0;flex-wrap:wrap}
+.team tr td:first-child{box-shadow:inset 4px 0 0 var(--tc,transparent)}
+.st.fa .tn{display:inline-flex;align-items:center}
+.sg-row .tn .tl{width:22px;height:22px;vertical-align:-6px}
+.board .cell .tl{width:16px;height:16px;vertical-align:-3px;margin-right:5px}
+.pend-btn{display:inline-flex;align-items:center;gap:8px}
+.pend-btn .count{font-family:var(--mono);background:var(--sunk);border-radius:10px;padding:1px 8px;font-size:12.5px}
+.pend-btn.hot{border-color:var(--down)}
+.pend-btn.hot .count{background:var(--down);color:#fff}
+.pend-panel{display:flex;flex-direction:column;gap:10px;margin-top:-6px}
+.pend-moves{list-style:none;margin:0;padding:6px 14px}
+.pend-moves li{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}
+.pend-moves li:last-child{border-bottom:0}
+.filters{display:flex;gap:8px;flex-wrap:wrap}
+.seg button{min-height:40px}
+.seg.wide{display:flex;overflow-x:auto;max-width:100%}
+.seg.wide button{flex:1;white-space:nowrap}
+.daynav .dn-mid{display:flex;flex-direction:column;align-items:center;min-width:150px;text-align:center;line-height:1.25}
+.daynav .arrow{min-width:44px;height:44px}
+dl.lgfacts{margin:0;padding:6px 16px}
+dl.lgfacts div{display:grid;grid-template-columns:120px 1fr;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
+dl.lgfacts div:last-child{border-bottom:0}
+dl.lgfacts dt{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700}
+dl.lgfacts dd{margin:0}
+@media (max-width:520px){dl.lgfacts div{grid-template-columns:1fr;gap:2px}.tabs .wrap{gap:0;justify-content:space-between}.tab{padding:12px 4px 10px;font-size:14.5px;letter-spacing:.02em}.daynav .dn-mid{min-width:0;flex:1}}
 </style>
 
 <header class="mast">
@@ -407,14 +455,10 @@ input[type=email],input[type=password],input[type=tel]{background:var(--bg);bord
 <nav class="tabs" id="tabsNav" aria-label="League sections" hidden>
   <div class="wrap" role="tablist">
     <button class="tab" role="tab" aria-selected="false" data-tab="league">League</button>
-    <button class="tab" role="tab" aria-selected="false" data-tab="scores" id="scoresTab" hidden>Scoreboard</button>
-    <button class="tab" role="tab" aria-selected="false" data-tab="team">My Team</button>
-    <button class="tab" role="tab" aria-selected="false" data-tab="standings">Standings</button>
-    <button class="tab" role="tab" aria-selected="false" data-tab="fa" id="faTab" hidden>Free Agents</button>
-    <button class="tab" role="tab" aria-selected="false" data-tab="trades" id="trTab" hidden>Trades</button>
-    <button class="tab" role="tab" aria-selected="false" data-tab="board">Board</button>
-    <button class="tab" role="tab" aria-selected="false" data-tab="results">Results</button>
-    <button class="tab" role="tab" aria-selected="false" data-tab="draft">Draft</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="scores">Scores</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="team" id="teamTab">My Team</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="moves" id="movesTab" hidden>Moves</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="draft" id="draftTab" hidden>Draft</button>
     <button class="tab" role="tab" aria-selected="false" data-tab="chat" id="chatTab" hidden>Chat</button>
   </div>
 </nav>
@@ -459,13 +503,13 @@ const SPORT_KEYS = Object.keys(SPORTS);
 const PFX = {NFL:"n:", CFB:"c:", NBA:"b:", CBB:"m:"};
 /* Spellings other score sources use, mapped to the names above. */
 const ALIAS = {"miami (fla.)":"Miami","miami (fl)":"Miami","miami fl":"Miami","miami-fl":"Miami","miami (oh)":"Miami (OH)","miami-oh":"Miami (OH)","miami (ohio)":"Miami (OH)","miami oh":"Miami (OH)","miami ohio":"Miami (OH)","miss. state":"Mississippi State","ga. southern":"Georgia Southern","ga. tech":"Georgia Tech","va. tech":"Virginia Tech","ul-monroe":"Louisiana-Monroe","ul monroe":"Louisiana-Monroe","ulm":"Louisiana-Monroe","louisiana monroe":"Louisiana-Monroe","louisiana-lafayette":"Louisiana","ul-lafayette":"Louisiana","c. michigan":"Central Michigan","cent. michigan":"Central Michigan","e. michigan":"Eastern Michigan","w. michigan":"Western Michigan","n. illinois":"Northern Illinois","niu":"Northern Illinois","app. state":"Appalachian State","app state":"Appalachian State","so. miss":"Southern Miss","southern mississippi":"Southern Miss","southern miss.":"Southern Miss","w. kentucky":"Western Kentucky","wku":"Western Kentucky","middle tenn.":"Middle Tennessee","middle tennessee state":"Middle Tennessee","mtsu":"Middle Tennessee","fau":"Florida Atlantic","florida international":"FIU","c. carolina":"Coastal Carolina","pitt":"Pittsburgh","n.c. state":"NC State","north carolina state":"NC State","massachusetts":"UMass","connecticut":"UConn","southern methodist":"SMU","central florida":"UCF","brigham young":"BYU","mississippi":"Ole Miss","texas christian":"TCU","louisiana state":"LSU","southern california":"USC","hawai'i":"Hawaii","san josé state":"San Jose State","la. tech":"Louisiana Tech","la tech":"Louisiana Tech","sam houston state":"Sam Houston","ut san antonio":"UTSA","texas-san antonio":"UTSA","texas-el paso":"UTEP","alabama-birmingham":"UAB","army west point":"Army","n. texas":"North Texas","s. florida":"South Florida","usf":"South Florida","e. carolina":"East Carolina","ecu":"East Carolina","s. carolina":"South Carolina","n. carolina":"North Carolina","unc":"North Carolina","w. virginia":"West Virginia","boston col.":"Boston College","ndsu":"North Dakota State","n. dakota state":"North Dakota State","s. alabama":"South Alabama","cal":"California","jax state":"Jacksonville State","nevada-las vegas":"UNLV","bowling green state":"Bowling Green",
-  "saint john's":"St. John's","st. john's (ny)":"St. John's","uncw":"UNC Wilmington","uncg":"UNC Greensboro","etsu":"East Tennessee State","fgcu":"Florida Gulf Coast","siue":"SIU Edwardsville","semo":"Southeast Missouri State","loyola (chi)":"Loyola Chicago","loyola-chicago":"Loyola Chicago","loyola (md)":"Loyola Maryland","st. mary's":"Saint Mary's","saint mary's (ca)":"Saint Mary's","st. joseph's":"Saint Joseph's","st. peter's":"Saint Peter's","st. louis":"Saint Louis","iupui":"IU Indy","umkc":"Kansas City","citadel":"The Citadel","grambling":"Grambling State","southern university":"Southern","pennsylvania":"Penn","long island university":"LIU","texas a&m-cc":"Texas A&M-Corpus Christi","ut rio grande valley":"UTRGV","sf austin":"Stephen F. Austin","california baptist":"Cal Baptist","csu bakersfield":"Cal State Bakersfield","detroit":"Detroit Mercy","college of charleston":"Charleston"};
+  "saint john's":"St. John's","st. john's (ny)":"St. John's","uncw":"UNC Wilmington","uncg":"UNC Greensboro","etsu":"East Tennessee State","fgcu":"Florida Gulf Coast","siue":"SIU Edwardsville","semo":"Southeast Missouri State","loyola (chi)":"Loyola Chicago","loyola-chicago":"Loyola Chicago","loyola (md)":"Loyola Maryland","st. mary's":"Saint Mary's","saint mary's (ca)":"Saint Mary's","st. joseph's":"Saint Joseph's","st. peter's":"Saint Peter's","st. louis":"Saint Louis","iupui":"IU Indy","umkc":"Kansas City","citadel":"The Citadel","grambling":"Grambling State","southern university":"Southern","pennsylvania":"Penn","long island university":"LIU","texas a&m-cc":"Texas A&M-Corpus Christi","ut rio grande valley":"UTRGV","sf austin":"Stephen F. Austin","california baptist":"Cal Baptist","csu bakersfield":"Cal State Bakersfield","detroit":"Detroit Mercy","college of charleston":"Charleston","american university":"American","seattle u":"Seattle","seattle university":"Seattle","st. thomas-minnesota":"St. Thomas","st. thomas (mn)":"St. Thomas","st. thomas minnesota":"St. Thomas","iu indianapolis":"IU Indy","long island":"LIU","ualbany":"Albany","se louisiana":"Southeastern Louisiana","southeastern la.":"Southeastern Louisiana","se missouri state":"Southeast Missouri State","southeast missouri":"Southeast Missouri State","texas rio grande valley":"UTRGV","texas a&m corpus christi":"Texas A&M-Corpus Christi","a&m-corpus christi":"Texas A&M-Corpus Christi","southern illinois-edwardsville":"SIU Edwardsville","csun":"Cal State Northridge","csu northridge":"Cal State Northridge","csu fullerton":"Cal State Fullerton","queens university":"Queens","queens (nc)":"Queens","mcneese state":"McNeese","nicholls state":"Nicholls","nebraska omaha":"Omaha","fort wayne":"Purdue Fort Wayne","loyola marymount university":"Loyola Marymount","lmu":"Loyola Marymount","fdu":"Fairleigh Dickinson","ucsb":"UC Santa Barbara","texas a&m-commerce":"East Texas A&M","tennessee-martin":"UT Martin","arkansas-little rock":"Little Rock","ualr":"Little Rock","prairie view":"Prairie View A&M","md eastern shore":"Maryland Eastern Shore","maryland-eastern shore":"Maryland Eastern Shore","umes":"Maryland Eastern Shore","mississippi valley":"Mississippi Valley State","bethune cookman":"Bethune-Cookman","n.c. a&t":"North Carolina A&T","nc a&t":"North Carolina A&T","nc central":"North Carolina Central","n.c. central":"North Carolina Central","gardner webb":"Gardner-Webb","sc upstate":"USC Upstate","south carolina upstate":"USC Upstate","stephen f austin":"Stephen F. Austin","sfa":"Stephen F. Austin","texas-arlington":"UT Arlington","tarleton":"Tarleton State","dixie state":"Utah Tech","boston u":"Boston University","william and mary":"William & Mary","houston baptist":"Houston Christian","unc-wilmington":"UNC Wilmington","unc-asheville":"UNC Asheville","unc-greensboro":"UNC Greensboro","sacramento st.":"Sacramento State","csu sacramento":"Sacramento State","mount st. marys":"Mount St. Mary's","ul lafayette":"Louisiana"};
 
 const S = { db:null, canWrite:false, leagues:[], leaguesLoaded:false, leagueId:null, gameDocs:[], sync:null,
   view:"home", tab:"standings", wantLeague:null, wantTab:null, open:new Set(), onlyMine:true, weeksShown:2, draftPool:"all", draftQ:"",
   confirmDel:null, confirmLg:null, newMgrs:[], newSport:"football", sportFilter:"all", me:{}, theme:"system", reset:new Set(),
   auth:{user:null, profile:null, live:true, timer:false, level:1, google:false, dbv:0}, authMode:"in", authNote:"", join:null, invites:{},
-  schedDocs:[], faPool:"all", faQ:"", faSort:"wins", faAdd:null, actFor:null, flash:null, trades:null, tradeWatch:null, trTo:null, trGive:[], trGet:[], sbAll:false, sbLg:"all", sbDay:null, recapWeek:null, chat:null, chatConn:null, queue:null, queueShut:false, mock:null, dAtDirty:false, leagueSig:"" };
+  schedDocs:[], faPool:"all", faQ:"", faSort:"wins", faAdd:null, actFor:null, flash:null, trades:null, tradeWatch:null, trTo:null, trGive:[], trGet:[], sbAll:false, sbLg:"all", sbDay:null, sbWeek:null, showPending:false, movesView:"fa", infoView:"history", showOther:false, showCreate:false, recapWeek:null, chat:null, chatConn:null, queue:null, queueShut:false, mock:null, dAtDirty:false, leagueSig:"" };
 
 /* Accounts exist on the website (window.portfolioAuth). Inside Claude there are none, and the owner manages everything. */
 const A = window.portfolioAuth || null;
@@ -508,6 +552,32 @@ function canonName(name, lg){
   return st!==low ? s.replace(/\bSt\.?$/i,"State") : s;
 }
 const tk = (name, lg) => PFX[lg] + canonName(name, lg).toLowerCase();
+
+/* ---------- team logos and colors ----------
+   From ESPN: the database keeps a list (pf_logos), and every live scoreboard adds what it sees.
+   A copy is kept in this browser so logos show straight away on the next visit. */
+const LOGO = new Map();
+const okLogo = u => typeof u==="string" && /^https:\/\/a\d?\.espncdn\.com\/[\w\/.\-]+\.png$/i.test(u) ? u : "";
+const okColor = c => typeof c==="string" && /^[0-9a-f]{6}$/i.test(c) ? c.toLowerCase() : "";
+let logoSaveT = 0;
+function addLogo(name, lg, d){
+  if (!name || !PFX[lg]) return false;
+  const k = tk(name, lg), was = LOGO.get(k) || {}, logo = okLogo(d.logo) || was.logo || "", color = okColor(d.color) || was.color || "";
+  if (was.logo===logo && was.color===color) return false;
+  LOGO.set(k, {logo, color}); clearTimeout(logoSaveT); logoSaveT = setTimeout(saveLogos, 3000); return true;
+}
+function saveLogos(){ try{ localStorage.setItem("pf-logos", JSON.stringify([...LOGO])); }catch(_){} }
+try{ for (const [k,v] of JSON.parse(localStorage.getItem("pf-logos")||"[]")) if (v && typeof k==="string") LOGO.set(k, {logo:okLogo(v.logo), color:okColor(v.color)}); }catch(_){}
+function logoOf(team, lg){
+  let d = LOGO.get(tk(team, lg));
+  if ((!d || !d.logo) && (lg==="CFB" || lg==="CBB")) d = LOGO.get(tk(team, lg==="CFB" ? "CBB" : "CFB")) || d;   // same school, other sport
+  return d || null;
+}
+const initials = t => String(t).replace(/[^A-Za-z0-9& ]/g,"").split(/\s+/).filter(Boolean).map(w=>w[0]).join("").slice(0,3).toUpperCase() || "?";
+const tlogo = (team, lg) => { const d = logoOf(team, lg);
+  return d && d.logo ? `<img class="tl" src="${d.logo}" alt="" width="20" height="20" loading="lazy" decoding="async">`
+    : `<span class="tl mono" aria-hidden="true"${d && d.color ? ` style="--tc:#${d.color}"` : ""}>${esc(initials(team))}</span>`; };
+const tcolor = (team, lg) => { const d = logoOf(team, lg); return d && d.color ? `style="--tc:#${d.color}"` : ""; };
 
 /* ---------- dates: league week runs Tuesday through Monday ---------- */
 const toD = s => { const [y,m,d] = s.split("-").map(Number); return new Date(Date.UTC(y,m-1,d)); };
@@ -647,7 +717,13 @@ function compute(L){
 /* ---------- routing: #home, #settings, #<league>, #<league>.<tab> ---------- */
 const PUBLIC_BASE = window.PORTFOLIO_PUBLIC ? location.origin + location.pathname : "https://playtheportfolio.com/";
 const leagueURL = id => PUBLIC_BASE + "#" + id;
-const TABS = ["league","scores","team","standings","fa","trades","board","results","draft","chat"];
+const TABS = ["league","scores","team","moves","draft","chat","info"];
+// Older links still work: each former tab opens where its content lives now.
+const OLD_TABS = {standings:"league", fa:"moves", trades:"moves", board:"info", results:"scores"};
+function setTab(t){
+  if (t==="fa" || t==="trades") S.movesView = t;
+  S.tab = OLD_TABS[t] || (TABS.includes(t) ? t : "league");
+}
 function applyHash(){
   const h = (location.hash||"").slice(1);
   if (!h || h==="home"){ S.view = "home"; return; }
@@ -658,12 +734,12 @@ function applyHash(){
     try{ localStorage.setItem("pf-join", JSON.stringify({id:jid, code:code||"", t:Date.now()})); }catch(_){}   // survives the trip out to an email link or Google
     return; }
   const [lid, tab] = h.split(".");
-  S.view = "league"; S.wantLeague = lid; S.wantTab = TABS.includes(tab) ? tab : null;
+  S.view = "league"; S.wantLeague = lid; S.wantTab = TABS.includes(tab) || OLD_TABS[tab] ? tab : null;
 }
 function settleLeague(){
   if (S.wantLeague && S.leaguesLoaded){
     const L = S.leagues.find(l=>l.id===S.wantLeague);
-    if (L){ S.leagueId = L.id; S.tab = S.wantTab || "league"; } else S.view = "home";
+    if (L){ S.leagueId = L.id; setTab(S.wantTab || "league"); } else S.view = "home";
     S.wantLeague = S.wantTab = null;
   }
   if (!S.leagues.some(l=>l.id===S.leagueId)) S.leagueId = (S.leagues.find(l=>mine(l)) || S.leagues[0])?.id || null;
@@ -680,7 +756,7 @@ function go(view, id, tab){
   S.view = view; S.confirmDel = S.confirmLg = null;
   if (view==="league"){
     if (id && id!==S.leagueId){ S.leagueId = id; S.open.clear(); S.faAdd = null; S.flash = null; S.trGive = []; S.trGet = []; S.trTo = null; S.actFor = null; S.faPool = "all"; S.faQ = ""; S.weeksShown = 2; S.draftQ = ""; S.draftPool = "all"; S.recapWeek = null; S.dAtDirty = false; S.reset.add("dAt"); }
-    S.tab = tab || "league";
+    setTab(tab || "league");
   }
   render(); try{ window.scrollTo(0,0); }catch(_){}
   if (A && view==="league"){ A.refresh(); if (S.trades && S.trades.id===S.leagueId && S.trades.reload) S.trades.reload(); }      // make sure the league is current when it's opened
@@ -711,11 +787,18 @@ function render(){
   const view = S.view==="league" && !L ? "home" : S.view;
   $("#tabsNav").hidden = view!=="league";
   $("#chatTab").hidden = !hasV3();
-  $("#scoresTab").hidden = !LIVE.on;
-  $("#faTab").hidden = $("#trTab").hidden = !A;
+  $("#movesTab").hidden = !A || !(L && L.status==="complete");      // pickups and trades start after the draft
+  // The Draft tab shows while a draft is on (or about to be); afterwards the results live under League info.
+  const drafting = !!(L && (L.status==="drafting" || !(L.picks||[]).length));
+  $("#draftTab").hidden = !drafting;
+  if (view==="league" && L && S.tab==="draft" && !drafting) S.tab = "info";
+  if (view==="league" && L && S.tab==="moves" && !A) S.tab = "league";
+  tabDots(L);
   if (S.chatConn && !(view==="league" && S.tab==="chat" && L && S.chat && S.chat.id===L.id)) stopChat();
   $("#signBtn").hidden = !(A && S.auth.live && !meId()) || view==="auth";
   document.querySelectorAll(".tab").forEach(b=> b.setAttribute("aria-selected", String(view==="league" && b.dataset.tab===S.tab)));
+  // Keep any open disclosure (info notes, collapsed sections) open across redraws.
+  const opened = [...main.querySelectorAll("details[id][open]")].map(d=>d.id);
   renderLeagueSel(view);
   if (S.db===null) main.innerHTML = `<section class="card empty"><strong>League data isn't available here.</strong>Open this page in Claude while signed in to see your leagues.</section>`;
   else if (!S.leaguesLoaded) main.innerHTML = `<section class="card empty"><strong>Opening The Portfolio…</strong>Your leagues, standings and results load from the shared league file.</section>`;
@@ -729,8 +812,9 @@ function render(){
     renderTicker(L, C);
     $("#tagline").textContent = `${L.name} · ${SP(L).label} ${seasonLabel(L.year)} · ${L.owners.length} managers`;
     if (S.tab==="chat" && !hasV3() && S.leaguesLoaded && !A) S.tab = "league";
-    main.innerHTML = ({league:leagueHTML, scores:scoresHTML, fa:faHTML, trades:tradesHTML, team:teamHTML, standings:standingsHTML, board:boardHTML, results:resultsHTML, draft:draftHTML, chat:chatHTML}[S.tab] || leagueHTML)(L, C);
+    main.innerHTML = ({league:leagueHTML, scores:scoresHTML, moves:movesHTML, team:teamHTML, draft:draftHTML, chat:chatHTML, info:infoHTML}[S.tab] || leagueHTML)(L, C);
   }
+  for (const id of opened){ const d = document.getElementById(id); if (d && d.tagName==="DETAILS") d.open = true; }
   for (const id in keep){ if (S.reset.has(id)) continue; const el = document.getElementById(id); if (el && el.value!==keep[id]) el.value = keep[id]; }
   S.reset.clear();
   main.querySelectorAll("[data-keep]").forEach(e=>{ if (scrolls[e.dataset.keep]) e.scrollTop = scrolls[e.dataset.keep]; });
@@ -767,30 +851,37 @@ function paintTicker(games, label, emptyText){
   if (track.dataset.sig !== full){ track.dataset.sig = full; track.innerHTML = full; }
 }
 function renderTicker(L, C){ paintTicker(C.games, (k, g)=>{ const s = C.who(k, g.date); return s ? s.owner : null; }, "No results yet for this league's teams."); }
+// Outside a league the ticker shows team, score and result only: your leagues' teams when you're in any, otherwise every drafted team.
 function renderTickerAll(){
-  const own = new Map();
-  for (const l of S.leagues) for (const p of stintsOf(l)) if (!p.to) own.set(pk(l,p), p.owner);
-  const one = S.leagues.length===1;
-  paintTicker(allGames(), k=> own.has(k) ? (one ? own.get(k) : "") : null, S.leagues.length ? "No results yet for drafted teams." : "Results appear here once a league has drafted.");
+  const my = S.leagues.filter(l=>mine(l)), pool = my.length ? my : S.leagues;
+  const own = new Set();
+  for (const l of pool) for (const p of stintsOf(l)) if (!p.to) own.add(pk(l,p));
+  paintTicker(allGames(), k=> own.has(k) ? "" : null, pool.length ? (my.length ? "No results yet for your teams." : "No results yet for drafted teams.") : "Results appear here once a league has drafted.");
 }
 
 /* ---------- home ---------- */
 function homeHTML(){
+  if (new Set(S.leagues.map(sportOf)).size < 2) S.sportFilter = "all";     // the sport filter only shows when there's a choice
   const show = S.leagues.filter(l=> S.sportFilter==="all" || sportOf(l)===S.sportFilter);
   const my = show.filter(l=>mine(l)), rest = show.filter(l=>!mine(l));
   const sports = `<div class="sports" role="group" aria-label="Sport">${[["all","All sports"],...SPORT_KEYS.map(k=>[k,SPORTS[k].label])].map(([k,t])=>`<button type="button" data-sport="${k}" aria-pressed="${S.sportFilter===k}">${t}</button>`).join("")}</div>`;
 
   const myCards = my.map(l=>{
     const C = compute(l), o = mine(l), r = C.rows.find(x=>x.owner===o);
-    const best = [...r.holdings].sort((a,b)=> b.pts-a.pts || a.l-b.l)[0];
     const tied = C.rows.filter(x=>x.rank===r.rank).length>1;
     const drafting = l.status==="drafting";
+    // This week: wins and losses by your teams, and how many of them are playing right now.
+    let w = 0, ls = 0;
+    for (const h of r.holdings) for (const g of h.wkG){ const win = winnerKey(g); if (win===h.k) w++; else if (win!==null) ls++; }
+    const lgs = [SP(l).pro, SP(l).col];
+    const live = LIVE.on ? liveAll().filter(g=> g.state==="in" && lgs.includes(g.lg) && [g.hk, g.ak].some(k=>{ const x = C.who(k, g.date); return x && x.owner===o; })).length : 0;
+    const waiting = offersFor(l).length, turn = myTurnIn(l);
     return `<button type="button" class="pf" data-go="${esc(l.id)}">
-      <div class="top"><span class="sport-tag">${SP(l).label} · ${seasonLabel(l.year)}</span>${drafting?`<span class="status live">${draftPending(l)?"Draft "+esc(fmtWhen(l.draftAt)):"Drafting"}</span>`:""}</div>
+      <div class="top"><span class="sport-tag">${SP(l).label} · ${seasonLabel(l.year)}</span>${drafting?`<span class="status live">${turn?"Your pick":draftPending(l)?"Draft "+esc(fmtWhen(l.draftAt)):"Drafting"}</span>`:live?`<span class="live-pill">${live} live</span>`:""}</div>
       <div class="nm">${esc(l.name)}</div>
-      <div class="big"><span class="bn">${fmt(r.total)}</span><span class="kv">wins · <b>${tied?"T-":""}${ordinal(r.rank)}</b> of ${l.owners.length}${r.wk?` · <span class="delta up">+${fmt(r.wk)} this week</span>`:""}</span></div>
-      <div class="kv">${best ? `Top performer: <b>${esc(best.team)}</b> ${best.w}-${best.l}${best.t?"-"+best.t:""}` : "No teams drafted yet"}</div>
-      <div class="kv">Managing as <b>${esc(o)}</b>${canAdmin(l)?" · you run this league":""}</div>
+      <div class="big"><span class="bn">${tied?"T-":""}${ordinal(r.rank)}</span><span class="kv">of ${l.owners.length} · <b>${fmt(r.total)}</b> wins</span></div>
+      <div class="kv">${C.picks.length ? `This week: <b>${w}-${ls}</b>` : "No teams drafted yet"}${waiting?` · <span class="hot-txt">${waiting} trade offer${waiting===1?"":"s"}</span>`:""}</div>
+      <div class="kv">Managing as <b>${esc(o)}</b>${canAdmin(l)?" · commissioner":""}</div>
     </button>`;
   }).join("");
 
@@ -803,7 +894,7 @@ function homeHTML(){
       <div class="nm">${esc(l.name)}</div>
       <div class="kv">${l.owners.length} managers · ${esc(slotText(l))}</div>
       <div class="kv">${lead&&lead.total ? `Leader: <b>${esc(lead.owner)}</b>${tied>1?` (tied with ${tied-1})`:""}, ${fmt(lead.total)} wins` : "No wins on the board yet"}</div>
-      ${A ? (canAdmin(l)?`<div class="kv"><b>You run this league.</b> Invite managers from its Draft tab.</div>`:"") : `<div class="claim"><label for="cl-${esc(l.id)}">I manage</label><select id="cl-${esc(l.id)}" data-claim="${esc(l.id)}"><option value="">Choose your name</option>${l.owners.map(o=>`<option>${esc(o)}</option>`).join("")}</select></div>`}
+      ${A ? (canAdmin(l)?`<div class="kv"><b>You run this league.</b> Invite managers from League info.</div>`:"") : `<div class="claim"><label for="cl-${esc(l.id)}">I manage</label><select id="cl-${esc(l.id)}" data-claim="${esc(l.id)}"><option value="">Choose your name</option>${l.owners.map(o=>`<option>${esc(o)}</option>`).join("")}</select></div>`}
       <div class="btns"><button class="btn primary" data-go="${esc(l.id)}">Open league</button>
       ${canAdmin(l)?`<button class="btn danger" data-dellg="${esc(l.id)}">${S.confirmLg===l.id?"Delete for everyone?":"Delete"}</button>`:""}</div>
       <div class="share"><input type="text" readonly id="ln-${esc(l.id)}" value="${esc(leagueURL(l.id))}" aria-label="Link to ${esc(l.name)}"><button type="button" class="btn" data-copy="ln-${esc(l.id)}">Copy link</button></div>
@@ -829,12 +920,14 @@ function homeHTML(){
   return `<section class="panel">
     ${A ? (meId() ? "" : hero + `<div class="btns"><button class="btn primary" data-auth="up">Create an account</button><button class="btn" data-auth="in">Sign in</button>${hasV3()?`<button class="btn" data-mock="new">Try a practice draft</button>`:""}</div>`) : (my.length || Object.keys(S.me).length ? "" : hero)}
     ${A && meId() && !my.length ? `<div class="card empty"><strong>Welcome${S.auth.profile?", "+esc(S.auth.profile.username):""}.</strong>You don't have a portfolio yet. Open an invite link from a commissioner to join a league, or create your own below.</div>` : ""}
-    ${S.leagues.length ? sports : ""}
-    ${my.length ? `<div class="head-row"><h2>My Portfolios</h2><p class="sub">Tap one to open its league home.</p></div><div class="pf-grid">${myCards}</div>` : ""}
-    ${rest.length ? `<div class="head-row"><h2>${my.length?"Other leagues":"Leagues"}</h2><p class="sub">${A?"Anyone can view a league. Joining one takes an invite link from its commissioner.":"Pick your name in a league to add it to My Portfolios on this device."}</p></div><div class="lg-grid">${restCards}</div>` : ""}
+    ${new Set(S.leagues.map(sportOf)).size > 1 ? sports : ""}
+    ${my.length ? `<div class="head-row"><h2>My leagues</h2></div><div class="pf-grid">${myCards}</div>` : ""}
+    ${rest.length ? (my.length
+      ? `<div class="btns"><button type="button" class="btn" id="otherBtn" aria-expanded="${S.showOther}">${S.showOther?"Hide other leagues":`Other leagues (${rest.length})`}</button></div>${S.showOther?`<div class="lg-grid">${restCards}</div>`:""}`
+      : `<div class="head-row">${ttl("Leagues", "lgs", A?"Anyone can view a league. Joining one takes an invite link from its commissioner.":"Pick your name in a league to add it to My leagues on this device.")}</div><div class="lg-grid">${restCards}</div>`) : ""}
     ${!show.length ? `<div class="card empty"><strong>No ${S.sportFilter==="all"?"":SPORTS[S.sportFilter].label.toLowerCase()+" "}leagues yet.</strong>${canCreate()?"Create one below.":"Leagues appear here once someone creates one."}</div>` : ""}
-    ${my.length ? `<details class="how"><summary>How The Portfolio works</summary>${how}</details>` : `<div class="head-row"><h2>How it works</h2></div>${how}`}
-    ${createFormHTML()}
+    ${my.length ? `<details class="how" id="howDet"><summary>How The Portfolio works</summary>${how}</details>` : `<div class="head-row"><h2>How it works</h2></div>${how}`}
+    ${my.length && canCreate() && !S.showCreate ? `<div class="btns"><button type="button" class="btn" id="createBtn">+ Create a league</button></div>` : createFormHTML()}
   </section>`;
 }
 
@@ -873,6 +966,34 @@ function createFormHTML(){
 }
 
 /* ---------- my team ---------- */
+/* The Pending button on My Team: pickups and trades that take effect next Tuesday, and open trade offers. */
+function pendingHTML(L, C, o, r){
+  const moves = [
+    ...r.incoming.map(h=>`<li>${chip(h.pool)}${tlogo(h.team, lgOfPool(L,h.pool))}<span><b>${esc(h.team)}</b> joins ${fmtDay(h.from)} <span class="sub">· ${h.via==="trade"?"trade":"pickup"}</span></span></li>`),
+    ...r.holdings.filter(h=>h.state==="leaving").map(h=>`<li>${chip(h.pool)}${tlogo(h.team, lgOfPool(L,h.pool))}<span><b>${esc(h.team)}</b> leaves after ${fmtDay(addDays(h.to,-1))} <span class="sub">· its wins stay yours</span></span></li>`)];
+  let offers = [], loading = false;
+  if (A && hasV4() && meId() && L.status==="complete" && mine(L)===o){
+    ensureTrades(L); loading = !S.trades.loaded;
+    offers = S.trades.list.filter(x=>x.status==="pending" && (x.to_owner===o || x.from_owner===o));
+  }
+  const n = moves.length + offers.length, waiting = offers.filter(x=>x.to_owner===o).length;
+  const open = S.showPending;
+  const btn = `<button type="button" class="btn pend-btn ${waiting?"hot":""}" id="pendBtn" aria-expanded="${open}">${open?"Hide pending moves":"Pending moves"} <span class="count">${loading?"…":n}</span>${waiting?`<span class="sub"> · ${waiting} offer${waiting===1?"":"s"} for you</span>`:""}</button>`;
+  if (!open) return `<div class="btns">${btn}</div>`;
+  const card = (x, btns) => `<div class="card offer">${offerLine(x, C)}<div class="btns">${btns}<span class="sub">${new Date(x.created_at).toLocaleString("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})}</span></div></div>`;
+  const closed = isPast(L.tradeUntil);
+  const inc = offers.filter(x=>x.to_owner===o), out = offers.filter(x=>x.from_owner===o);
+  return `<div class="btns">${btn}</div>
+    <div class="pend-panel">${flashHTML("tr")}
+      <h3>Taking effect ${fmtDay(nextWeekStart())}</h3>
+      ${moves.length ? `<ul class="pend-moves card">${moves.join("")}</ul>` : `<p class="sub">No pickups or trades waiting to take effect.</p>`}
+      <h3>Trade offers</h3>
+      ${loading ? `<p class="sub">Loading offers…</p>` : ""}
+      ${inc.map(x=>card(x, closed ? `<span class="status">Trades are closed</span>` : `<button type="button" class="btn primary" data-tracc="${x.id}">Accept</button><button type="button" class="btn danger" data-trdec="${x.id}">Decline</button>`)).join("")}
+      ${out.map(x=>card(x, `<span class="status">Waiting for ${esc(x.to_owner)}</span><button type="button" class="btn" data-trcan="${x.id}">Withdraw</button>`)).join("")}
+      ${!loading && !offers.length ? `<p class="sub">No open trade offers.${A && hasV4() ? ` <button type="button" class="linkbtn" data-tabgo="trades">Propose a trade</button>` : ""}</p>` : ""}
+    </div>`;
+}
 function teamHTML(L, C){
   const o = mine(L);
   const picker = `<div class="claim"><label for="cl-${esc(L.id)}">${o?"Viewing as":"I manage"}</label><select id="cl-${esc(L.id)}" data-claim="${esc(L.id)}"><option value="">${o?"Not in this league":"Choose your name"}</option>${L.owners.map(x=>`<option ${x===o?"selected":""}>${esc(x)}</option>`).join("")}</select></div>`;
@@ -886,37 +1007,38 @@ function teamHTML(L, C){
   const how = h => h.via==="trade" ? "Trade" : h.via==="add" ? "Added" : (h.n ? "#"+h.n : "–");
   const row = (h, note) => {
     const wk = h.wkG.map(g=>{ const w=winnerKey(g), m=g.hk===h.k?g.hs:g.as, t=g.hk===h.k?g.as:g.hs; return `${w===h.k?"W":w===null?"T":"L"} ${m}–${t}`; }).join(", ");
-    return `<tr class="${h.state}"><td>${chip(h.slot.startsWith("Any")?"Any":h.pool)}</td><td><b>${esc(h.team)}</b>${h.slot.startsWith("Any")?` <span class="lg">${esc(h.pool)}</span>`:""}${note?`<div class="sub">${note}</div>`:""}</td>
+    const lg = lgOfPool(L, h.pool);
+    return `<tr class="${h.state}" ${tcolor(h.team, lg)}><td>${chip(h.slot.startsWith("Any")?"Any":h.pool)}</td><td><span class="tn">${tlogo(h.team, lg)}<b>${esc(h.team)}</b>${h.slot.startsWith("Any")?` <span class="lg">${esc(h.pool)}</span>`:""}</span>${note?`<div class="sub">${note}</div>`:""}</td>
       <td class="r num">${recTxt(h.rec)}</td><td class="r num">${fmt(h.pts)}</td><td class="r num hide-sm">${wk||"–"}</td><td class="r num hide-sm">${how(h)}</td></tr>`;
   };
   const rows = r.holdings.map(h=> row(h, h.state==="leaving" ? `Counts for you through ${fmtDay(addDays(h.to,-1))}` : "")).join("")
     + r.incoming.map(h=> row(h, `Joins your portfolio ${fmtDay(h.from)}`)).join("");
-  const former = r.former.map(h=> `<div class="h-item">${chip(h.pool)}<span class="tn">${esc(h.team)}</span><span class="rec">${fmt(h.pts)} win${h.pts===1?"":"s"} kept</span><span class="lg">${h.from?fmtShort(h.from):"draft"}–${fmtShort(addDays(h.to,-1))}</span></div>`).join("");
+  const former = r.former.map(h=> `<div class="h-item">${chip(h.pool)}${tlogo(h.team, lgOfPool(L,h.pool))}<span class="tn">${esc(h.team)}</span><span class="rec">${fmt(h.pts)} win${h.pts===1?"":"s"} kept</span><span class="lg">${h.from?fmtShort(h.from):"draft"}–${fmtShort(addDays(h.to,-1))}</span></div>`).join("");
   return `<section class="panel">
     <div class="card me-head">
       <div><div class="sport-tag">${esc(L.name)} · ${SP(L).label} ${seasonLabel(L.year)}</div><div class="who">${esc(o)}</div>
         <div class="sub" style="margin-top:6px"><b>${tied?"T-":""}${ordinal(r.rank)}</b> of ${L.owners.length}${r.gb?` · ${fmt(r.gb)} back`:" · leading"}${C.sp.pro?` · ${r.pro} ${C.sp.pro} + ${r.col} college wins`:""}${r.wk?` · +${fmt(r.wk)} this week`:""}${P?` · projected ${P.proj.toFixed(1)} (${ordinal(P.projRank)})`:""}</div></div>
-      <div><div class="n">${fmt(r.total)}</div><div class="lbl">Wins</div></div>
+      <div><div class="n">${fmt(r.total)}</div><div class="lbl">Wins${wtNote?" "+info("wt", esc(wtNote)+"."):""}</div></div>
     </div>
+    ${pendingHTML(L, C, o, r)}
     ${r.holdings.length || r.incoming.length ? `<div class="card scroll"><table class="team">
       <thead><tr><th>Slot</th><th>Team</th><th class="r">Record</th><th class="r">Counts</th><th class="r hide-sm">This week</th><th class="r hide-sm">How</th></tr></thead>
       <tbody>${rows}</tbody></table></div>` : `<div class="card empty"><strong>No teams yet.</strong>${L.status==="drafting"?"Your picks appear here as the draft goes on.":"This league hasn't drafted."}</div>`}
-    ${former ? `<div class="card" style="padding:12px 14px"><h3 style="margin-bottom:8px">Former teams</h3><div class="hold">${former}</div><p class="sub" style="margin-top:8px">Wins a team earned while it was yours stay on your total.</p></div>` : ""}
-    ${wtNote?`<p class="sub">${esc(wtNote)}.</p>`:""}
+    ${former ? `<div class="card" style="padding:12px 14px">${ttl("Former teams", "former", "Wins a team earned while it was yours stay on your total.", "h3")}<div class="hold" style="margin-top:8px">${former}</div></div>` : ""}
     ${A ? "" : picker}
   </section>`;
 }
 
 /* ---------- league views ---------- */
 function standingsHTML(L, C){
-  if (!C.picks.length) return `<section class="panel"><div class="card empty"><strong>No rosters yet.</strong>${L.status==="drafting"?"The draft is open on the Draft tab. The table fills in as teams come off the board.":"Run the draft on the Draft tab and the table fills in here."}</div></section>`;
+  if (!C.picks.length) return "";
   const max = Math.max(1, ...C.rows.map(r=>r.total)), me = mine(L);
   const wkLabel = C.curWeek ? `Wk ${C.weekNo}` : "Wk";
   const body = C.rows.map(r=>{
     const open = S.open.has(r.owner);
     const hold = r.holdings.map(h=>{
       const wkTxt = h.wkG.map(g=>{ const w=winnerKey(g); return w===h.k?"W":w===null?"T":"L"; }).join(" ");
-      return `<div class="h-item">${chip(h.pool)}<span class="tn">${esc(h.team)}</span><span class="rec">${recTxt(h.rec)}</span>${wkTxt?`<span class="lg">${wkTxt}</span>`:""}</div>`;
+      return `<div class="h-item">${chip(h.pool)}${tlogo(h.team, lgOfPool(L,h.pool))}<span class="tn">${esc(h.team)}</span><span class="rec">${recTxt(h.rec)}</span>${wkTxt?`<span class="lg">${wkTxt}</span>`:""}</div>`;
     }).join("");
     return `<tr class="row ${r.rank===1&&r.total?"lead":""} ${open?"open":""}" tabindex="0" data-owner="${esc(r.owner)}" aria-expanded="${open}">
       <td class="rk num">${r.rank}</td>
@@ -926,34 +1048,35 @@ function standingsHTML(L, C){
       <td class="r num hide-sm">${r.gb?fmt(r.gb):"—"}</td>
     </tr>${open?`<tr class="detail"><td colspan="7"><div class="hold">${hold||`<span class="sub">No teams drafted yet.</span>`}</div></td></tr>`:""}`;
   }).join("");
-  const leaders = C.sp.pools.filter(pool=> slotsOf(L)[pool] || C.cur.some(s=>s.pool===pool)).map(pool=>{
-    const best = C.cur.filter(p=>p.pool===pool).map(p=>({...p, w:p.rec.w, l:p.rec.l})).sort((a,b)=> b.w-a.w || a.l-b.l)[0];
-    return best ? `<div class="card ld">${chip(pool)}<span class="t">${esc(best.team)}</span><span class="n">${best.w}-${best.l}</span><span class="o">${esc(best.owner)}</span></div>` : "";
-  }).join("");
   const wtNote = weightText(L);
-  return `<section class="panel">
-    <div class="head-row"><h2>The Table</h2><p class="sub">${C.lastDate?`Through ${fmtDay(C.lastDate)} · ${wkLabel} runs ${fmtShort(C.curWeek)}–${fmtShort(weekEnd(C.curWeek))}`:"No games logged yet"}</p></div>
+  return `<div class="head-row">${ttl("Standings", "table", `Tap a manager to see their teams. Ties share a rank${C.sp.pro?`; order within a tie follows ${C.sp.pro} wins`:""}.${wtNote?` ${esc(wtNote)}; the ${C.sp.pro} column shows actual wins.`:""}`)}<p class="sub">${C.lastDate?`Through ${fmtDay(C.lastDate)} · ${wkLabel} runs ${fmtShort(C.curWeek)}–${fmtShort(weekEnd(C.curWeek))}`:"No games logged yet"}</p></div>
     <div class="card scroll"><table class="st">
       <thead><tr><th>#</th><th>Manager</th><th class="r">Wins</th>${C.sp.pro?`<th class="r">${C.sp.pro}</th><th class="r">${C.sp.col}</th>`:""}<th class="r">${wkLabel}</th><th class="r hide-sm">Back</th></tr></thead>
-      <tbody>${body}</tbody></table></div>
-    <p class="sub">Tap a manager to see their teams. Ties share a rank${C.sp.pro?`; order within a tie follows ${C.sp.pro} wins`:""}.${wtNote?` ${esc(wtNote)}; the ${C.sp.pro} column shows actual wins.`:""}</p>
-    <div class="head-row"><h2>Best in each pool</h2></div>
-    <div class="leaders">${leaders}</div>
-  </section>`;
+      <tbody>${body}</tbody></table></div>`;
+}
+
+function leadersHTML(L, C){
+  if (!C.picks.length) return "";
+  const leaders = C.sp.pools.filter(pool=> slotsOf(L)[pool] || C.cur.some(s=>s.pool===pool)).map(pool=>{
+    const best = C.cur.filter(p=>p.pool===pool).map(p=>({...p, w:p.rec.w, l:p.rec.l})).sort((a,b)=> b.w-a.w || a.l-b.l)[0];
+    return best ? `<div class="card ld">${chip(pool)}${tlogo(best.team, lgOfPool(L,pool))}<span class="t">${esc(best.team)}</span><span class="n">${best.w}-${best.l}</span><span class="o">${esc(best.owner)}</span></div>` : "";
+  }).join("");
+  return leaders ? `<div class="head-row"><h2>Best in each pool</h2></div><div class="leaders">${leaders}</div>` : "";
 }
 
 function boardHTML(L, C){
   const owners = L.owners;
   if (!C.picks.length) return `<section class="panel"><div class="card empty"><strong>The board is empty.</strong>Picks appear here as soon as the draft starts.</div></section>`;
+  const lgo = t => { const p = C.cur.find(x=>x.team===t); return p ? tlogo(t, lgOfPool(L,p.pool)) : ""; };
   const rows = slotRows(L).map(s=> `<tr><td class="slot">${chip(s.pool)} ${s.many?s.ix:""}</td>${owners.map(o=>{
       const p = C.cur.find(x=>x.owner===o && x.slot===s.slot);
       if (!p) return `<td></td>`;
       const r = p.rec, gp = r.w+r.l+r.t, pct = gp? r.w/gp : null;
-      return `<td><div class="cell ${pct===null?"":pct>=.7?"hot":pct<=.3?"cold":""}"><span>${esc(p.team)}</span><span class="rec">${r.w}-${r.l}${r.t?"-"+r.t:""}${s.pool==="Any"?` · ${esc(p.pool)}`:""}${p.via==="trade"?" · trade":p.via==="add"?" · added":p.n?` · pick ${p.n}`:""}</span></div></td>`;
+      return `<td><div class="cell ${pct===null?"":pct>=.7?"hot":pct<=.3?"cold":""}"><span>${lgo(p.team)}${esc(p.team)}</span><span class="rec">${r.w}-${r.l}${r.t?"-"+r.t:""}${s.pool==="Any"?` · ${esc(p.pool)}`:""}${p.via==="trade"?" · trade":p.via==="add"?" · added":p.n?` · pick ${p.n}`:""}</span></div></td>`;
     }).join("")}</tr>`).join("");
   const tot = `<tr><td class="slot">Total</td>${owners.map(o=>`<td class="tot-row">${fmt(C.rows.find(r=>r.owner===o)?.total??0)} W</td>`).join("")}</tr>`;
   return `<section class="panel">
-    <div class="head-row"><h2>Rosters</h2><p class="sub">Columns follow draft order. Green edge: winning 70%+. Red edge: 30% or less.</p></div>
+    <div class="head-row">${ttl("Draft board", "board", "Every manager's current teams by slot. Columns follow draft order. Green edge: winning 70% or more. Red edge: 30% or less.")}</div>
     <div class="card scroll"><table class="board"><thead><tr><th>Slot</th>${owners.map(o=>`<th>${esc(o)}</th>`).join("")}</tr></thead><tbody>${rows}${tot}</tbody></table></div>
   </section>`;
 }
@@ -1038,9 +1161,9 @@ function needsFor(L, o){
 }
 const canTake = (L, need, pool) => need.req[pool]>0 || (pool!==SP(L).pro && need.flex>0);
 
-function draftHTML(L){
-  const D = draftState(L), type = L.draftType==="straight"?"Straight":"Snake", sp = SP(L);
-  if (L.status!=="drafting"){
+function draftResultsHTML(L){
+  const D = draftState(L), type = L.draftType==="straight"?"Straight":"Snake";
+  {
     if (!D.i) return `<section class="panel"><div class="head-row"><h2>Draft</h2></div><div class="card empty"><strong>No draft on record.</strong></div></section>`;
     const rounds = Math.ceil(D.i/D.N);
     const rows = Array.from({length:rounds},(_,r)=> `<tr><td class="slot">Rd ${r+1}</td>${D.owners.map(o=>{
@@ -1052,9 +1175,12 @@ function draftHTML(L){
       <div class="card scroll"><table class="board rounds"><thead><tr><th>Round</th>${D.owners.map((o,i)=>`<th>${i+1}. ${esc(o)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div>
       ${!L.mock && canAdmin(L) && !(Array.isArray(L.holds) && L.holds.length)?`<div class="btns"><button class="btn" id="reopen">Reopen the draft</button><span class="sub">Lets you undo or change the last picks.</span><span class="msg" id="dMsg" role="status"></span></div>`:""}
       ${!L.mock && hasV3()?`<div class="btns"><button type="button" class="btn" data-mock="1">Practice draft</button><span class="sub">Try a draft against auto-pick. Nothing is saved.</span></div>`:""}
-      ${seatsHTML(L)}
     </section>`;
   }
+}
+function draftHTML(L){
+  const D = draftState(L), sp = SP(L);
+  if (L.status!=="drafting") return draftResultsHTML(L);
   const admin = !L.mock && canAdmin(L), pending = !L.mock && draftPending(L);
   const myPick = L.mock ? D.onClock===L.me : !!(A && meId() && D.onClock && (L.members||{})[D.onClock]===meId());
   const canP = admin || (myPick && !pending);
@@ -1085,7 +1211,7 @@ function draftHTML(L){
         ${sched?`<label class="f" for="dAt">Draft date and time (optional)<input type="datetime-local" id="dAt" value="${L.draftAt?toLocalInput(L.draftAt):""}"></label>`:""}</div>
       <div class="btns">${running?`<button type="button" class="btn" id="tmPause">Pause the clock</button>`:`<button type="button" class="btn primary" id="tmStart">${pending?"Start now instead":"Start the clock"}</button>`}
         ${sched?`<button type="button" class="btn" id="dSave">${L.draftAt?"Change the start time":"Schedule the draft"}</button>${L.draftAt?`<button type="button" class="btn" id="dClear">Remove the start time</button>`:""}`:""}<span class="msg" id="tmMsg" role="status"></span></div>
-      <p class="sub">When a manager's time runs out, their queue is used first, then the best team still available for one of their open spots. Those picks are marked "auto". The clock restarts after every pick.${sched?" If you schedule the draft, managers can't pick before that time, and the clock starts by itself when it arrives.":""}</p></div>`;
+      <div class="note-row"><span class="sub">How auto-pick works</span>${info("clock", `When a manager's time runs out, their queue is used first, then the best team still available for one of their open spots. Those picks are marked "auto". The clock restarts after every pick.${sched?" If you schedule the draft, managers can't pick before that time, and the clock starts by itself when it arrives.":""}`)}</div></div>`;
   const order = D.owners.map((o,ix)=>`<span class="pill" style="${o===D.onClock?"border-color:var(--accent);font-weight:700":""}">${ix+1}. ${esc(o)}</span>`).join("");
   return `<section class="panel">
     <div class="head-row"><h2>Draft Room</h2><p class="sub">${type} draft · ${D.N} managers · ${roundsOf(L)} rounds · ${esc(slotText(L))}</p></div>
@@ -1258,10 +1384,10 @@ function projection(L, C){
 function projectionHTML(L, C){
   if (!C.picks.length || !C.games.length) return "";
   const P = projection(L, C), me = mine(L), max = Math.max(1, ...P.map(r=>r.proj)), sp = C.sp;
-  return `<div class="head-row"><h2>Projected finish</h2><p class="sub">Where the table ends up if every team keeps its current pace.</p></div>
+  return `<div class="head-row">${ttl("Projected finish", "proj", `Where the table ends up if every team keeps its current pace over the rest of its regular season (${sp.pro?`${SEASON_GAMES[sp.pro]} ${sp.pro} games, `:""}${SEASON_GAMES[sp.col]} college), leaning slightly toward .500 early on. Postseason games aren't projected.`)}</div>
     <div class="card scroll"><table class="st mini"><thead><tr><th>#</th><th>Manager</th><th class="r">Now</th><th class="r">Projected</th><th class="r hide-sm">Now ranked</th></tr></thead>
     <tbody>${P.map(r=>`<tr><td class="rk num">${r.projRank}</td><td><span class="mgr">${esc(r.owner)}</span>${r.owner===me?` <span class="tag">you</span>`:""}<div class="bar"><i style="width:${(r.proj/max*100).toFixed(1)}%"></i></div></td><td class="r num">${fmt(r.total)}</td><td class="r num tot">${r.proj.toFixed(1)}</td><td class="r num hide-sm">${ordinal(r.rank)}${r.projRank<r.rank?` <span class="delta up">▲${r.rank-r.projRank}</span>`:r.projRank>r.rank?` <span class="mv-dn">▼${r.projRank-r.rank}</span>`:""}</td></tr>`).join("")}</tbody></table></div>
-    <p class="sub">Each team's pace over the rest of its regular season (${sp.pro?`${SEASON_GAMES[sp.pro]} ${sp.pro} games, `:""}${SEASON_GAMES[sp.col]} college), leaning slightly toward .500 early on. Postseason games aren't projected.</p>`;
+`;
 }
 
 function seasonRecords(L, C){
@@ -1278,7 +1404,7 @@ function seasonRecords(L, C){
 function historyHTML(L, C){
   const H = Array.isArray(L.history) ? L.history : [], admin = canAdmin(L), rec = C.picks.length ? seasonRecords(L, C) : [];
   const rows = H.map((h,i)=>`<tr><td class="num">${esc(h.season)}</td><td><span class="mgr">${esc(h.champion)}</span></td><td class="r num">${h.wins===""||h.wins==null?"–":esc(h.wins)}</td><td class="hide-sm">${esc(h.note||"")}</td>${admin?`<td class="r"><button type="button" class="x" data-hdel="${i}" aria-label="Remove ${esc(h.season)}">✕</button></td>`:""}</tr>`).join("");
-  return `<div class="head-row"><h2>League history</h2><p class="sub">Past champions and this season's marks.</p></div>
+  return `<div class="head-row"><h2>League history</h2></div>
     ${rec.length?`<ul class="wk-notes card" style="padding:12px 14px">${rec.map(([k,v])=>`<li><span class="k">${k}</span>${esc(v)}</li>`).join("")}</ul>`:""}
     ${H.length?`<div class="card scroll"><table class="st mini"><thead><tr><th>Season</th><th>Champion</th><th class="r">Wins</th><th class="hide-sm">Note</th>${admin?"<th></th>":""}</tr></thead><tbody>${rows}</tbody></table></div>`
       : `<div class="card empty" style="padding:20px 16px"><strong>No past seasons recorded.</strong>${admin?"Add earlier champions below so the league's history starts on day one.":"The commissioner can add earlier champions here."}</div>`}
@@ -1308,25 +1434,94 @@ function leagueHTML(L, C){
   }
   const you = r && C.picks.length ? (()=>{ const P = C.games.length ? projection(L,C).find(x=>x.owner===me) : null, tied = C.rows.filter(x=>x.rank===r.rank).length>1;
     return `<button type="button" class="card you" data-tabgo="team"><span><span class="sport-tag">Your portfolio</span><span class="who">${esc(me)}</span></span>
-      <span class="kv"><b>${fmt(r.total)}</b> wins · <b>${tied?"T-":""}${ordinal(r.rank)}</b> of ${L.owners.length}${P?` · projected <b>${P.proj.toFixed(1)}</b> (${ordinal(P.projRank)})`:""}</span></button>`; })() : "";
+      <span class="kv"><b>${fmt(r.total)}</b> wins · <b>${tied?"T-":""}${ordinal(r.rank)}</b> of ${L.owners.length}${r.wk?` · <span class="delta up">+${fmt(r.wk)} this week</span>`:""}${P?` · projected <b>${P.proj.toFixed(1)}</b>`:""} <b>›</b></span></button>`; })() : "";
   const body = C.picks.length && C.games.length
     ? `${recapHTML(L, C)}${previewHTML(L, C)}${projectionHTML(L, C)}`
     : (C.picks.length ? `<div class="card empty"><strong>Rosters are set.</strong>The first recap arrives the Tuesday morning after this league's teams play.</div>`
       : (L.status==="drafting" ? "" : `<div class="card empty"><strong>No rosters yet.</strong>This league hasn't drafted.</div>`));
   return `<section class="panel">
-    <div class="head-row"><h2>${esc(L.name)}</h2><p class="sub">${SP(L).label} ${seasonLabel(L.year)} · ${L.owners.length} managers · ${esc(slotText(L))}</p></div>
-    ${draftCard}${you}${offersStrip(L)}${liveStrip(L, C)}${body}
+    <div class="head-row lg-head"><div><h2>${esc(L.name)}</h2><p class="sub">${SP(L).label} ${seasonLabel(L.year)} · ${L.owners.length} managers</p></div>
+      <button type="button" class="btn sm" data-tabgo="info">League info ›</button></div>
+    ${draftCard}${attentionHTML(L, C)}${you}${standingsHTML(L, C)}${body}
     ${Array.isArray(L.moves) && L.moves.length ? `<div class="head-row"><h2>Recent activity</h2><button type="button" class="linkbtn" data-tabgo="trades">All activity</button></div>${activityHTML(L, 5)}` : ""}
-    ${settingsCardHTML(L, C)}
-    ${historyHTML(L, C)}
   </section>`;
 }
+
+/* ---------- small shared pieces ---------- */
+// A small "i" that opens a note, used in place of explanatory paragraphs. Its open state survives redraws (it has an id).
+const info = (id, html) => `<details class="info" id="i-${id}"><summary aria-label="More about this" title="More about this">i</summary><div class="info-pop">${html}</div></details>`;
+const ttl = (title, id, html, tag) => `<div class="ttl"><${tag||"h2"}>${title}</${tag||"h2"}>${html ? info(id, html) : ""}</div>`;
+const myTurnIn = L => { if (!L || L.status!=="drafting" || L.mock || draftPending(L)) return false; const D = draftState(L); return !!(A && meId() && D.onClock && (L.members||{})[D.onClock]===meId()); };
+function offersFor(L){
+  if (!L || !A || !hasV4() || !meId() || L.status!=="complete") return [];
+  const seat = mine(L); if (!seat) return [];
+  ensureTrades(L);
+  return S.trades.list.filter(o=>o.status==="pending" && o.to_owner===seat);
+}
+// Red dots on tabs that need you: a trade offer waiting (My Team) or your pick in the draft.
+function tabDots(L){
+  const set = (id, on, label) => { const b = $(id); if (!b) return; b.classList.toggle("has-dot", !!on); if (on) b.setAttribute("aria-label", b.textContent+" ("+label+")"); else b.removeAttribute("aria-label"); };
+  set("#teamTab", S.view==="league" && offersFor(L).length>0, "trade offer waiting");
+  set("#draftTab", S.view==="league" && myTurnIn(L), "you're on the clock");
+}
+/* Everything that wants a decision or a look from you, in one place at the top of the League tab. */
+function attentionHTML(L, C){
+  const items = [];
+  const n = offersFor(L).length;
+  if (n) items.push({go:"pending", cls:"hot", html:`<b>${n} trade offer${n===1?"":"s"}</b> waiting for your answer`});
+  if (LIVE.on && C.picks.length){
+    const lgs = [SP(L).pro, SP(L).col];
+    const live = liveAll().filter(g=> g.state==="in" && lgs.includes(g.lg) && (C.who(g.hk, g.date) || C.who(g.ak, g.date))).length;
+    if (live) items.push({go:"scores", html:`<span class="live-pill">Live</span> <b>${live} game${live===1?"":"s"}</b> with this league's teams ${live===1?"is":"are"} on now`});
+  }
+  if (A && hasV4() && mine(L) && L.status==="complete"){
+    const today = etDate(new Date());
+    for (const [f, what, view] of [["waiverUntil","Pickups","fa"],["tradeUntil","Trades","trades"]]){
+      const d = L[f]; if (!d || isPast(d)) continue;
+      const days = Math.round((toD(d)-toD(today))/864e5);
+      if (days<=7) items.push({go:view, html:`<b>${what} close</b> after ${fmtDay(d)}${days<=1?` (${days===0?"today":"tomorrow"})`:""}`});
+    }
+  }
+  if (!items.length) return "";
+  return `<div class="card attn" role="region" aria-label="Needs your attention">${items.map(i=>`<button type="button" class="attn-row ${i.cls||""}" data-attn="${i.go}"><span>${i.html}</span><span class="go">›</span></button>`).join("")}</div>`;
+}
+
+/* ---------- League info: history, draft board, draft results, settings ---------- */
+function infoHTML(L, C){
+  const views = [["history","History"],["board","Draft board"],["draft","Draft results"],["settings","Settings"]];
+  const v = views.some(x=>x[0]===S.infoView) ? S.infoView : "history";
+  const nav = `<div class="seg wide" role="group" aria-label="League info">${views.map(([k,t])=>`<button type="button" data-info-view="${k}" aria-pressed="${v===k}">${t}</button>`).join("")}</div>`;
+  let inner = "";
+  if (v==="history") inner = `<section class="panel">${historyHTML(L, C)}${leadersHTML(L, C)}</section>`;
+  else if (v==="board") inner = boardHTML(L, C);
+  else if (v==="draft") inner = draftResultsHTML(L);
+  else {
+    const facts = [["Sport", `${SP(L).label} ${seasonLabel(L.year)}`], ["Managers", L.owners.map(esc).join(", ")], ["Teams each", esc(slotText(L))],
+      ["Draft", `${L.draftType==="straight"?"Straight":"Snake"}${L.pickSeconds?` · ${spanText(L.pickSeconds)} pick timer`:""}`], ["What counts", esc(SP(L).counts)]];
+    if (weightText(L)) facts.push(["Scoring", esc(weightText(L))]);
+    if (A){ facts.push(["Pickups", esc(windowNote(L, "waiverUntil", "Pickups"))]); facts.push(["Trades", esc(windowNote(L, "tradeUntil", "Trades"))]); }
+    inner = `<section class="panel"><dl class="card lgfacts">${facts.map(([k,x])=>`<div><dt>${k}</dt><dd>${x}</dd></div>`).join("")}</dl>
+      ${settingsCardHTML(L, C)}${seatsHTML(L)}
+      ${canAdmin(L) ? "" : `<p class="sub">Only the commissioner can change these settings.</p>`}</section>`;
+  }
+  return `<section class="panel">
+    <div class="head-row"><h2>League info</h2><button type="button" class="linkbtn" data-tabgo="league">‹ Back to the league</button></div>
+    ${nav}${inner}
+  </section>`;
+}
+
+/* ---------- Moves: free agents and trades ---------- */
+function movesHTML(L, C){
+  const v = S.movesView==="trades" ? "trades" : "fa";
+  return v==="trades" ? tradesHTML(L, C) : faHTML(L, C);
+}
+const movesNav = () => `<div class="seg" role="group" aria-label="Moves"><button type="button" data-moves="fa" aria-pressed="${S.movesView!=="trades"}">Free agents</button><button type="button" data-moves="trades" aria-pressed="${S.movesView==="trades"}">Trades</button></div>`;
 
 /* ---------- live scores (website only) ---------- */
 /* Each visitor's browser reads ESPN's public scoreboard directly: football by week, NBA and college basketball by day.
    Finals from here count in the standings right away; the stored record (football each morning, basketball every
    few minutes from the database) remains the permanent one. */
-const LIVE = { on: !!window.PORTFOLIO_PUBLIC, by:{NFL:[], CFB:[], NBA:[], CBB:[]}, prev:{NFL:[], CFB:[], NBA:[], CBB:[]}, days:{}, cur:{}, ws:null, at:0, err:"", tried:false, busy:false, timer:null, coarse:"", fine:"", lgs:[] };
+const LIVE = { on: !!window.PORTFOLIO_PUBLIC, by:{NFL:[], CFB:[], NBA:[], CBB:[]}, prev:{NFL:[], CFB:[], NBA:[], CBB:[]}, days:{}, wk:{}, cur:{}, ws:null, at:0, err:"", tried:false, busy:false, timer:null, coarse:"", fine:"", lgs:[] };
 const ESPN_PATH = { NFL:"football/nfl", CFB:"football/college-football", NBA:"basketball/nba", CBB:"basketball/mens-college-basketball" };
 const ESPN_Q = { NFL:"limit=100", CFB:"groups=80&limit=300", NBA:"limit=100", CBB:"groups=50&limit=500" };
 const BB = lg => lg==="NBA" || lg==="CBB";
@@ -1343,6 +1538,7 @@ const liveWithPrev = () => [...LIVE.lgs.flatMap(lg=> LIVE.prev[lg]), ...liveAll(
 function liveFinals(){
   const m = new Map();
   for (const k in LIVE.days) for (const g of LIVE.days[k].games) m.set(g.lg+g.id, g);
+  for (const k in LIVE.wk) for (const g of LIVE.wk[k].games) m.set(g.lg+g.id, g);
   for (const g of liveWithPrev()) m.set(g.lg+g.id, g);
   return [...m.values()];
 }
@@ -1365,6 +1561,7 @@ function parseEvent(e, lg, day){
   const st = c.status || e.status || {}, ty = st.type || {}, sit = c.situation || null, start = new Date(e.date || c.date);
   if (isNaN(start)) return null;
   const home = canonName(nm(H), lg), away = canonName(nm(W), lg);
+  addLogo(home, lg, {logo:H.team.logo, color:H.team.color}); addLogo(away, lg, {logo:W.team.logo, color:W.team.color});
   const rank = t => { const r = t.curatedRank && +t.curatedRank.current; return r>0 && r<=25 ? r : 0; };
   const rec = t => { const r = (t.records||[]).find(x=>x.name==="overall" || x.type==="total") || (t.records||[])[0]; return r ? r.summary||"" : ""; };
   const state = ty.state==="in" ? "in" : ty.state==="post" ? "post" : "pre";
@@ -1442,6 +1639,28 @@ function liveLoop(){
 }
 if (LIVE.on) document.addEventListener("visibilitychange", ()=>{ if (document.visibilityState==="visible" && Date.now()-LIVE.at > 20000) loadLive().then(liveLoop); });
 // A basketball day other than today, opened on the scoreboard. Past days are read again at most every 10 minutes.
+// A football week other than the current one, opened on the scoreboard (ESPN's own week numbers).
+function loadWeek(lg, wk){
+  const k = lg+"|"+wk.type+"|"+wk.n, c = LIVE.wk[k];
+  if (c && (c.busy || Date.now()-c.at < 600e3)) return c;
+  LIVE.wk[k] = {games: c ? c.games : [], at: c ? c.at : 0, busy:true};
+  espnGet(lg, wk).then(R=> LIVE.wk[k] = {games:R.games, at:Date.now()})
+    .catch(()=> LIVE.wk[k] = {games: c ? c.games : [], at:Date.now(), err:true})
+    .then(()=> { if (S.view==="league" && S.tab==="scores") render(); });
+  return LIVE.wk[k];
+}
+// Which week the football scoreboard opens on: the week just finished through Tuesday, then the new week from Wednesday.
+const sbDefaultOff = () => toD(sbToday()).getUTCDay()===2 ? -1 : 0;
+function weekGames(lg, off){
+  const cur = LIVE.cur[lg];
+  if (off===0) return {games:LIVE.by[lg], ready:LIVE.tried, wk:cur||null};
+  if (!cur) return {games:[], ready:LIVE.tried, wk:null};
+  const wk = {n:cur.n+off, type:cur.type};
+  if (off===-1 && LIVE.prev[lg].length) return {games:LIVE.prev[lg], ready:true, wk};
+  if (wk.n<1) return {games:[], ready:true, wk};
+  const c = loadWeek(lg, wk);
+  return {games:c.games, ready:!!c.at, wk};
+}
 function loadDay(lg, day){
   const k = lg+"|"+day, c = LIVE.days[k];
   if (c && (c.busy || Date.now()-c.at < (day < sbToday() ? 600e3 : 120e3))) return;
@@ -1476,7 +1695,7 @@ function scoreCard(g, C){
   const ho = C.who(g.hk, g.date), ao = C.who(g.ak, g.date), fin = g.state==="post", live = g.state==="in";
   const row = (side) => { const home = side==="home", sc = home?g.hs:g.as, other = home?g.as:g.hs, own = home?ho:ao, rk = home?g.hrank:g.arank, rec = home?g.hrec:g.arec;
     return `<div class="sg-row ${fin && sc>other?"won":""} ${fin && sc<other?"lost":""}">
-      <span class="tn">${rk?`<span class="rk">${rk}</span>`:""}${esc(home?g.home:g.away)}${live && g.poss===side?`<span class="ball" role="img" aria-label="has the ball" title="Has the ball"></span>`:""}</span>
+      <span class="tn">${tlogo(home?g.home:g.away, g.lg)}${rk?`<span class="rk">${rk}</span>`:""}${esc(home?g.home:g.away)}${live && g.poss===side?`<span class="ball" role="img" aria-label="has the ball" title="Has the ball"></span>`:""}</span>
       ${own?`<span class="own">${esc(own.owner)}</span>`:(g.state==="pre"&&rec?`<span class="rec">${esc(rec)}</span>`:"")}
       <span class="sc num">${g.state==="pre"?"":sc}</span></div>`; };
   const sit = live && g.dd ? `<div class="sg-sit ${g.rz?"rz":""}">${g.poss?`${esc(g.poss==="home"?g.home:g.away)} ball · `:""}${esc(g.dd)}</div>` : "";
@@ -1487,59 +1706,54 @@ function scoreCard(g, C){
   </div>`;
 }
 function scoresHTML(L, C){
-  const wrap = (sub, inner) => `<section class="panel"><div class="head-row"><h2>Scoreboard</h2>${sub}</div>${inner}</section>`;
-  if (!LIVE.on) return wrap("", `<div class="card empty"><strong>The live scoreboard is on the website.</strong>Open playtheportfolio.com to follow games as they happen.</div>`);
+  if (!LIVE.on) return resultsHTML(L, C);       // the Claude version has no live feed: show the stored results
   const sp = SP(L), bb = sportOf(L)!=="football", lgs = [sp.pro, sp.col].filter(Boolean), hasPicks = C.picks.length>0;
   const mineOnly = hasPicks && !S.sbAll, lgPick = lgs.includes(S.sbLg) ? S.sbLg : "all";
   const today = sbToday();
-  let all, sub;
-  const upd = LIVE.at ? ` · updated ${new Date(LIVE.at).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit",second:"2-digit"})}` : "";
+  const upd = LIVE.at ? `Updated ${new Date(LIVE.at).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"})}` : "";
+  let all, nav, loading = false, label = "";
   if (bb){
-    // Basketball: one day at a time, with arrows to step back and forward.
+    // Basketball: one day at a time.
     const day = S.sbDay || today;
     if (day!==today) lgs.forEach(lg=> loadDay(lg, day));
     all = lgs.flatMap(lg=> day===today ? LIVE.by[lg] : ((LIVE.days[lg+"|"+day]||{}).games || []));
-    const loading = day!==today && lgs.some(lg=> !(LIVE.days[lg+"|"+day]||{}).at);
-    sub = `<div class="daynav"><button type="button" class="arrow" data-sbday="-1" aria-label="Day before">‹</button>
-      <span class="sub"><b>${day===today?"Today":day===addDays(today,-1)?"Yesterday":day===addDays(today,1)?"Tomorrow":""}</b> ${fmtDay(day)}${day===today?upd:""}</span>
+    loading = day!==today && lgs.some(lg=> !(LIVE.days[lg+"|"+day]||{}).at);
+    label = day===today?"Today":day===addDays(today,-1)?"Yesterday":day===addDays(today,1)?"Tomorrow":fmtDay(day);
+    nav = `<div class="daynav"><button type="button" class="arrow" data-sbday="-1" aria-label="Day before">‹</button>
+      <span class="dn-mid"><b>${label}</b><span class="sub">${label===fmtDay(day)?"":fmtDay(day)}</span></span>
       <button type="button" class="arrow" data-sbday="1" aria-label="Day after">›</button>${day!==today?`<button type="button" class="linkbtn" data-sbday="0">Today</button>`:""}</div>`;
-    if (loading) return wrap(sub, `<div class="card empty"><strong>Loading ${fmtDay(day)}…</strong></div>`);
   } else {
-    const ws = weekStart(today), we = weekEnd(ws);
-    all = liveAll().filter(g=> (g.lg==="NFL"||g.lg==="CFB") && g.date>=ws && g.date<=we);
-    sub = `<p class="sub">Week of ${fmtShort(ws)}–${fmtShort(we)}${upd}</p>`;
+    // Football: one league week (Tuesday to Monday) at a time, like ESPN's scoreboard.
+    const def = sbDefaultOff(), off = S.sbWeek==null ? def : S.sbWeek;
+    const W = lgs.map(lg=> ({lg, ...weekGames(lg, off)}));
+    all = W.flatMap(w=>w.games);
+    loading = W.some(w=>!w.ready);
+    const ws = addDays(weekStart(today), 7*off), we = weekEnd(ws);
+    const wkTxt = W.filter(w=>w.wk && w.wk.n>0).map(w=>`${LG_NAME[w.lg]} Week ${w.wk.n}`).join(" · ");
+    label = off===def ? (off===0 ? "This week" : "Last week") : off===def+1 && def===-1 ? "This week" : off===def-1 ? (def===0 ? "Last week" : "Two weeks ago") : off===def+1 ? "Next week" : `${fmtShort(ws)}–${fmtShort(we)}`;
+    nav = `<div class="daynav"><button type="button" class="arrow" data-sbwk="-1" aria-label="Week before">‹</button>
+      <span class="dn-mid"><b>${wkTxt || label}</b><span class="sub">${fmtShort(ws)}–${fmtShort(we)}</span></span>
+      <button type="button" class="arrow" data-sbwk="1" aria-label="Week after">›</button>${off!==def?`<button type="button" class="linkbtn" data-sbwk="0">Current week</button>`:""}</div>`;
   }
   const shown = all.filter(g=> (!mineOnly || C.who(g.hk, g.date) || C.who(g.ak, g.date)) && (lgPick==="all" || g.lg===lgPick)).sort((a,b)=> a.start-b.start || a.home.localeCompare(b.home));
-  const filters = `<div class="btns">${hasPicks?`<div class="seg" role="group" aria-label="Which games"><button type="button" data-sb="mine" aria-pressed="${mineOnly}">This league's teams</button><button type="button" data-sb="all" aria-pressed="${!mineOnly}">All games</button></div>`:""}
+  const filters = `<div class="filters">${hasPicks?`<div class="seg" role="group" aria-label="Which games"><button type="button" data-sb="mine" aria-pressed="${mineOnly}">My league</button><button type="button" data-sb="all" aria-pressed="${!mineOnly}">All games</button></div>`:""}
       ${lgs.length>1?`<div class="seg" role="group" aria-label="Which level"><button type="button" data-sblg="all" aria-pressed="${lgPick==="all"}">All</button>${lgs.map(lg=>`<button type="button" data-sblg="${lg}" aria-pressed="${lgPick===lg}">${LG_NAME[lg]}</button>`).join("")}</div>`:""}</div>`;
-  if (!LIVE.tried) return wrap(sub, `<div class="card empty"><strong>Loading the scoreboard…</strong></div>`);
-  if (LIVE.err && !all.length) return wrap(sub, `<div class="card empty"><strong>Live scores can't be reached right now.</strong>Standings still update from the stored results. This page keeps trying.</div>`);
-  const live = shown.filter(g=>g.state==="in"), pre = shown.filter(g=>g.state==="pre"), post = shown.filter(g=>g.state==="post").reverse();
+  const about = `Live scores come from ESPN's public scoreboard and refresh about every 20 seconds while games are on. A final counts in the standings straight away.${bb?" Preseason and exhibition games are shown but don't count.":" The scoreboard shows the week just played through Tuesday and moves to the new week on Wednesday."}`;
+  const head = `<div class="head-row">${ttl("Scores", "sb", about)}<span class="sub">${upd}</span></div>${nav}${filters}`;
+  const wrap = inner => `<section class="panel">${head}${inner}</section>`;
+  if (!LIVE.tried || loading) return wrap(`<div class="card empty"><strong>Loading scores…</strong></div>`);
+  if (LIVE.err && !all.length) return wrap(`<div class="card empty"><strong>Live scores can't be reached right now.</strong>Standings still update from the stored results. This page keeps trying.</div>`);
   const grid = gs => `<div class="sg-grid">${gs.map(g=>scoreCard(g, C)).join("")}</div>`;
-  const days = [...new Set(pre.map(g=>g.date))];
+  const live = shown.filter(g=>g.state==="in"), rest = shown.filter(g=>g.state!=="in");
+  const days = [...new Set(rest.map(g=>g.date))].sort();
+  const dayName = d => toD(d).toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",timeZone:"UTC"});
   const body = (live.length ? `<div class="head-row"><h3>Live now</h3><span class="sub">${live.length} game${live.length===1?"":"s"}</span></div>${grid(live)}` : "")
-    + (bb ? (pre.length ? `<div class="head-row"><h3>Upcoming</h3><span class="sub">${pre.length} game${pre.length===1?"":"s"}</span></div>${grid(pre)}` : "")
-          : days.map(d=>`<div class="head-row"><h3>${fmtDay(d)}</h3><span class="sub">${pre.filter(g=>g.date===d).length} upcoming</span></div>${grid(pre.filter(g=>g.date===d))}`).join(""))
-    + (post.length ? `<div class="head-row"><h3>Final</h3><span class="sub">${post.length} game${post.length===1?"":"s"}</span></div>${grid(post)}` : "");
-  const none = mineOnly ? `None of this league's teams play ${bb?"on this day":"this week"}. Try All games.` : `Nothing is on the schedule for ${bb?"this day":"this week"}${bb && all.length===0 ? " (or the season hasn't started)" : ""}.`;
-  return wrap(sub, `${filters}${LIVE.err?`<p class="ro">Some scores couldn't be refreshed just now. Showing the last ones received.</p>`:""}
-    ${body || `<div class="card empty"><strong>No games to show.</strong>${none}</div>`}
-    <p class="sub">Live scores come from ESPN's public scoreboard and refresh about every 20 seconds while games are on. A final here counts in the standings straight away.${bb?" Preseason and exhibition games are shown but don't count.":""}</p>`);
+    + (bb ? (rest.length ? `<div class="head-row"><h3>${live.length?"Other games":"Games"}</h3><span class="sub">${rest.length}</span></div>${grid(rest)}` : "")
+          : days.map(d=>{ const gs = rest.filter(g=>g.date===d); return `<div class="head-row"><h3>${dayName(d)}</h3><span class="sub">${gs.length} game${gs.length===1?"":"s"}</span></div>${grid(gs)}`; }).join(""));
+  const none = mineOnly && all.length ? `None of this league's teams play ${bb?"on this day":"this week"}. Try All games.` : `Nothing is on the schedule for ${bb?"this day":"this week"}.`;
+  return wrap(`${LIVE.err?`<p class="ro">Some scores couldn't be refreshed just now. Showing the last ones received.</p>`:""}
+    ${body || `<div class="card empty"><strong>No games to show.</strong>${none}</div>`}`);
 }
-function offersStrip(L){
-  if (!hasV4() || !meId() || L.status!=="complete") return "";
-  const seat = mine(L); if (!seat) return "";
-  ensureTrades(L);
-  const n = S.trades.list.filter(o=>o.status==="pending" && o.to_owner===seat).length;
-  return n ? `<button type="button" class="card you" data-tabgo="trades"><span class="kv"><b>${n}</b> trade offer${n===1?"":"s"} waiting for you</span><span class="kv"><b>Review ›</b></span></button>` : "";
-}
-function liveStrip(L, C){
-  if (!LIVE.on || !C.picks.length) return "";
-  const lgs = [SP(L).pro, SP(L).col];
-  const n = liveAll().filter(g=> g.state==="in" && lgs.includes(g.lg) && (C.who(g.hk, g.date) || C.who(g.ak, g.date))).length;
-  return n ? `<button type="button" class="card you" data-tabgo="scores"><span><span class="live-pill">Live</span><span class="kv"><b>${n}</b> game${n===1?"":"s"} with this league's teams ${n===1?"is":"are"} on now</span></span><span class="kv"><b>Open the scoreboard ›</b></span></button>` : "";
-}
-
 /* ---------- pickups and trades (website only) ---------- */
 const hasV4 = () => !!(A && S.auth.live && S.auth.dbv>=4);
 const isPast = d => !!d && etDate(new Date()) > d;
@@ -1563,7 +1777,8 @@ const activeTeams = (C, owner) => C.stints.filter(s=> s.owner===owner && !s.to);
 function flashHTML(where){ const f = S.flash; return f && f.where===where ? `<p class="banner ${f.ok?"":"err-banner"}">${esc(f.text)}</p>` : ""; }
 
 function faHTML(L, C){
-  const sp = C.sp, wrap = inner => `<section class="panel"><div class="head-row"><h2>Free Agents</h2><p class="sub">${esc(windowNote(L, "waiverUntil", "Pickups"))} A team you add starts counting the next Tuesday.</p></div>${inner}</section>`;
+  const sp = C.sp, wrap = inner => `<section class="panel"><div class="head-row"><h2>Moves</h2>${movesNav()}</div>
+    <div class="note-row"><p class="sub">${esc(windowNote(L, "waiverUntil", "Pickups"))}</p>${info("fa", "First come, first served. A pickup replaces a team from the same conference. The team you add starts counting the next Tuesday; the team you drop keeps counting for you until then, and every win it earned for you stays on your total.")}</div>${inner}</section>`;
   if (!A) return wrap(`<div class="card empty"><strong>Pickups happen on the website.</strong>Open playtheportfolio.com to add and drop teams.</div>`);
   if (L.status!=="complete") return wrap(`<div class="card empty"><strong>Pickups open once the draft is finished.</strong></div>`);
   const pools = sp.pools.filter(p=> slotsOf(L)[p] || (p!==sp.pro && flexOf(L)));
@@ -1587,7 +1802,7 @@ function faHTML(L, C){
       : `<p>${esc(seat)} has no ${esc(x.p)} spot to swap. A pickup replaces a team from the same conference.</p><div class="btns"><button type="button" class="btn" id="faCancel">Close</button></div>`}
     </div>`;
   }
-  const rows = shown.map(x=>`<tr><td><span class="tn">${esc(x.t)}</span> ${chip(x.p)}</td><td class="r num">${x.gp?recTxt(x.r):"0-0"}</td><td class="r num hide-sm">${x.gp?x.pct.toFixed(3).replace(/^0/,""):"–"}</td><td class="hide-sm sub">${lastTxt(x)}</td>
+  const rows = shown.map(x=>`<tr><td><span class="tn">${tlogo(x.t, lgOfPool(L,x.p))}${esc(x.t)}</span> ${chip(x.p)}</td><td class="r num">${x.gp?recTxt(x.r):"0-0"}</td><td class="r num hide-sm">${x.gp?x.pct.toFixed(3).replace(/^0/,""):"–"}</td><td class="hide-sm sub">${lastTxt(x)}</td>
       <td class="r">${open?`<button type="button" class="qb add" data-fa="${esc(x.t)}" data-fapool="${esc(x.p)}" aria-label="Add ${esc(x.t)}">+</button>`:""}</td></tr>`).join("");
   return wrap(`${flashHTML("fa")}${actForHTML(L)}${why?`<p class="ro">${why}</p>`:""}${panel}
     <div class="card form" style="padding-bottom:12px"><div class="form-grid">
@@ -1604,7 +1819,7 @@ function ensureTrades(L){
   if (S.trades && S.trades.id===L.id) return;
   if (S.tradeWatch) S.tradeWatch();
   const T = S.trades = {id:L.id, list:[], loaded:false, err:""};
-  const load = () => A.listTrades(L.id).then(list=>{ if (S.trades!==T) return; const sig = JSON.stringify(list); if (sig!==T.sig || !T.loaded){ T.sig = sig; T.list = list; T.loaded = true; T.err = ""; if (S.view==="league" && (S.tab==="trades" || S.tab==="league")) render(); } })
+  const load = () => A.listTrades(L.id).then(list=>{ if (S.trades!==T) return; const sig = JSON.stringify(list); if (sig!==T.sig || !T.loaded){ T.sig = sig; T.list = list; T.loaded = true; T.err = ""; if (S.view==="league" && ["moves","team","league"].includes(S.tab)) render(); } })
     .catch(err=>{ if (S.trades===T){ T.loaded = true; T.err = failText(err); render(); } });
   T.reload = load; load();
   S.tradeWatch = A.watchTrades(L.id, load);
@@ -1625,7 +1840,8 @@ function offerLine(o, C){
     <div class="offer-side"><span class="sub">${esc(o.to_owner)} gives</span><div class="pend-list" style="margin:4px 0 0">${list(o.get)}</div></div>`;
 }
 function tradesHTML(L, C){
-  const wrap = inner => `<section class="panel"><div class="head-row"><h2>Trades</h2><p class="sub">${esc(windowNote(L, "tradeUntil", "Trades"))} Conference for conference; traded teams start counting for their new manager the next Tuesday.</p></div>${inner}</section>`;
+  const wrap = inner => `<section class="panel"><div class="head-row"><h2>Moves</h2>${movesNav()}</div>
+    <div class="note-row"><p class="sub">${esc(windowNote(L, "tradeUntil", "Trades"))}</p>${info("tr", "Trades are conference for conference and can include several teams, for example an NFL team and an SEC team for an NFL team and an SEC team. An accepted trade goes through right away; the teams start counting for their new managers the next Tuesday, and wins already earned stay where they are.")}</div>${inner}</section>`;
   if (!A) return wrap(`<div class="card empty"><strong>Trades happen on the website.</strong></div>`);
   if (!hasV4()) return wrap(`<div class="card empty"><strong>Trades switch on once the site's database is updated.</strong></div>`);
   if (!meId()) return wrap(`<div class="card empty"><strong>Sign in to trade.</strong><div class="btns" style="justify-content:center;margin-top:12px"><button class="btn primary" data-auth="in">Sign in</button></div></div>`);
@@ -1673,11 +1889,10 @@ function deadlineOpts(L, C, cur){
 }
 function settingsCardHTML(L, C){
   if (!A || !canAdmin(L) || !hasV4()) return "";
-  return `<form class="card form" id="dlForm" autocomplete="off"><h3>Pickups and trades</h3>
+  return `<form class="card form" id="dlForm" autocomplete="off">${ttl("Pickups and trades", "dl", "A pickup or trade made during a week starts counting the following Tuesday. Wins a team earned before it moved stay with the manager who had it.", "h3")}
     <div class="form-grid"><label class="f" for="dlWaiver">Pickups allowed<select id="dlWaiver">${deadlineOpts(L, C, L.waiverUntil)}</select></label>
       <label class="f" for="dlTrade">Trades allowed<select id="dlTrade">${deadlineOpts(L, C, L.tradeUntil)}</select></label></div>
-    <div class="btns"><button type="submit" class="btn">Save</button><span class="msg" id="dlMsg" role="status"></span></div>
-    <p class="sub">A pickup or trade made during a week starts counting the following Tuesday. Wins a team earned before it moved stay with the manager who had it.</p></form>`;
+    <div class="btns"><button type="submit" class="btn">Save</button><span class="msg" id="dlMsg" role="status"></span></div></form>`;
 }
 
 /* ---------- chat ---------- */
@@ -1694,7 +1909,7 @@ function startChat(id){
 }
 function stopChat(){ if (S.chatConn){ S.chatConn.close(); S.chatConn = null; } S.chat = null; }
 function chatHTML(L){
-  const wrap = inner => `<section class="panel"><div class="head-row"><h2>League chat</h2><p class="sub">Only this league's managers can read and post here.</p></div>${inner}</section>`;
+  const wrap = inner => `<section class="panel"><div class="head-row">${ttl("League chat", "chat", "Only this league's managers and its commissioner can read and post here.")}</div>${inner}</section>`;
   if (!hasV3()) return wrap(`<div class="card empty"><strong>Chat isn't available right now.</strong>${A?"It switches on once the site's database is updated.":"Chat is part of the website version of The Portfolio."}</div>`);
   if (!meId()) return wrap(`<div class="card empty"><strong>Sign in to chat.</strong>Chat is for the managers in this league.<div class="btns" style="justify-content:center;margin-top:12px"><button class="btn primary" data-auth="in">Sign in</button></div></div>`);
   if (!mine(L) && !canAdmin(L)) return wrap(`<div class="card empty"><strong>Chat is for this league's managers.</strong>Join with the commissioner's invite link to take part.</div>`);
@@ -1736,7 +1951,7 @@ function queueHTML(L){
       <button type="button" class="ib" data-qmv="${i}|1" ${i<live.length-1?"":"disabled"} aria-label="Move ${esc(x.t)} down">↓</button>
       <button type="button" class="ib" data-qrm="${esc(x.t)}" aria-label="Remove ${esc(x.t)} from queue">✕</button></li>`).join("");
   return `<details class="card qcard" ${S.queueShut?"":"open"} id="qCard"><summary><span>My queue</span><span class="sub">${q.loaded ? `${live.length} team${live.length===1?"":"s"}` : "Loading…"}</span></summary>
-    <div class="form" style="padding-top:0"><p class="sub">Add teams with the + next to each name. If your time runs out, auto-pick takes the first one here that is still on the board and fits an open spot. Only you can see your queue.</p>
+    <div class="form" style="padding-top:0"><div class="note-row"><span class="sub">Add teams with the + next to each name.</span>${info("queue", "If your time runs out, auto-pick takes the first team here that is still on the board and fits an open spot. Only you can see your queue.")}</div>
     <ol class="mgr-list">${items || `<li><span class="sub">Nothing queued yet.</span></li>`}</ol><span class="msg" id="qMsg" role="status"></span></div></details>`;
 }
 
@@ -1816,7 +2031,7 @@ function settingsHTML(){
     <div class="card set"><h3>Help</h3>
       <details><summary>How does scoring work?</summary><p>Every win by a team in your portfolio adds to your total. Football: ${SPORTS.football.counts} Basketball: ${SPORTS.basketball.counts}</p></details>
       <details><summary>When do scores update?</summary><p>${LIVE.on?"On the website, scores are live: the Scoreboard tab follows every NFL, college football, NBA and college basketball game, and a final counts in the standings as soon as the game ends. Football results are also saved to the permanent record each morning; basketball results are saved within about ten minutes of the final buzzer. NBA preseason, the NBA Cup final, the play-in and playoffs, and college exhibitions don't count.":"Scores are pulled once each morning. A game that ends tonight shows up tomorrow morning. The website version also has live scores."}</p></details>
-      <details><summary>How do I see my team?</summary><p>${A?"Join a league with the invite link from its commissioner. It then appears under My Portfolios on Home, and you can switch between portfolios from the menu at the top.":"Open a league and pick your name on the My Team tab. That league then appears under My Portfolios on Home, and you can switch between portfolios from the menu at the top."}</p></details>
+      <details><summary>How do I see my team?</summary><p>${A?"Join a league with the invite link from its commissioner. It then appears under My leagues on Home, and you can switch between portfolios from the menu at the top.":"Open a league and pick your name on the My Team tab. That league then appears under My leagues on Home, and you can switch between portfolios from the menu at the top."}</p></details>
       <details><summary>A score looks wrong. What now?</summary><p>Tell your commissioner. They can enter a correction, and a corrected result always replaces the automatic one.</p></details>
       <details><summary>How do I start a league?</summary><p>${A?"Sign in and use Create a league on Home. You become its commissioner: you set the managers and draft order, share the invite link, and can make or undo picks for anyone.":"New leagues are set up by the commissioner, who also runs the draft."}</p></details>
       ${A?`<details><summary>How does the draft work?</summary><p>Managers pick on their own phones when it's their turn, and everyone sees each pick as it happens. The commissioner can pick on behalf of a manager who isn't there.</p><p>The commissioner can also set a pick timer. If your time runs out, the first available team in your queue is picked for you, or the best team left for one of your open spots, and the draft moves on.</p><p>Build your queue in the Draft tab with the + next to each team. Only you can see it. Use Practice draft to try the format against auto-pick; nothing there is saved.</p></details>
@@ -1923,8 +2138,7 @@ function seatsHTML(L){
   if (code===undefined){ S.invites[L.id] = null; A.invite(L.id).then(c=>{ S.invites[L.id]=c; render(); }).catch(()=>{ S.invites[L.id]=""; render(); }); }
   const link = code ? `${PUBLIC_BASE}#join.${L.id}.${code}` : "";
   const joined = L.owners.filter(o=>m[o]).length;
-  return `<div class="card form"><div class="head-row"><h3>Managers and invites</h3><span class="sub">${joined} of ${L.owners.length} joined</span></div>
-    <p class="sub">Send this link to your managers. Each one signs in and chooses their name. Until someone joins, you can pick for them. If you play in this league too, tap "That's me" next to your own name.</p>
+  return `<div class="card form"><div class="head-row">${ttl("Managers and invites", "seats", `Send this link to your managers. Each one signs in and chooses their name. Until someone joins, you can pick for them. If you play in this league too, tap "That's me" next to your own name.`, "h3")}<span class="sub">${joined} of ${L.owners.length} joined</span></div>
     ${link ? `<div class="share"><input type="text" readonly id="inv-${esc(L.id)}" value="${esc(link)}" aria-label="Invite link"><button type="button" class="btn" data-copy="inv-${esc(L.id)}">Copy invite link</button></div>` : `<p class="sub">${code===""?"The invite link couldn't be loaded.":"Loading the invite link…"}</p>`}
     <ul class="seats">${L.owners.map(o=>`<li><span class="who">${esc(o)}</span><span class="sub">${m[o] ? (m[o]===meId()?"You":"Joined") : "Not joined yet"}</span>${m[o]?`<button type="button" class="btn" data-release="${esc(o)}" style="padding:4px 10px;font-size:12.5px">${m[o]===meId()?"Leave":"Free this spot"}</button>`:(!mine(L)&&code?`<button type="button" class="btn" data-take="${esc(o)}" style="padding:4px 10px;font-size:12.5px">That's me</button>`:"")}</li>`).join("")}</ul>
     <span class="msg" id="stMsg" role="status"></span></div>`;
@@ -2058,9 +2272,18 @@ function bind(){
     try{ await S.db.doc(`leagues/${L.id}`).update({waiverUntil:$("#dlWaiver").value, tradeUntil:$("#dlTrade").value}); ["dlWaiver","dlTrade"].forEach(id=>S.reset.add(id)); setMsg("#dlMsg","Saved.",true); }
     catch(err){ setMsg("#dlMsg",failText(err)); } };
   document.querySelectorAll("[data-sb]").forEach(b=> b.onclick=()=>{ S.sbAll = b.dataset.sb==="all"; render(); });
+  const ob=$("#otherBtn"); if(ob) ob.onclick=()=>{ S.showOther=!S.showOther; render(); };
+  const cb=$("#createBtn"); if(cb) cb.onclick=()=>{ S.showCreate=true; render(); const f=$("#lgForm"); if(f) try{ f.scrollIntoView({block:"start"}); }catch(_){} };
+  const pb=$("#pendBtn"); if(pb) pb.onclick=()=>{ S.showPending=!S.showPending; S.flash=null; render(); if (S.showPending && S.trades && S.trades.reload) S.trades.reload(); };
+  document.querySelectorAll("[data-attn]").forEach(b=> b.onclick=()=>{ const g=b.dataset.attn;
+    if (g==="pending"){ S.showPending=true; setTab("team"); } else setTab(g);
+    render(); try{ window.scrollTo(0,0); }catch(_){} if (S.trades && S.trades.reload) S.trades.reload(); });
+  document.querySelectorAll("[data-moves]").forEach(b=> b.onclick=()=>{ S.movesView=b.dataset.moves; S.flash=null; render(); if (S.movesView==="trades" && S.trades && S.trades.reload) S.trades.reload(); });
+  document.querySelectorAll("[data-info-view]").forEach(b=> b.onclick=()=>{ S.infoView=b.dataset.infoView; render(); });
   document.querySelectorAll("[data-sblg]").forEach(b=> b.onclick=()=>{ S.sbLg = b.dataset.sblg; render(); });
+  document.querySelectorAll("[data-sbwk]").forEach(b=> b.onclick=()=>{ const n = +b.dataset.sbwk, def = sbDefaultOff(); S.sbWeek = n ? (S.sbWeek==null ? def : S.sbWeek) + n : null; if (S.sbWeek===def) S.sbWeek = null; render(); });
   document.querySelectorAll("[data-sbday]").forEach(b=> b.onclick=()=>{ const n = +b.dataset.sbday, t = sbToday(); S.sbDay = n ? addDays(S.sbDay || t, n) : null; if (S.sbDay===t) S.sbDay = null; render(); });
-  document.querySelectorAll("[data-tabgo]").forEach(b=> b.onclick=()=>{ S.tab=b.dataset.tabgo; render(); try{ window.scrollTo(0,0); }catch(_){} });
+  document.querySelectorAll("[data-tabgo]").forEach(b=> b.onclick=()=>{ setTab(b.dataset.tabgo); render(); try{ window.scrollTo(0,0); }catch(_){} if (S.tab==="moves" && S.trades && S.trades.reload) S.trades.reload(); });
   document.querySelectorAll("[data-recap]").forEach(b=> b.onclick=()=>{ if (b.dataset.recap){ S.recapWeek=b.dataset.recap; render(); } });
   // league history
   const saveHist = async h => { const L=league(); try{ await S.db.doc(`leagues/${L.id}`).update({history:h}); ["hSeason","hChamp","hWins","hNote"].forEach(id=>S.reset.add(id)); if (!A) render(); }catch(err){ setMsg("#hMsg",failText(err)); } };
@@ -2204,9 +2427,9 @@ async function delLeague(id){
 }
 
 /* ---------- boot ---------- */
-document.querySelectorAll(".tab").forEach(b=> b.onclick=()=>{ S.tab=b.dataset.tab; S.confirmDel=S.confirmLg=null; S.flash=null; render(); if (A) A.refresh(); if (S.tab==="trades" && S.trades && S.trades.reload) S.trades.reload(); });
+document.querySelectorAll(".tab").forEach(b=> b.onclick=()=>{ setTab(b.dataset.tab); S.confirmDel=S.confirmLg=null; S.flash=null; render(); if (A) A.refresh(); if ((S.tab==="moves" || S.tab==="team") && S.trades && S.trades.reload) S.trades.reload(); });
 // Trade offers: re-check every 20 seconds while the Trades tab is open, in case the live feed is unavailable.
-setInterval(()=>{ if (S.view==="league" && S.tab==="trades" && S.trades && S.trades.reload && document.visibilityState==="visible") S.trades.reload(); }, 20000);
+setInterval(()=>{ if (S.view==="league" && (S.tab==="moves" || S.tab==="team" || S.tab==="league") && S.trades && S.trades.reload && document.visibilityState==="visible") S.trades.reload(); }, 20000);
 $("#leagueSel").onchange=e=>{ e.target.value ? go("league", e.target.value) : go("home"); };
 $("#brandLink").onclick=e=>{ e.preventDefault(); go("home"); };
 $("#gearBtn").onclick=()=> go(S.view==="settings" ? "home" : "settings");
@@ -2248,6 +2471,7 @@ window.addEventListener("hashchange", ()=>{ applyHash(); settleLeague(); render(
     settleLeague(); render();
     if (LIVE.on && liveLgs().join()!==LIVE.lgs.join()) loadLive();    // a basketball league showed up: follow its scoreboard too
   }, ()=>{});
+  if (A && A.logos) A.logos().then(rows=>{ let ch = false; for (const r of rows||[]) ch = addLogo(r.name, r.lg, r) || ch; if (ch) render(); }).catch(()=>{});
   db.collection("games").limit(1000).onSnapshot(q=>{ S.gameDocs = q.docs.map(d=>({_id:d.id, ...d.data()})); render(); }, ()=>{});
   db.doc("meta/sync").onSnapshot(s=>{ S.sync = s.exists ? s.data() : null; render(); }, ()=>{});
   if (LIVE.on) loadLive().then(liveLoop);

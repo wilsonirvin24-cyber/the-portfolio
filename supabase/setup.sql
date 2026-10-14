@@ -12,6 +12,7 @@
 --   league_messages league chat, readable only by that league's managers
 --   trade_offers    trade proposals, readable only by the two managers involved and the commissioner
 --   score_days      every NBA and college basketball final, collected from ESPN's public scoreboard every few minutes
+--   pf_logos        team logos and colors from ESPN's team lists, refreshed weekly
 
 -- ---------------------------------------------------------------- profiles
 create table if not exists public.profiles (
@@ -599,11 +600,11 @@ begin
   end;
   begin   -- basketball results: when ESPN was last read and how many days of finals are stored
     execute 'select jsonb_build_object(''last'', (select max(at) from public.score_log where status = 200),
-      ''days'', (select count(*) from public.score_days), ''net'', exists (select 1 from pg_extension where extname = ''pg_net''))' into sc;
+      ''days'', (select count(*) from public.score_days), ''logos'', (select count(*) from public.pf_logos), ''net'', exists (select 1 from pg_extension where extname = ''pg_net''))' into sc;
     execute 'select $1 || jsonb_build_object(''job'', exists (select 1 from cron.job where jobname = ''portfolio-scores''))' into sc using sc;
   exception when others then null;
   end;
-  return jsonb_build_object('version', 5, 'scheduler', s, 'scores', sc);
+  return jsonb_build_object('version', 6, 'scheduler', s, 'scores', sc);
 end $$;
 
 -- Run by the scheduler every minute, so picks still happen when nobody has the draft room open.
@@ -959,6 +960,10 @@ revoke all on public.score_fetch, public.score_log from anon, authenticated;
 create or replace function public.pf_espn_url(p_lg text, p_day date) returns text
 language sql immutable as $$
   select case p_lg
+    when 'T-NFL' then 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams?limit=100'
+    when 'T-NBA' then 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams?limit=100'
+    when 'T-CFB' then 'https://site.api.espn.com/apis/site/v2/sports/football/college-football/teams?groups=80&limit=500'
+    when 'T-CBB' then 'https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/teams?limit=500'
     when 'NBA' then 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=' || to_char(p_day, 'YYYYMMDD')
     else 'https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?groups=50&limit=500&dates=' || to_char(p_day, 'YYYYMMDD')
   end $$;
@@ -1021,6 +1026,45 @@ language sql stable set search_path = public as $$
   select coalesce(jsonb_agg(g || jsonb_build_object('h', public.pf_cbb_name(g->>'h'), 'a', public.pf_cbb_name(g->>'a')) order by g->>'i'), '[]'::jsonb)
   from jsonb_array_elements(p_games) g $$;
 
+-- Team logos and colors, from ESPN's team lists. Refreshed weekly by the same job; the website reads them.
+create table if not exists public.pf_logos (
+  lg          text not null,                 -- NFL, NBA, CFB, CBB
+  name        text not null,                 -- nickname for pro teams, school for college
+  abbr        text,
+  color       text,
+  logo        text,
+  updated_at  timestamptz not null default now(),
+  primary key (lg, name)
+);
+alter table public.pf_logos enable row level security;
+drop policy if exists "Logos are public" on public.pf_logos;
+create policy "Logos are public" on public.pf_logos for select to anon, authenticated using (true);
+grant select on public.pf_logos to anon, authenticated;
+
+create or replace function public.pf_store_logos(p_lg text, p_body jsonb) returns int
+language plpgsql security definer set search_path = public as $$
+declare n int;
+begin
+  with t as (
+    select x->'team' as t from jsonb_array_elements(coalesce(p_body->'sports'->0->'leagues'->0->'teams', '[]'::jsonb)) x
+  ), v as (
+    select distinct on (nm) nm, t->>'abbreviation' as abbr,
+           case when (t->>'color') ~* '^[0-9a-f]{6}$' then lower(t->>'color') end as color,
+           case when (t->'logos'->0->>'href') ~* '^https://a[0-9]?\.espncdn\.com/' then t->'logos'->0->>'href' end as logo
+    from t cross join lateral (select case when p_lg in ('NFL','NBA') then t->>'name'
+                                           when p_lg = 'CBB' then public.pf_cbb_name(t->>'location') else t->>'location' end as nm) z
+    where nm is not null and nm <> ''
+    order by nm
+  )
+  insert into public.pf_logos (lg, name, abbr, color, logo, updated_at)
+  select p_lg, nm, abbr, color, logo, now() from v
+  on conflict (lg, name) do update set abbr = excluded.abbr, color = coalesce(excluded.color, pf_logos.color),
+    logo = coalesce(excluded.logo, pf_logos.logo), updated_at = now();
+  get diagnostics n = row_count;
+  return n;
+end $$;
+revoke execute on function public.pf_store_logos(text, jsonb) from public, anon, authenticated;
+
 -- Adds finals to a day, replacing any earlier copy of the same game. Returns how many finals the day now holds.
 create or replace function public.pf_store_scores(p_lg text, p_day date, p_games jsonb) returns int
 language plpgsql security definer set search_path = public as $$
@@ -1076,7 +1120,10 @@ begin
       continue;
     end if;
     begin
-      if r.status_code = 200 then
+      if r.status_code = 200 and f.lg like 'T-%' then
+        n := public.pf_store_logos(substr(f.lg, 3), r.content::jsonb);
+        insert into public.score_log (lg, day, status, events) values (f.lg, f.day, r.status_code, n);
+      elsif r.status_code = 200 then
         body := r.content::jsonb;
         got := public.pf_parse_scoreboard(f.lg, body);
         if f.lg = 'CBB' then got := public.pf_canon_cbb(got); end if;
@@ -1110,6 +1157,11 @@ begin
       perform public.pf_request_scores(lgs[i], today - 1);
     end if;
   end loop;
+  -- Team logos: once a week (or straight away when there are none yet).
+  if not exists (select 1 from public.pf_logos where updated_at > now() - interval '7 days')
+     and not exists (select 1 from public.score_log where lg like 'T-%' and at > now() - interval '6 hours') then
+    perform public.pf_request_scores(x, today) from unnest(array['T-NFL','T-NBA','T-CFB','T-CBB']) x;
+  end if;
   delete from public.score_log where at < now() - interval '14 days';
 end $$;
 

@@ -229,6 +229,16 @@
     async releaseSeat(id, seat){ await rpc("release_seat", { p_id: id, p_seat: seat }); await fetchLeagues(); },
     async invite(id){ return await rpc("league_invite", { p_id: id }); },
     now: () => Date.now() + state.offset,
+    // Team logos and colors the database collected from ESPN (database update 6). Empty until then.
+    logos: async () => {
+      const out = [];
+      for (let i = 0; i < 4; i++){
+        const { data, error } = await sb.from("pf_logos").select("lg,name,color,logo").order("lg").order("name").range(i * 1000, i * 1000 + 999);
+        if (error || !data) break;
+        out.push(...data); if (data.length < 1000) break;
+      }
+      return out;
+    },
     async setDraftTime(id, when){ await rpc("set_draft_time", { p_id: id, p_at: when }); await fetchLeagues(); },
     async startIfDue(id){ const ok = await rpc("start_draft_if_due", { p_id: id }); await fetchLeagues(); return ok; },
     async getQueue(id){
