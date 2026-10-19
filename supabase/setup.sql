@@ -11,7 +11,7 @@
 --   draft_queues    each manager's private wish list, used first when their pick timer runs out
 --   league_messages league chat, readable only by that league's managers
 --   trade_offers    trade proposals, readable only by the two managers involved and the commissioner
---   score_days      every NBA and college basketball final, collected from ESPN's public scoreboard every few minutes
+--   score_days      every NFL, college football, NBA and college basketball final, collected from ESPN's public scoreboard every few minutes
 --   pf_logos        team logos and colors from ESPN's team lists, refreshed weekly
 
 -- ---------------------------------------------------------------- profiles
@@ -604,7 +604,7 @@ begin
     execute 'select $1 || jsonb_build_object(''job'', exists (select 1 from cron.job where jobname = ''portfolio-scores''))' into sc using sc;
   exception when others then null;
   end;
-  return jsonb_build_object('version', 6, 'scheduler', s, 'scores', sc);
+  return jsonb_build_object('version', 7, 'scheduler', s, 'scores', sc);
 end $$;
 
 -- Run by the scheduler every minute, so picks still happen when nobody has the draft room open.
@@ -920,18 +920,20 @@ revoke execute on function public.pf_fail_offers(text, text[], bigint), public.p
 grant execute on function public.pf_acts_for(public.leagues, text) to authenticated;
 
 -- ------------------------------------------------ basketball scores
--- Every 5 minutes during the season the database asks ESPN's public scoreboard for today's NBA and college
--- basketball games (and, before noon Eastern, yesterday's late finishers) and keeps every final in score_days.
+-- Every 5 minutes during the season the database asks ESPN's public scoreboard for today's NFL, college football,
+-- NBA and college basketball games (and, before noon Eastern, yesterday's late finishers) and keeps every final in score_days.
 -- Nothing here needs a key or account. The website reads score_days; browsers fill in live scores themselves.
 --   NBA counts the regular season only (no preseason, NBA Cup final, play-in or playoffs).
 --   College counts every Division I game except exhibitions, including conference tournaments and March Madness.
 create table if not exists public.score_days (
-  lg          text not null check (lg in ('NBA','CBB')),
+  lg          text not null,
   day         date not null,
   games       jsonb not null default '[]'::jsonb,    -- [{i: ESPN id, h: home, a: away, hs, as}]
   updated_at  timestamptz not null default now(),
   primary key (lg, day)
 );
+alter table public.score_days drop constraint if exists score_days_lg_check;
+alter table public.score_days add constraint score_days_lg_check check (lg in ('NBA','CBB','NFL','CFB'));
 alter table public.score_days enable row level security;
 drop policy if exists "Scores are public" on public.score_days;
 create policy "Scores are public" on public.score_days for select to anon, authenticated using (true);
@@ -964,17 +966,21 @@ language sql immutable as $$
     when 'T-NBA' then 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams?limit=100'
     when 'T-CFB' then 'https://site.api.espn.com/apis/site/v2/sports/football/college-football/teams?groups=80&limit=500'
     when 'T-CBB' then 'https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/teams?limit=500'
+    when 'NFL' then 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?limit=100&dates=' || to_char(p_day, 'YYYYMMDD')
+    when 'CFB' then 'https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=80&limit=500&dates=' || to_char(p_day, 'YYYYMMDD')
+    when 'CFB-FCS' then 'https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=81&limit=500&dates=' || to_char(p_day, 'YYYYMMDD')
     when 'NBA' then 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=' || to_char(p_day, 'YYYYMMDD')
     else 'https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?groups=50&limit=500&dates=' || to_char(p_day, 'YYYYMMDD')
   end $$;
 
 -- Finished games that count, from one ESPN scoreboard response.
+--   NFL: regular season. College football: everything after preseason, including bowls and the playoff.
 create or replace function public.pf_parse_scoreboard(p_lg text, p_body jsonb) returns jsonb
 language sql immutable as $$
   select coalesce(jsonb_agg(jsonb_build_object(
            'i', e->>'id',
-           'h', case when p_lg = 'NBA' then h->'team'->>'name' else h->'team'->>'location' end,
-           'a', case when p_lg = 'NBA' then w->'team'->>'name' else w->'team'->>'location' end,
+           'h', case when p_lg in ('NBA','NFL') then h->'team'->>'name' else h->'team'->>'location' end,
+           'a', case when p_lg in ('NBA','NFL') then w->'team'->>'name' else w->'team'->>'location' end,
            'hs', (h->>'score')::int, 'as', (w->>'score')::int) order by e->>'id'), '[]'::jsonb)
   from jsonb_array_elements(coalesce(p_body->'events', '[]'::jsonb)) e
   cross join lateral (select e->'competitions'->0 as c) c
@@ -983,8 +989,8 @@ language sql immutable as $$
   where coalesce((c.c->'status'->'type'->>'completed')::boolean, (e->'status'->'type'->>'completed')::boolean, false)
     and h is not null and w is not null
     and (h->>'score') ~ '^\d+$' and (w->>'score') ~ '^\d+$'
-    and (h->>'score')::int <> (w->>'score')::int
-    and case when p_lg = 'NBA'
+    and case when p_lg = 'NFL' then coalesce(e->'season'->>'type', '2') = '2'
+          when p_lg = 'NBA'
           then coalesce(e->'season'->>'type', '2') = '2'
                and coalesce((select string_agg(n->>'headline', ' ') from jsonb_array_elements(coalesce(c.c->'notes', '[]'::jsonb)) n), '') !~* 'cup.*(final|championship)'
           else coalesce(e->'season'->>'type', '2') <> '1'
@@ -1106,6 +1112,7 @@ declare
   today date := (now() at time zone 'America/New_York')::date;
   md int := extract(month from today)::int * 100 + extract(day from today)::int;
   lgs text[] := '{}';
+  d date;
 begin
   for f in select * from public.score_fetch order by created_at loop
     begin
@@ -1125,9 +1132,9 @@ begin
         insert into public.score_log (lg, day, status, events) values (f.lg, f.day, r.status_code, n);
       elsif r.status_code = 200 then
         body := r.content::jsonb;
-        got := public.pf_parse_scoreboard(f.lg, body);
+        got := public.pf_parse_scoreboard(case when f.lg = 'CFB-FCS' then 'CFB' else f.lg end, body);
         if f.lg = 'CBB' then got := public.pf_canon_cbb(got); end if;
-        n := public.pf_store_scores(f.lg, f.day, got);
+        n := public.pf_store_scores(case when f.lg = 'CFB-FCS' then 'CFB' else f.lg end, f.day, got);
         insert into public.score_log (lg, day, status, events, finals)
           values (f.lg, f.day, r.status_code, jsonb_array_length(coalesce(body->'events', '[]'::jsonb)), jsonb_array_length(got));
       else
@@ -1147,6 +1154,19 @@ begin
   -- In season: NBA October through April, college November through the first days of April.
   if md >= 1001 or md <= 430 then lgs := lgs || 'NBA'::text; end if;
   if md >= 1101 or md <= 410 then lgs := lgs || 'CBB'::text; end if;
+  -- Football: NFL September to mid-February; college late August to late January (FBS and FCS lists).
+  if md >= 901 or md <= 215 then lgs := lgs || 'NFL'::text; end if;
+  if md >= 820 or md <= 125 then lgs := lgs || 'CFB'::text || 'CFB-FCS'::text; end if;
+  -- First run with football: fill in the season so far, once.
+  if not exists (select 1 from public.score_days where lg in ('NFL','CFB'))
+     and not exists (select 1 from public.score_log where lg = 'BF-FB') then
+    for d in select generate_series(make_date(case when md >= 701 then extract(year from today)::int else extract(year from today)::int - 1 end, 8, 20), today - 1, interval '1 day')::date loop
+      perform public.pf_request_scores('CFB', d);
+      perform public.pf_request_scores('CFB-FCS', d);
+      if d >= make_date(extract(year from d)::int, 9, 1) or extract(month from d) < 3 then perform public.pf_request_scores('NFL', d); end if;
+    end loop;
+    insert into public.score_log (lg, day, note) values ('BF-FB', today, 'football season requested');
+  end if;
   for i in 1 .. coalesce(array_length(lgs, 1), 0) loop
     if not exists (select 1 from public.score_log where lg = lgs[i] and day = today and at > now() - interval '9 minutes') then
       perform public.pf_request_scores(lgs[i], today);

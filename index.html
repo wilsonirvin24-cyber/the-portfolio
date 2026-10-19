@@ -14,7 +14,7 @@
 <style>:root{padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}
 .pubnote{max-width:1080px;margin:0 auto;padding:0 16px 28px;font-size:12.5px;color:var(--muted)}</style>
 <script src="vendor/supabase.js?v=16aeff365b"></script>
-<script src="backend.js?v=8c759f0e24"></script>
+<script src="backend.js?v=c1aaee34a0"></script>
 </head>
 <body>
 <title>The Portfolio</title>
@@ -678,7 +678,7 @@ function allGames(){
   for (const d of S.gameDocs) (d.games||[]).forEach(g=>{
     const lg = normLg(g.lg || d.lg), date = g.date||d.date, hs=+g.hs, as=+g.as;
     if (!/^\d{4}-\d\d-\d\d$/.test(date||"") || !isFinite(hs) || !isFinite(as) || !g.home || !g.away) return;
-    const G = {doc:d._id, lg, date, home:canonName(g.home,lg), away:canonName(g.away,lg), rawHome:g.home, rawAway:g.away, rawLg:g.lg, hs, as, rank:({auto:1,sheet:2})[g.src||d.src]||3};
+    const G = {doc:d._id, lg, date, home:canonName(g.home,lg), away:canonName(g.away,lg), rawHome:g.home, rawAway:g.away, rawLg:g.lg, hs, as, rank:({auto:1,espn:1.5,sheet:2})[g.src||d.src]||3};   // ESPN's data beats the page-reading pull; a hand-entered result beats both
     const a = tk(G.home,lg), b = tk(G.away,lg);
     G.hk=a; G.ak=b;
     // basketball teams can meet twice in a week, so those games are keyed by day; football by week

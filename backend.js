@@ -116,7 +116,7 @@
     })().catch(() => false).finally(() => { bbBusy = null; });
   }
   const scoreDocs = () => [...bbRows.values()].sort((a, b) => a.day < b.day ? -1 : 1).map(r => snapDoc("sb-" + r.lg + "-" + r.day,
-    { lg: r.lg, date: r.day, src: "auto", games: (r.games || []).map(g => ({ home: g.h, away: g.a, hs: g.hs, as: g.as })) }));
+    { lg: r.lg, date: r.day, src: "espn", games: (r.games || []).map(g => ({ home: g.h, away: g.a, hs: g.hs, as: g.as })) }));
   async function emitGames(){
     const d = await loadStatic();
     const docs = Object.keys(d.docs || {}).filter(k => k.startsWith("games/") && k.split("/").length === 2).sort()
