@@ -566,7 +566,7 @@ const S = { db:null, canWrite:false, leagues:[], leaguesLoaded:false, leagueId:n
   view:"home", tab:"standings", wantLeague:null, wantTab:null, open:new Set(), onlyMine:true, weeksShown:2, draftPool:"all", draftQ:"",
   confirmDel:null, confirmLg:null, newMgrs:[], newSport:"football", sportFilter:"all", me:{}, theme:"system", reset:new Set(),
   auth:{user:null, profile:null, live:true, timer:false, level:1, google:false, dbv:0}, authMode:"in", authNote:"", join:null, invites:{},
-  schedDocs:[], faPool:"all", faQ:"", faSort:"wins", faAdd:null, actFor:null, flash:null, trades:null, tradeWatch:null, trTo:null, trGive:[], trGet:[], sbAll:false, sbLg:"all", sbDay:null, sbWeek:null, showPending:false, movesView:"fa", infoView:"history", showOther:false, showCreate:false, homeLg:null, mvView:"up", recapWeek:null, chat:null, chatConn:null, queue:null, queueShut:false, mock:null, dAtDirty:false, leagueSig:"" };
+  schedDocs:[], faPool:"all", faQ:"", faSort:"wins", faAdd:null, actFor:null, flash:null, trades:null, tradeWatch:null, trTo:null, trGive:[], trGet:[], sbAll:false, sbLg:"all", sbDay:null, sbWeek:null, showPending:false, movesView:"fa", infoView:"history", showOther:false, showCreate:false, homeLg:null, mvView:"up", autoDraft:null, recapWeek:null, chat:null, chatConn:null, queue:null, queueShut:false, mock:null, dAtDirty:false, leagueSig:"" };
 
 /* Accounts exist on the website (window.portfolioAuth). Inside Claude there are none, and the owner manages everything. */
 const A = window.portfolioAuth || null;
@@ -1368,7 +1368,7 @@ function draftResultsHTML(L){
   }
 }
 function draftHTML(L){
-  const D = draftState(L), sp = SP(L);
+  const D = draftState(L), sp = SP(L), type = L.draftType==="straight"?"Straight":"Snake";
   if (L.status!=="drafting") return draftResultsHTML(L);
   const admin = !L.mock && canAdmin(L), pending = !L.mock && draftPending(L);
   const myPick = L.mock ? D.onClock===L.me : !!(A && meId() && D.onClock && (L.members||{})[D.onClock]===meId());
@@ -1409,6 +1409,7 @@ function draftHTML(L){
       ${(tm||admin)?`<div class="clock-side">${tm}${admin?`<div class="btns"><button class="btn danger" id="undoPick" ${D.i?"":"disabled"}>Undo last pick</button></div>`:""}</div>`:""}</div>
     ${pending?`<div class="banner">The draft opens ${esc(fmtWhen(L.draftAt))}.${qOn?" Build your queue while you wait.":""}</div>`:myPick?`<div class="banner">You're on the clock. Pick a team below.</div>`:""}
     ${timerCtl}
+    ${autoDraftHTML(L, D, admin, pending)}
     ${queueHTML(L)}
     <div class="pend-list">${order}</div>
     <div class="two">
@@ -2432,6 +2433,8 @@ function bind(){
   const dq=$("#dq"); if(dq) dq.oninput=()=>{ S.draftQ=dq.value; render(); };
   const dp=$("#dp"); if(dp) dp.onchange=()=>{ S.draftPool=dp.value; render(); };
   document.querySelectorAll("[data-pick]").forEach(b=> b.onclick=()=> makePick(b.dataset.pick, b.dataset.pool));
+  const adg=$("#adGo"); if(adg) adg.onclick=()=> runAutoDraft();
+  const ads=$("#adStop"); if(ads) ads.onclick=()=>{ S.autoDraft=null; render(); };
   const cAdd=$("#cAdd"); if(cAdd) cAdd.onclick=()=>{ const t=$("#cT").value.trim(); if(t) makePick(t, $("#cP").value); };
   const u=$("#undoPick"); if(u) u.onclick=undoPick;
   // pickups and trades
@@ -2561,6 +2564,43 @@ async function delGame(id){
   }catch(err){ setMsg("#gMsg",failText(err)); }
 }
 
+/* Commissioner tool: auto-draft for every manager who hasn't joined the league (bots, or friends who'll join later).
+   Picks go to the best-ranked team that fits an open spot, with a little variety, and stop at a joined manager's turn. */
+function autoDraftHTML(L, D, admin, pending){
+  if (!A || L.mock || !admin || pending || !D.onClock) return "";
+  const m = L.members || {}, open = L.owners.filter(o=>!m[o]).length;
+  if (!open) return "";
+  const run = S.autoDraft && S.autoDraft.id===L.id;
+  return `<div class="card form"><div class="head-row">${ttl("Auto-draft", "autod", "Makes the picks for every manager who hasn't joined this league yet, using the same rankings as auto-pick with a little variety. It pauses when it reaches a manager who has joined, so they can make their own pick. Good for filling a league with bots to try it out.", "h3")}<span class="sub">${open} of ${L.owners.length} managers haven't joined</span></div>
+    <div class="btns">${run ? `<button type="button" class="btn" id="adStop">Stop</button><span class="msg ok">Drafting… ${esc(S.autoDraft.msg||"")}</span>`
+      : `<button type="button" class="btn" id="adGo">Auto-draft for managers who haven't joined</button>`}<span class="msg" id="adMsg" role="status"></span></div></div>`;
+}
+async function runAutoDraft(){
+  const L0 = league(); if (!L0) return;
+  const run = S.autoDraft = {id:L0.id, msg:""}; render();
+  let ranks;
+  try{ ranks = await A.ranks(sportOf(L0)); }catch(err){ S.autoDraft = null; render(); return setMsg("#adMsg", failText(err)); }
+  let made = 0, why = "";
+  while (S.autoDraft===run){
+    const L = league(); if (!L || L.id!==run.id || L.status!=="drafting"){ why = L && L.status==="complete" ? "The draft is complete." : ""; break; }
+    const D = draftState(L), who = D.onClock; if (!who){ why = "The draft is complete."; break; }
+    if ((L.members||{})[who]){ why = `${who} has joined, so it's their pick.`; break; }
+    const need = needsFor(L, who), taken = new Set((L.picks||[]).map(p=>pk(L,p)));
+    const opts = ranks.filter(t=> canTake(L, need, t.pool) && !taken.has(tk(t.team, lgOfPool(L,t.pool)))).slice(0,3);
+    if (!opts.length){ why = `No team fits ${who}'s open spots.`; break; }
+    const roll = Math.random(), c = opts[roll<0.6 ? 0 : roll<0.9 ? Math.min(1,opts.length-1) : opts.length-1];
+    try{
+      const before = (L.picks||[]).length;
+      await A.makePick(L.id, c.team, c.pool, slotFor(L, need, c.pool)); made++; run.msg = `${made} pick${made===1?"":"s"} made`;
+      // wait until this page has the new pick before choosing the next one
+      for (let i=0; i<10; i++){ await A.refresh(); const L2 = league(); if (!L2 || (L2.picks||[]).length>before) break; await new Promise(r=>setTimeout(r, 300)); }
+    }
+    catch(err){ why = failText(err); break; }
+    render();
+  }
+  if (S.autoDraft===run) S.autoDraft = null;
+  render(); setMsg("#adMsg", `${made} pick${made===1?"":"s"} made.${why?" "+why:""}`, true);
+}
 async function makePick(team, pool){
   const L=league(), D=draftState(L); if(!D.onClock) return;
   const lg = lgOfPool(L, pool);
