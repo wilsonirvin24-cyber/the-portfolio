@@ -11,7 +11,7 @@
 --   draft_queues    each manager's private wish list, used first when their pick timer runs out
 --   league_messages league chat, readable only by that league's managers
 --   trade_offers    trade proposals, readable only by the two managers involved and the commissioner
---   score_days      every NFL, college football, NBA and college basketball final, collected from ESPN's public scoreboard every few minutes
+--   score_days      every NFL, college football, NBA, college basketball and European soccer final, collected from ESPN's public scoreboard every few minutes
 --   pf_logos        team logos and colors from ESPN's team lists, refreshed weekly
 
 -- ---------------------------------------------------------------- profiles
@@ -604,7 +604,7 @@ begin
     execute 'select $1 || jsonb_build_object(''job'', exists (select 1 from cron.job where jobname = ''portfolio-scores''))' into sc using sc;
   exception when others then null;
   end;
-  return jsonb_build_object('version', 7, 'scheduler', s, 'scores', sc);
+  return jsonb_build_object('version', 8, 'scheduler', s, 'scores', sc);
 end $$;
 
 -- Run by the scheduler every minute, so picks still happen when nobody has the draft room open.
@@ -933,7 +933,7 @@ create table if not exists public.score_days (
   primary key (lg, day)
 );
 alter table public.score_days drop constraint if exists score_days_lg_check;
-alter table public.score_days add constraint score_days_lg_check check (lg in ('NBA','CBB','NFL','CFB'));
+alter table public.score_days add constraint score_days_lg_check check (lg in ('NBA','CBB','NFL','CFB','SOC'));
 alter table public.score_days enable row level security;
 drop policy if exists "Scores are public" on public.score_days;
 create policy "Scores are public" on public.score_days for select to anon, authenticated using (true);
@@ -961,7 +961,11 @@ revoke all on public.score_fetch, public.score_log from anon, authenticated;
 
 create or replace function public.pf_espn_url(p_lg text, p_day date) returns text
 language sql immutable as $$
-  select case p_lg
+  select case
+    -- Soccer: one request per competition. 'SOC-eng.1' is a Premier League day, 'T-SOC-eng.1' its team list.
+    when p_lg like 'T-SOC-%' then 'https://site.api.espn.com/apis/site/v2/sports/soccer/' || substr(p_lg, 7) || '/teams'
+    when p_lg like 'SOC-%' then 'https://site.api.espn.com/apis/site/v2/sports/soccer/' || substr(p_lg, 5) || '/scoreboard?dates=' || to_char(p_day, 'YYYYMMDD')
+    else case p_lg
     when 'T-NFL' then 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams?limit=100'
     when 'T-NBA' then 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams?limit=100'
     when 'T-CFB' then 'https://site.api.espn.com/apis/site/v2/sports/football/college-football/teams?groups=80&limit=500'
@@ -971,7 +975,7 @@ language sql immutable as $$
     when 'CFB-FCS' then 'https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=81&limit=500&dates=' || to_char(p_day, 'YYYYMMDD')
     when 'NBA' then 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=' || to_char(p_day, 'YYYYMMDD')
     else 'https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?groups=50&limit=500&dates=' || to_char(p_day, 'YYYYMMDD')
-  end $$;
+  end end $$;
 
 -- Finished games that count, from one ESPN scoreboard response.
 --   NFL: regular season. College football: everything after preseason, including bowls and the playoff.
@@ -979,8 +983,8 @@ create or replace function public.pf_parse_scoreboard(p_lg text, p_body jsonb) r
 language sql immutable as $$
   select coalesce(jsonb_agg(jsonb_build_object(
            'i', e->>'id',
-           'h', case when p_lg in ('NBA','NFL') then h->'team'->>'name' else h->'team'->>'location' end,
-           'a', case when p_lg in ('NBA','NFL') then w->'team'->>'name' else w->'team'->>'location' end,
+           'h', case when p_lg in ('NBA','NFL') then h->'team'->>'name' when p_lg = 'SOC' then h->'team'->>'displayName' else h->'team'->>'location' end,
+           'a', case when p_lg in ('NBA','NFL') then w->'team'->>'name' when p_lg = 'SOC' then w->'team'->>'displayName' else w->'team'->>'location' end,
            'hs', (h->>'score')::int, 'as', (w->>'score')::int) order by e->>'id'), '[]'::jsonb)
   from jsonb_array_elements(coalesce(p_body->'events', '[]'::jsonb)) e
   cross join lateral (select e->'competitions'->0 as c) c
@@ -989,7 +993,8 @@ language sql immutable as $$
   where coalesce((c.c->'status'->'type'->>'completed')::boolean, (e->'status'->'type'->>'completed')::boolean, false)
     and h is not null and w is not null
     and (h->>'score') ~ '^\d+$' and (w->>'score') ~ '^\d+$'
-    and case when p_lg = 'NFL' then coalesce(e->'season'->>'type', '2') = '2'
+    and case when p_lg = 'SOC' then true      -- soccer: every competitive match (a shootout leaves the score level: a draw)
+          when p_lg = 'NFL' then coalesce(e->'season'->>'type', '2') = '2'
           when p_lg = 'NBA'
           then coalesce(e->'season'->>'type', '2') = '2'
                and coalesce((select string_agg(n->>'headline', ' ') from jsonb_array_elements(coalesce(c.c->'notes', '[]'::jsonb)) n), '') !~* 'cup.*(final|championship)'
@@ -1057,7 +1062,7 @@ begin
     select distinct on (nm) nm, t->>'abbreviation' as abbr,
            case when (t->>'color') ~* '^[0-9a-f]{6}$' then lower(t->>'color') end as color,
            case when (t->'logos'->0->>'href') ~* '^https://a[0-9]?\.espncdn\.com/' then t->'logos'->0->>'href' end as logo
-    from t cross join lateral (select case when p_lg in ('NFL','NBA') then t->>'name'
+    from t cross join lateral (select case when p_lg in ('NFL','NBA') then t->>'name' when p_lg = 'SOC' then t->>'displayName'
                                            when p_lg = 'CBB' then public.pf_cbb_name(t->>'location') else t->>'location' end as nm) z
     where nm is not null and nm <> ''
     order by nm
@@ -1070,6 +1075,24 @@ begin
   return n;
 end $$;
 revoke execute on function public.pf_store_logos(text, jsonb) from public, anon, authenticated;
+
+-- Soccer: keep the matches that involve a club on the list (cup ties against lower-division clubs included).
+create or replace function public.pf_keep_soc(p_games jsonb) returns jsonb
+language sql stable set search_path = public as $$
+  select coalesce(jsonb_agg(g order by g->>'i'), '[]'::jsonb) from jsonb_array_elements(p_games) g
+  where exists (select 1 from public.pf_teams t where t.sport = 'soccer' and lower(t.team) in (lower(g->>'h'), lower(g->>'a'))) $$;
+
+-- Soccer competition-days already read, so the season so far is filled in a little at a time.
+create table if not exists public.score_bf (lg text not null, day date not null, primary key (lg, day));
+alter table public.score_bf enable row level security;
+revoke all on public.score_bf from anon, authenticated;
+
+-- Every competition a club from the five leagues can play in: league, domestic cups and super cups, Europe.
+create or replace function public.pf_soc_comps() returns text[]
+language sql immutable as $$
+  select array['eng.1','esp.1','ger.1','ita.1','fra.1','uefa.champions','uefa.europa','uefa.europa.conf',
+               'eng.fa','eng.league_cup','esp.copa_del_rey','ger.dfb_pokal','ita.coppa_italia','fra.coupe_de_france',
+               'uefa.super_cup','eng.charity','esp.super_cup','ita.super_cup','ger.super_cup','fra.super_cup'] $$;
 
 -- Adds finals to a day, replacing any earlier copy of the same game. Returns how many finals the day now holds.
 create or replace function public.pf_store_scores(p_lg text, p_day date, p_games jsonb) returns int
@@ -1128,18 +1151,26 @@ begin
     end if;
     begin
       if r.status_code = 200 and f.lg like 'T-%' then
-        n := public.pf_store_logos(substr(f.lg, 3), r.content::jsonb);
+        n := public.pf_store_logos(case when f.lg like 'T-SOC-%' then 'SOC' else substr(f.lg, 3) end, r.content::jsonb);
         insert into public.score_log (lg, day, status, events) values (f.lg, f.day, r.status_code, n);
       elsif r.status_code = 200 then
         body := r.content::jsonb;
-        got := public.pf_parse_scoreboard(case when f.lg = 'CFB-FCS' then 'CFB' else f.lg end, body);
+        got := public.pf_parse_scoreboard(case when f.lg = 'CFB-FCS' then 'CFB' when f.lg like 'SOC-%' then 'SOC' else f.lg end, body);
         if f.lg = 'CBB' then got := public.pf_canon_cbb(got); end if;
-        n := public.pf_store_scores(case when f.lg = 'CFB-FCS' then 'CFB' else f.lg end, f.day, got);
+        if f.lg like 'SOC-%' then
+          got := public.pf_keep_soc(got);
+          insert into public.score_bf (lg, day) values (f.lg, f.day) on conflict do nothing;
+        end if;
+        n := public.pf_store_scores(case when f.lg = 'CFB-FCS' then 'CFB' when f.lg like 'SOC-%' then 'SOC' else f.lg end, f.day, got);
         insert into public.score_log (lg, day, status, events, finals)
           values (f.lg, f.day, r.status_code, jsonb_array_length(coalesce(body->'events', '[]'::jsonb)), jsonb_array_length(got));
       else
         insert into public.score_log (lg, day, status, note)
           values (f.lg, f.day, r.status_code, left(coalesce(r.error_msg, case when r.timed_out then 'timed out' end, 'error'), 200));
+        -- A competition ESPN doesn't know (4xx) isn't asked for again for that day.
+        if f.lg like 'SOC-%' and r.status_code between 400 and 499 then
+          insert into public.score_bf (lg, day) values (f.lg, f.day) on conflict do nothing;
+        end if;
       end if;
     exception when others then
       insert into public.score_log (lg, day, status, note) values (f.lg, f.day, r.status_code, left('could not read: ' || sqlerrm, 200));
@@ -1157,6 +1188,22 @@ begin
   -- Football: NFL September to mid-February; college late August to late January (FBS and FCS lists).
   if md >= 901 or md <= 215 then lgs := lgs || 'NFL'::text; end if;
   if md >= 820 or md <= 125 then lgs := lgs || 'CFB'::text || 'CFB-FCS'::text; end if;
+  -- Soccer: August to early June, every competition.
+  if md >= 801 or md <= 610 then
+    lgs := lgs || array(select 'SOC-' || cc.comp from unnest(public.pf_soc_comps()) as cc(comp));
+    -- Fill in earlier days of the season, about 100 requests per run, until every competition-day has been read.
+    begin
+    perform public.pf_request_scores(q.lg, q.day) from (
+      select 'SOC-' || cc.comp as lg, ds.dd::date as day
+      from unnest(public.pf_soc_comps()) as cc(comp),
+           generate_series(make_date(case when md >= 701 then extract(year from today)::int else extract(year from today)::int - 1 end, 8, 1), today - 2, interval '1 day') as ds(dd)
+      where not exists (select 1 from public.score_bf b where b.lg = 'SOC-' || cc.comp and b.day = ds.dd::date)
+        and not exists (select 1 from public.score_fetch sf where sf.lg = 'SOC-' || cc.comp and sf.day = ds.dd::date)
+      order by ds.dd limit 100) q;
+    exception when others then
+      insert into public.score_log (lg, day, note) values ('SOC', today, left('soccer backfill: ' || sqlerrm, 200));
+    end;
+  end if;
   -- First run with football: fill in the season so far, once.
   if not exists (select 1 from public.score_days where lg in ('NFL','CFB'))
      and not exists (select 1 from public.score_log where lg = 'BF-FB') then
@@ -1178,9 +1225,10 @@ begin
     end if;
   end loop;
   -- Team logos: once a week (or straight away when there are none yet).
-  if not exists (select 1 from public.pf_logos where updated_at > now() - interval '7 days')
+  if (not exists (select 1 from public.pf_logos where updated_at > now() - interval '7 days')
+      or not exists (select 1 from public.pf_logos where lg = 'SOC'))
      and not exists (select 1 from public.score_log where lg like 'T-%' and at > now() - interval '6 hours') then
-    perform public.pf_request_scores(x, today) from unnest(array['T-NFL','T-NBA','T-CFB','T-CBB']) x;
+    perform public.pf_request_scores(x, today) from unnest(array['T-NFL','T-NBA','T-CFB','T-CBB','T-SOC-eng.1','T-SOC-esp.1','T-SOC-ger.1','T-SOC-ita.1','T-SOC-fra.1']) x;
   end if;
   delete from public.score_log where at < now() - interval '14 days';
 end $$;
@@ -1281,6 +1329,106 @@ insert into public.pf_teams (sport, pool, team, rank) values
 ('cbb','OVC','SIU Edwardsville',309),('cbb','Big West','Sacramento State',310),('cbb','MAAC','Sacred Heart',311),('cbb','MAAC','Saint Peter''s',312),('cbb','Conference USA','Sam Houston',313),('cbb','WCC','San Diego',314),('cbb','Mountain West','San Jose State',315),('cbb','WCC','Seattle',316),('cbb','Sun Belt','South Alabama',317),('cbb','MEAC','South Carolina State',318),('cbb','Summit','South Dakota',319),('cbb','OVC','Southeast Missouri State',320),('cbb','Southland','Southeastern Louisiana',321),('cbb','Missouri Valley','Southern Illinois',322),('cbb','OVC','Southern Indiana',323),('cbb','Sun Belt','Southern Miss',324),('cbb','Big Sky','Southern Utah',325),('cbb','Atlantic 10','St. Bonaventure',326),('cbb','ASUN','Stetson',327),('cbb','NEC','Stonehill',328),('cbb','CAA','Stony Brook',329),('cbb','UAC','Tarleton State',330),('cbb','SoCon','Tennessee Tech',331),
 ('cbb','Southland','Texas A&M-Corpus Christi',332),('cbb','SWAC','Texas Southern',333),('cbb','Pac-12','Texas State',334),('cbb','SoCon','The Citadel',335),('cbb','CAA','Towson',336),('cbb','American','Tulane',337),('cbb','Mountain West','UC Davis',338),('cbb','Big West','UC Riverside',339),('cbb','Missouri Valley','UIC',340),('cbb','America East','UMBC',341),('cbb','MAC','UMass',342),('cbb','America East','UMass Lowell',343),('cbb','Big South','UNC Asheville',344),('cbb','SoCon','UNC Greensboro',345),('cbb','Big South','USC Upstate',346),('cbb','UAC','UT Arlington',347),('cbb','OVC','UT Martin',348),('cbb','Mountain West','UTEP',349),('cbb','Southland','UTRGV',350),('cbb','American','UTSA',351),('cbb','Big Sky','Utah Tech',352),('cbb','SoCon','VMI',353),('cbb','Missouri Valley','Valparaiso',354),('cbb','NEC','Wagner',355),('cbb','Big Sky','Weber State',356),
 ('cbb','ASUN','West Florida',357),('cbb','UAC','West Georgia',358),('cbb','SoCon','Western Carolina',359),('cbb','OVC','Western Illinois',360),('cbb','Conference USA','Western Kentucky',361),('cbb','MAC','Western Michigan',362),('cbb','CAA','William & Mary',363),('cbb','SoCon','Wofford',364),('cbb','Horizon','Youngstown State',365)
+on conflict (sport, pool, team) do nothing;
+
+-- Soccer leagues: every club in the five big European leagues for 2026-27, roughly strongest first.
+insert into public.pf_teams (sport, pool, team, rank) values
+('soccer','LaLiga','Real Madrid',1),
+('soccer','LaLiga','Barcelona',2),
+('soccer','Bundesliga','Bayern Munich',3),
+('soccer','Premier League','Arsenal',4),
+('soccer','Premier League','Liverpool',5),
+('soccer','Premier League','Manchester City',6),
+('soccer','Ligue 1','Paris Saint-Germain',7),
+('soccer','Serie A','Internazionale',8),
+('soccer','Premier League','Chelsea',9),
+('soccer','LaLiga','Atlético Madrid',10),
+('soccer','Serie A','Napoli',11),
+('soccer','Bundesliga','Bayer Leverkusen',12),
+('soccer','Bundesliga','Borussia Dortmund',13),
+('soccer','Premier League','Newcastle United',14),
+('soccer','Premier League','Aston Villa',15),
+('soccer','Premier League','Tottenham Hotspur',16),
+('soccer','Premier League','Manchester United',17),
+('soccer','Serie A','Juventus',18),
+('soccer','Serie A','AC Milan',19),
+('soccer','Serie A','Atalanta',20),
+('soccer','Serie A','AS Roma',21),
+('soccer','Ligue 1','Marseille',22),
+('soccer','Ligue 1','AS Monaco',23),
+('soccer','Bundesliga','RB Leipzig',24),
+('soccer','Bundesliga','Eintracht Frankfurt',25),
+('soccer','LaLiga','Athletic Club',26),
+('soccer','LaLiga','Villarreal',27),
+('soccer','LaLiga','Real Betis',28),
+('soccer','Premier League','Brighton & Hove Albion',29),
+('soccer','Premier League','Nottingham Forest',30),
+('soccer','Ligue 1','Lille',31),
+('soccer','Ligue 1','Lyon',32),
+('soccer','Serie A','Como',33),
+('soccer','Serie A','Lazio',34),
+('soccer','Serie A','Bologna',35),
+('soccer','Bundesliga','VfB Stuttgart',36),
+('soccer','LaLiga','Real Sociedad',37),
+('soccer','Ligue 1','Lens',38),
+('soccer','Premier League','Crystal Palace',39),
+('soccer','Premier League','Fulham',40),
+('soccer','Premier League','Brentford',41),
+('soccer','Premier League','AFC Bournemouth',42),
+('soccer','Serie A','Fiorentina',43),
+('soccer','Bundesliga','SC Freiburg',44),
+('soccer','Bundesliga','TSG Hoffenheim',45),
+('soccer','LaLiga','Celta Vigo',46),
+('soccer','Ligue 1','Nice',47),
+('soccer','Ligue 1','Strasbourg',48),
+('soccer','Ligue 1','Stade Rennais',49),
+('soccer','Premier League','Everton',50),
+('soccer','LaLiga','Sevilla',51),
+('soccer','LaLiga','Valencia',52),
+('soccer','LaLiga','Osasuna',53),
+('soccer','Bundesliga','Borussia Mönchengladbach',54),
+('soccer','Bundesliga','Werder Bremen',55),
+('soccer','Bundesliga','Mainz',56),
+('soccer','Serie A','Torino',57),
+('soccer','Serie A','Udinese',58),
+('soccer','Ligue 1','Brest',59),
+('soccer','Ligue 1','Toulouse',60),
+('soccer','LaLiga','Rayo Vallecano',61),
+('soccer','LaLiga','Getafe',62),
+('soccer','LaLiga','Espanyol',63),
+('soccer','Bundesliga','1. FC Union Berlin',64),
+('soccer','Bundesliga','FC Augsburg',65),
+('soccer','Premier League','Leeds United',66),
+('soccer','Premier League','Sunderland',67),
+('soccer','Serie A','Genoa',68),
+('soccer','Serie A','Cagliari',69),
+('soccer','Serie A','Parma',70),
+('soccer','Serie A','Sassuolo',71),
+('soccer','Ligue 1','Paris FC',72),
+('soccer','Ligue 1','Le Havre AC',73),
+('soccer','Ligue 1','AJ Auxerre',74),
+('soccer','Ligue 1','Angers',75),
+('soccer','Ligue 1','Lorient',76),
+('soccer','LaLiga','Alavés',77),
+('soccer','LaLiga','Elche',78),
+('soccer','LaLiga','Levante',79),
+('soccer','Bundesliga','Hamburg SV',80),
+('soccer','Bundesliga','FC Cologne',81),
+('soccer','Bundesliga','Schalke 04',82),
+('soccer','Serie A','Lecce',83),
+('soccer','Serie A','Monza',84),
+('soccer','Serie A','Venezia',85),
+('soccer','Serie A','Frosinone',86),
+('soccer','Premier League','Coventry City',87),
+('soccer','Premier League','Ipswich Town',88),
+('soccer','Premier League','Hull City',89),
+('soccer','LaLiga','Deportivo La Coruña',90),
+('soccer','LaLiga','Málaga',91),
+('soccer','LaLiga','Racing Santander',92),
+('soccer','Bundesliga','SC Paderborn 07',93),
+('soccer','Bundesliga','SV Elversberg',94),
+('soccer','Ligue 1','Le Mans',95),
+('soccer','Ligue 1','Troyes',96)
 on conflict (sport, pool, team) do nothing;
 
 -- ------------------------------------------------ the existing league

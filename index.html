@@ -256,6 +256,7 @@ details.pend summary{cursor:pointer;font-weight:600;font-size:14px}
 .share .btn{padding:6px 10px;font-size:12.5px;white-space:nowrap}
 
 /* v5: app shell */
+.p-Premier-League{--c:#7b3fb0}.p-LaLiga{--c:#d2541b}.p-Bundesliga{--c:#c8202f}.p-Serie-A{--c:#1d5fc2}.p-Ligue-1{--c:#2e7d32}
 .p-NBA{--c:var(--nfl)}.p-Big-East{--c:var(--be)}.p-Other{--c:var(--np4)}.p-Any{--c:var(--muted)}
 .topbar{display:flex;align-items:center;gap:8px}
 .gear{appearance:none;border:1px solid var(--line);background:var(--sunk);color:var(--fg);border-radius:6px;width:36px;height:34px;cursor:pointer;font-size:17px;line-height:1}
@@ -545,6 +546,8 @@ const BB_POOL = {
 
 /* College basketball: every Division I team in its 2026-27 conference. */
 const CBB_CONF = {"SEC":["Alabama","Arkansas","Auburn","Florida","Georgia","Kentucky","LSU","Mississippi State","Missouri","Oklahoma","Ole Miss","South Carolina","Tennessee","Texas","Texas A&M","Vanderbilt"],"Big Ten":["Illinois","Indiana","Iowa","Maryland","Michigan","Michigan State","Minnesota","Nebraska","Northwestern","Ohio State","Oregon","Penn State","Purdue","Rutgers","UCLA","USC","Washington","Wisconsin"],"Big 12":["Arizona","Arizona State","Baylor","BYU","Cincinnati","Colorado","Houston","Iowa State","Kansas","Kansas State","Oklahoma State","TCU","Texas Tech","UCF","Utah","West Virginia"],"ACC":["Boston College","California","Clemson","Duke","Florida State","Georgia Tech","Louisville","Miami","NC State","North Carolina","Notre Dame","Pittsburgh","SMU","Stanford","Syracuse","Virginia","Virginia Tech","Wake Forest"],"Big East":["Butler","Creighton","DePaul","Georgetown","Marquette","Providence","Seton Hall","St. John's","UConn","Villanova","Xavier"],"America East":["Albany","Binghamton","Bryant","Maine","New Hampshire","NJIT","UMass Lowell","UMBC","Vermont"],"American":["Charlotte","East Carolina","Florida Atlantic","Memphis","North Texas","Rice","South Florida","Temple","Tulane","Tulsa","UAB","UTSA","Wichita State"],"ASUN":["Bellarmine","Florida Gulf Coast","Jacksonville","Lipscomb","North Florida","Queens","Stetson","West Florida"],"Atlantic 10":["Davidson","Dayton","Duquesne","Fordham","George Mason","George Washington","La Salle","Loyola Chicago","Rhode Island","Richmond","Saint Joseph's","Saint Louis","St. Bonaventure","VCU"],"Big Sky":["Eastern Washington","Idaho","Idaho State","Montana","Montana State","Northern Arizona","Northern Colorado","Portland State","Southern Utah","Utah Tech","Weber State"],"Big South":["Charleston Southern","Gardner-Webb","High Point","Longwood","Presbyterian","Radford","UNC Asheville","USC Upstate","Winthrop"],"Big West":["Cal Baptist","Cal Poly","Cal State Bakersfield","Cal State Fullerton","Cal State Northridge","Long Beach State","Sacramento State","UC Irvine","UC Riverside","UC San Diego","UC Santa Barbara","Utah Valley"],"CAA":["Campbell","Charleston","Drexel","Elon","Hampton","Hofstra","Monmouth","North Carolina A&T","Northeastern","Stony Brook","Towson","UNC Wilmington","William & Mary"],"Conference USA":["Delaware","FIU","Jacksonville State","Kennesaw State","Liberty","Middle Tennessee","Missouri State","New Mexico State","Sam Houston","Western Kentucky"],"Horizon":["Cleveland State","Detroit Mercy","Green Bay","IU Indy","Milwaukee","Northern Illinois","Northern Kentucky","Oakland","Purdue Fort Wayne","Robert Morris","Wright State","Youngstown State"],"Ivy":["Brown","Columbia","Cornell","Dartmouth","Harvard","Penn","Princeton","Yale"],"MAAC":["Canisius","Fairfield","Iona","Manhattan","Marist","Merrimack","Mount St. Mary's","Niagara","Quinnipiac","Rider","Sacred Heart","Saint Peter's","Siena"],"MAC":["Akron","Ball State","Bowling Green","Buffalo","Central Michigan","Eastern Michigan","Kent State","Miami (OH)","Ohio","Toledo","UMass","Western Michigan"],"MEAC":["Coppin State","Delaware State","Howard","Maryland Eastern Shore","Morgan State","Norfolk State","North Carolina Central","South Carolina State"],"Missouri Valley":["Belmont","Bradley","Drake","Evansville","Illinois State","Indiana State","Murray State","Northern Iowa","Southern Illinois","UIC","Valparaiso"],"Mountain West":["Air Force","Grand Canyon","Hawaii","Nevada","New Mexico","San Jose State","UC Davis","UNLV","UTEP","Wyoming"],"NEC":["Central Connecticut","Chicago State","Fairleigh Dickinson","Le Moyne","LIU","Mercyhurst","New Haven","Stonehill","Wagner"],"OVC":["Eastern Illinois","Lindenwood","Morehead State","SIU Edwardsville","Southeast Missouri State","Southern Indiana","Tennessee State","UT Martin","Western Illinois"],"Pac-12":["Boise State","Colorado State","Fresno State","Gonzaga","Oregon State","San Diego State","Texas State","Utah State","Washington State"],"Patriot":["American","Army","Boston University","Bucknell","Colgate","Holy Cross","Lafayette","Lehigh","Loyola Maryland","Navy"],"SoCon":["Chattanooga","East Tennessee State","Furman","Mercer","Samford","Tennessee Tech","The Citadel","UNC Greensboro","VMI","Western Carolina","Wofford"],"Southland":["East Texas A&M","Houston Christian","Incarnate Word","Lamar","McNeese","New Orleans","Nicholls","Northwestern State","Southeastern Louisiana","Stephen F. Austin","Texas A&M-Corpus Christi","UTRGV"],"Summit":["Kansas City","North Dakota","North Dakota State","Omaha","Oral Roberts","South Dakota","South Dakota State","St. Thomas"],"Sun Belt":["Appalachian State","Arkansas State","Coastal Carolina","Georgia Southern","Georgia State","James Madison","Louisiana","Louisiana Tech","Louisiana-Monroe","Marshall","Old Dominion","South Alabama","Southern Miss","Troy"],"SWAC":["Alabama A&M","Alabama State","Alcorn State","Arkansas-Pine Bluff","Bethune-Cookman","Florida A&M","Grambling State","Jackson State","Mississippi Valley State","Prairie View A&M","Southern","Texas Southern"],"UAC":["Abilene Christian","Austin Peay","Central Arkansas","Eastern Kentucky","Little Rock","North Alabama","Tarleton State","UT Arlington","West Georgia"],"WCC":["Denver","Loyola Marymount","Pacific","Pepperdine","Portland","Saint Mary's","San Diego","San Francisco","Santa Clara","Seattle"]};
+/* Soccer: every club in the five big European leagues, 2026-27. MLS joins when it moves to the same calendar (2027-28). */
+const SOC_POOL = {"Premier League": ["AFC Bournemouth", "Arsenal", "Aston Villa", "Brentford", "Brighton & Hove Albion", "Chelsea", "Coventry City", "Crystal Palace", "Everton", "Fulham", "Hull City", "Ipswich Town", "Leeds United", "Liverpool", "Manchester City", "Manchester United", "Newcastle United", "Nottingham Forest", "Sunderland", "Tottenham Hotspur"], "LaLiga": ["Alavés", "Athletic Club", "Atlético Madrid", "Barcelona", "Celta Vigo", "Deportivo La Coruña", "Elche", "Espanyol", "Getafe", "Levante", "Málaga", "Osasuna", "Racing Santander", "Rayo Vallecano", "Real Betis", "Real Madrid", "Real Sociedad", "Sevilla", "Valencia", "Villarreal"], "Bundesliga": ["1. FC Union Berlin", "Bayer Leverkusen", "Bayern Munich", "Borussia Dortmund", "Borussia Mönchengladbach", "Eintracht Frankfurt", "FC Augsburg", "FC Cologne", "Hamburg SV", "Mainz", "RB Leipzig", "SC Freiburg", "SC Paderborn 07", "Schalke 04", "SV Elversberg", "TSG Hoffenheim", "VfB Stuttgart", "Werder Bremen"], "Serie A": ["AC Milan", "AS Roma", "Atalanta", "Bologna", "Cagliari", "Como", "Fiorentina", "Frosinone", "Genoa", "Internazionale", "Juventus", "Lazio", "Lecce", "Monza", "Napoli", "Parma", "Sassuolo", "Torino", "Udinese", "Venezia"], "Ligue 1": ["AJ Auxerre", "Angers", "AS Monaco", "Brest", "Le Havre AC", "Le Mans", "Lens", "Lille", "Lorient", "Lyon", "Marseille", "Nice", "Paris FC", "Paris Saint-Germain", "Stade Rennais", "Strasbourg", "Toulouse", "Troyes"]};
 const SPORTS = {
   football:   { label:"Football",   pro:"NFL", col:"CFB", pools:["NFL","ACC","Big Ten","Big 12","SEC","Non-P4"], teams:FB_POOL,
                 slots:{"NFL":3,"ACC":1,"Big Ten":1,"Big 12":1,"SEC":1,"Non-P4":1}, flex:0, weights:{},
@@ -554,13 +557,16 @@ const SPORTS = {
                 counts:"NBA regular season at half a win each, plus every college game including March Madness." },
   cbb:        { label:"College Basketball", pro:null, col:"CBB", pools:Object.keys(CBB_CONF), teams:CBB_CONF,
                 slots:Object.fromEntries(Object.keys(CBB_CONF).map(c=>[c, ["SEC","Big Ten","Big 12","ACC","Big East"].includes(c) ? 1 : 0])), flex:3, weights:{},
-                counts:"Every Division I game counts, including conference tournaments and March Madness." }
+                counts:"Every Division I game counts, including conference tournaments and March Madness." },
+  soccer:     { label:"Soccer", pro:null, col:"SOC", pools:Object.keys(SOC_POOL), teams:SOC_POOL, points:true,
+                slots:{"Premier League":2, "LaLiga":1, "Bundesliga":1, "Serie A":1, "Ligue 1":1}, flex:1, weights:{},
+                counts:"Every match counts: league, domestic cups and European competitions. 3 points for a win, 1 for a draw (a penalty shootout counts as a draw)." }
 };
 const SPORT_KEYS = Object.keys(SPORTS);
-const PFX = {NFL:"n:", CFB:"c:", NBA:"b:", CBB:"m:"};
+const PFX = {NFL:"n:", CFB:"c:", NBA:"b:", CBB:"m:", SOC:"s:"};
 /* Spellings other score sources use, mapped to the names above. */
 const ALIAS = {"miami (fla.)":"Miami","miami (fl)":"Miami","miami fl":"Miami","miami-fl":"Miami","miami (oh)":"Miami (OH)","miami-oh":"Miami (OH)","miami (ohio)":"Miami (OH)","miami oh":"Miami (OH)","miami ohio":"Miami (OH)","miss. state":"Mississippi State","ga. southern":"Georgia Southern","ga. tech":"Georgia Tech","va. tech":"Virginia Tech","ul-monroe":"Louisiana-Monroe","ul monroe":"Louisiana-Monroe","ulm":"Louisiana-Monroe","louisiana monroe":"Louisiana-Monroe","louisiana-lafayette":"Louisiana","ul-lafayette":"Louisiana","c. michigan":"Central Michigan","cent. michigan":"Central Michigan","e. michigan":"Eastern Michigan","w. michigan":"Western Michigan","n. illinois":"Northern Illinois","niu":"Northern Illinois","app. state":"Appalachian State","app state":"Appalachian State","so. miss":"Southern Miss","southern mississippi":"Southern Miss","southern miss.":"Southern Miss","w. kentucky":"Western Kentucky","wku":"Western Kentucky","middle tenn.":"Middle Tennessee","middle tennessee state":"Middle Tennessee","mtsu":"Middle Tennessee","fau":"Florida Atlantic","florida international":"FIU","c. carolina":"Coastal Carolina","pitt":"Pittsburgh","n.c. state":"NC State","north carolina state":"NC State","massachusetts":"UMass","connecticut":"UConn","southern methodist":"SMU","central florida":"UCF","brigham young":"BYU","mississippi":"Ole Miss","texas christian":"TCU","louisiana state":"LSU","southern california":"USC","hawai'i":"Hawaii","san josé state":"San Jose State","la. tech":"Louisiana Tech","la tech":"Louisiana Tech","sam houston state":"Sam Houston","ut san antonio":"UTSA","texas-san antonio":"UTSA","texas-el paso":"UTEP","alabama-birmingham":"UAB","army west point":"Army","n. texas":"North Texas","s. florida":"South Florida","usf":"South Florida","e. carolina":"East Carolina","ecu":"East Carolina","s. carolina":"South Carolina","n. carolina":"North Carolina","unc":"North Carolina","w. virginia":"West Virginia","boston col.":"Boston College","ndsu":"North Dakota State","n. dakota state":"North Dakota State","s. alabama":"South Alabama","cal":"California","jax state":"Jacksonville State","nevada-las vegas":"UNLV","bowling green state":"Bowling Green",
-  "saint john's":"St. John's","st. john's (ny)":"St. John's","uncw":"UNC Wilmington","uncg":"UNC Greensboro","etsu":"East Tennessee State","fgcu":"Florida Gulf Coast","siue":"SIU Edwardsville","semo":"Southeast Missouri State","loyola (chi)":"Loyola Chicago","loyola-chicago":"Loyola Chicago","loyola (md)":"Loyola Maryland","st. mary's":"Saint Mary's","saint mary's (ca)":"Saint Mary's","st. joseph's":"Saint Joseph's","st. peter's":"Saint Peter's","st. louis":"Saint Louis","iupui":"IU Indy","umkc":"Kansas City","citadel":"The Citadel","grambling":"Grambling State","southern university":"Southern","pennsylvania":"Penn","long island university":"LIU","texas a&m-cc":"Texas A&M-Corpus Christi","ut rio grande valley":"UTRGV","sf austin":"Stephen F. Austin","california baptist":"Cal Baptist","csu bakersfield":"Cal State Bakersfield","detroit":"Detroit Mercy","college of charleston":"Charleston","american university":"American","seattle u":"Seattle","seattle university":"Seattle","st. thomas-minnesota":"St. Thomas","st. thomas (mn)":"St. Thomas","st. thomas minnesota":"St. Thomas","iu indianapolis":"IU Indy","long island":"LIU","ualbany":"Albany","se louisiana":"Southeastern Louisiana","southeastern la.":"Southeastern Louisiana","se missouri state":"Southeast Missouri State","southeast missouri":"Southeast Missouri State","texas rio grande valley":"UTRGV","texas a&m corpus christi":"Texas A&M-Corpus Christi","a&m-corpus christi":"Texas A&M-Corpus Christi","southern illinois-edwardsville":"SIU Edwardsville","csun":"Cal State Northridge","csu northridge":"Cal State Northridge","csu fullerton":"Cal State Fullerton","queens university":"Queens","queens (nc)":"Queens","mcneese state":"McNeese","nicholls state":"Nicholls","nebraska omaha":"Omaha","fort wayne":"Purdue Fort Wayne","loyola marymount university":"Loyola Marymount","lmu":"Loyola Marymount","fdu":"Fairleigh Dickinson","ucsb":"UC Santa Barbara","texas a&m-commerce":"East Texas A&M","tennessee-martin":"UT Martin","arkansas-little rock":"Little Rock","ualr":"Little Rock","prairie view":"Prairie View A&M","md eastern shore":"Maryland Eastern Shore","maryland-eastern shore":"Maryland Eastern Shore","umes":"Maryland Eastern Shore","mississippi valley":"Mississippi Valley State","bethune cookman":"Bethune-Cookman","n.c. a&t":"North Carolina A&T","nc a&t":"North Carolina A&T","nc central":"North Carolina Central","n.c. central":"North Carolina Central","gardner webb":"Gardner-Webb","sc upstate":"USC Upstate","south carolina upstate":"USC Upstate","stephen f austin":"Stephen F. Austin","sfa":"Stephen F. Austin","texas-arlington":"UT Arlington","tarleton":"Tarleton State","dixie state":"Utah Tech","boston u":"Boston University","william and mary":"William & Mary","houston baptist":"Houston Christian","unc-wilmington":"UNC Wilmington","unc-asheville":"UNC Asheville","unc-greensboro":"UNC Greensboro","sacramento st.":"Sacramento State","csu sacramento":"Sacramento State","mount st. marys":"Mount St. Mary's","ul lafayette":"Louisiana"};
+  "saint john's":"St. John's","st. john's (ny)":"St. John's","uncw":"UNC Wilmington","uncg":"UNC Greensboro","etsu":"East Tennessee State","fgcu":"Florida Gulf Coast","siue":"SIU Edwardsville","semo":"Southeast Missouri State","loyola (chi)":"Loyola Chicago","loyola-chicago":"Loyola Chicago","loyola (md)":"Loyola Maryland","st. mary's":"Saint Mary's","saint mary's (ca)":"Saint Mary's","st. joseph's":"Saint Joseph's","st. peter's":"Saint Peter's","st. louis":"Saint Louis","iupui":"IU Indy","umkc":"Kansas City","citadel":"The Citadel","grambling":"Grambling State","southern university":"Southern","pennsylvania":"Penn","long island university":"LIU","texas a&m-cc":"Texas A&M-Corpus Christi","ut rio grande valley":"UTRGV","sf austin":"Stephen F. Austin","california baptist":"Cal Baptist","csu bakersfield":"Cal State Bakersfield","detroit":"Detroit Mercy","college of charleston":"Charleston","american university":"American","seattle u":"Seattle","seattle university":"Seattle","st. thomas-minnesota":"St. Thomas","st. thomas (mn)":"St. Thomas","st. thomas minnesota":"St. Thomas","iu indianapolis":"IU Indy","long island":"LIU","ualbany":"Albany","se louisiana":"Southeastern Louisiana","southeastern la.":"Southeastern Louisiana","se missouri state":"Southeast Missouri State","southeast missouri":"Southeast Missouri State","texas rio grande valley":"UTRGV","texas a&m corpus christi":"Texas A&M-Corpus Christi","a&m-corpus christi":"Texas A&M-Corpus Christi","southern illinois-edwardsville":"SIU Edwardsville","csun":"Cal State Northridge","csu northridge":"Cal State Northridge","csu fullerton":"Cal State Fullerton","queens university":"Queens","queens (nc)":"Queens","mcneese state":"McNeese","nicholls state":"Nicholls","nebraska omaha":"Omaha","fort wayne":"Purdue Fort Wayne","loyola marymount university":"Loyola Marymount","lmu":"Loyola Marymount","fdu":"Fairleigh Dickinson","ucsb":"UC Santa Barbara","texas a&m-commerce":"East Texas A&M","tennessee-martin":"UT Martin","arkansas-little rock":"Little Rock","ualr":"Little Rock","prairie view":"Prairie View A&M","md eastern shore":"Maryland Eastern Shore","maryland-eastern shore":"Maryland Eastern Shore","umes":"Maryland Eastern Shore","mississippi valley":"Mississippi Valley State","bethune cookman":"Bethune-Cookman","n.c. a&t":"North Carolina A&T","nc a&t":"North Carolina A&T","nc central":"North Carolina Central","n.c. central":"North Carolina Central","gardner webb":"Gardner-Webb","sc upstate":"USC Upstate","south carolina upstate":"USC Upstate","stephen f austin":"Stephen F. Austin","sfa":"Stephen F. Austin","texas-arlington":"UT Arlington","tarleton":"Tarleton State","dixie state":"Utah Tech","boston u":"Boston University","william and mary":"William & Mary","houston baptist":"Houston Christian","unc-wilmington":"UNC Wilmington","unc-asheville":"UNC Asheville","unc-greensboro":"UNC Greensboro","sacramento st.":"Sacramento State","csu sacramento":"Sacramento State","mount st. marys":"Mount St. Mary's","ul lafayette":"Louisiana","inter milan":"Internazionale","inter":"Internazionale","fc internazionale milano":"Internazionale","milan":"AC Milan","roma":"AS Roma","monaco":"AS Monaco","man city":"Manchester City","man united":"Manchester United","man utd":"Manchester United","spurs":"Tottenham Hotspur","tottenham":"Tottenham Hotspur","newcastle":"Newcastle United","brighton":"Brighton & Hove Albion","bournemouth":"AFC Bournemouth","nottm forest":"Nottingham Forest","leeds":"Leeds United","psg":"Paris Saint-Germain","paris sg":"Paris Saint-Germain","atletico madrid":"Atlético Madrid","atlético":"Atlético Madrid","athletic bilbao":"Athletic Club","bayern münchen":"Bayern Munich","fc bayern munich":"Bayern Munich","bayern":"Bayern Munich","leverkusen":"Bayer Leverkusen","dortmund":"Borussia Dortmund","borussia monchengladbach":"Borussia Mönchengladbach","gladbach":"Borussia Mönchengladbach","union berlin":"1. FC Union Berlin","1. fc köln":"FC Cologne","fc koln":"FC Cologne","hamburger sv":"Hamburg SV","mainz 05":"Mainz","1. fsv mainz 05":"Mainz","rennes":"Stade Rennais","le havre":"Le Havre AC","auxerre":"AJ Auxerre","deportivo":"Deportivo La Coruña","alaves":"Alavés","malaga":"Málaga","celta":"Celta Vigo","betis":"Real Betis"};
 
 const S = { db:null, canWrite:false, leagues:[], leaguesLoaded:false, leagueId:null, gameDocs:[], sync:null,
   view:"home", tab:"standings", wantLeague:null, wantTab:null, open:new Set(), onlyMine:true, weeksShown:2, draftPool:"all", draftQ:"",
@@ -586,13 +592,13 @@ function leftText(s){ if (s<=0) return "0:00"; if (s>=86400) return `${Math.floo
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const poolCls = p => "p-" + String(p).replace(/\s+/g,"-");
-const CHIP = {"Big Ten":"B1G","Big 12":"B12","Atlantic 10":"A-10","America East":"AE","American":"AAC","Big Sky":"BSKY","Big South":"BSTH","Big West":"BWEST","Conference USA":"CUSA","Horizon":"HRZN","Missouri Valley":"MVC","Mountain West":"MWC","Patriot":"PAT","Southland":"SLND","Summit":"SUMMIT","Sun Belt":"SBC","Pac-12":"PAC-12","Big East":"BIG EAST"};
+const CHIP = {"Premier League":"EPL","LaLiga":"LIGA","Bundesliga":"BUNDES","Serie A":"SERIE A","Ligue 1":"LIGUE 1","Big Ten":"B1G","Big 12":"B12","Atlantic 10":"A-10","America East":"AE","American":"AAC","Big Sky":"BSKY","Big South":"BSTH","Big West":"BWEST","Conference USA":"CUSA","Horizon":"HRZN","Missouri Valley":"MVC","Mountain West":"MWC","Patriot":"PAT","Southland":"SLND","Summit":"SUMMIT","Sun Belt":"SBC","Pac-12":"PAC-12","Big East":"BIG EAST"};
 const chip = p => `<span class="chip ${poolCls(p)}" title="${esc(p)}">${esc(CHIP[p] || p)}</span>`;
 const fmt = n => Number.isInteger(n) ? String(n) : n.toFixed(1);
 const ordinal = n => n + (n%100>=11&&n%100<=13 ? "th" : ["th","st","nd","rd"][n%10] || "th");
 
 /* ---------- team names ---------- */
-const NAMES = {NFL:new Map(), NBA:new Map(), CFB:new Map(), CBB:new Map()};
+const NAMES = {NFL:new Map(), NBA:new Map(), CFB:new Map(), CBB:new Map(), SOC:new Map()};
 for (const k of SPORT_KEYS){ const sp = SPORTS[k]; for (const p of sp.pools) for (const t of sp.teams[p]) NAMES[p===sp.pro ? sp.pro : sp.col].set(t.toLowerCase(), t); }
 const normLg = lg => PFX[lg] ? lg : "CFB";
 function canonName(name, lg){
@@ -650,6 +656,9 @@ const thisSeason = () => { const n = new Date(); return n.getMonth()>=2 ? n.getF
 /* ---------- league helpers ---------- */
 const league = () => S.view==="mock" ? ((S.mock && S.mock.L) || null) : (S.leagues.find(l=>l.id===S.leagueId) || null);
 const sportOf = L => SPORTS[L.sport] ? L.sport : "football";
+// What a league counts: wins, or (soccer) points. Records read W-L-T, or W-D-L for soccer.
+const U = L => SPORTS[sportOf(L)].points ? {w:"points", W:"Points", s:"Pts", one:"point"} : {w:"wins", W:"Wins", s:"Wins", one:"win"};
+let REC_SOC = false;
 const SP = L => SPORTS[sportOf(L)];
 const slotsOf = L => L.slots || SP(L).slots;
 const flexOf = L => typeof L.flex==="number" ? L.flex : (L.slots ? 0 : SP(L).flex);
@@ -663,7 +672,7 @@ function slotRows(L){
   const f = flexOf(L); for (let i=1;i<=f;i++) out.push({slot: f>1?`Any #${i}`:"Any", pool:"Any", ix:i, many:f>1});
   return out;
 }
-const slotText = L => SP(L).pools.filter(p=>slotsOf(L)[p]).map(p=>`${slotsOf(L)[p]} ${p==="Other"?"other-conference":p}`).concat(flexOf(L)?[`${flexOf(L)} any ${sportOf(L)==="cbb"?"conference":"college"}`]:[]).join(" · ");
+const slotText = L => SP(L).pools.filter(p=>slotsOf(L)[p]).map(p=>`${slotsOf(L)[p]} ${p==="Other"?"other-conference":p}`).concat(flexOf(L)?[`${flexOf(L)} any ${sportOf(L)==="cbb"?"conference":sportOf(L)==="soccer"?"league":"college"}`]:[]).join(" · ");
 const weightText = L => SP(L).pools.filter(p=>weightOf(L,p)!==1).map(p=>`${p} wins count ${weightOf(L,p)}`).join(" · ");
 const mine = L => {
   if (A){ const id = meId(), m = L.members || {}; return id ? (L.owners.find(o=>m[o]===id) || null) : null; }
@@ -742,7 +751,7 @@ function compute(L){
     }
   }
   for (const s of stints){
-    s.pts = s.w * s.wt; s.rec = rec[s.k] || {w:0,l:0,t:0,games:[]};
+    s.pts = (sp.points ? s.w*3 + s.t : s.w) * s.wt; s.rec = rec[s.k] || {w:0,l:0,t:0,games:[]};
     // a team picked up and moved on again within the same week never counted for that manager
     s.state = s.from && s.to && s.to <= s.from ? "void" : s.from && s.from > today ? "incoming" : (s.to && s.to <= today ? "former" : (s.to ? "leaving" : "current"));
   }
@@ -754,7 +763,7 @@ function compute(L){
     for (const s of mineS){
       if (s.pool===sp.pro) pro += s.w; else col += s.w;
       total += s.pts;
-      wk += s.wkG.filter(g=>winnerKey(g)===s.k).length * s.wt;
+      wk += s.wkG.reduce((n,g)=>{ const w = winnerKey(g); return n + (w===s.k ? (sp.points?3:1) : (w===null && sp.points ? 1 : 0)); }, 0) * s.wt;
     }
     const holdings = mineS.filter(s=>s.state==="current" || s.state==="leaving").sort(bySlot);
     const incoming = mineS.filter(s=>s.state==="incoming").sort(bySlot);
@@ -865,6 +874,7 @@ function render(){
   else if (view==="mock"){ $("#tagline").textContent = "Practice draft"; renderTickerAll(); main.innerHTML = mockHTML(); }
   else if (view==="home"){ $("#tagline").textContent = "Draft teams, not players. Most wins takes the table."; renderTickerAll(); main.innerHTML = homeHTML(); }
   else {
+    REC_SOC = !!SP(L).points;
     const C = compute(L);
     renderTicker(L, C);
     $("#tagline").textContent = `${L.name} · ${SP(L).label} ${seasonLabel(L.year)} · ${L.owners.length} managers`;
@@ -897,7 +907,7 @@ function paintTicker(games, label, emptyText){
   for (const g of recent) for (const side of ["home","away"]){
     const who = label(side==="home"?g.hk:g.ak, g); if (who===null) continue;
     const m = side==="home"?g.hs:g.as, t = side==="home"?g.as:g.hs;
-    const res = m>t?"W":m<t?"L":"T";
+    const res = m>t?"W":m<t?"L":(g.lg==="SOC"?"D":"T");
     items.push(`<span class="tk"><b>${esc(g[side].toUpperCase())}</b> <span class="${res==="W"?"w":res==="L"?"l":"o"}">${res==="W"?"▲":res==="L"?"▼":"■"} ${res} ${m}–${t}</span>${who?` <span class="o">${esc(who)}</span>`:""}</span>`);
   }
   const liveItems = LIVE.on ? liveAll().filter(g=> g.state==="in" && (label(g.hk, g)!==null || label(g.ak, g)!==null)).map(g=>
@@ -924,10 +934,10 @@ function weeklyWins(L, C){
   const weeks = []; for (let w = first; w <= last; w = addDays(w, 7)) weeks.push(w);
   const by = {}; for (const o of L.owners) by[o] = weeks.map(()=>0);
   for (const g of C.games){
-    const win = winnerKey(g); if (win===null) continue;
+    const win = winnerKey(g), i = weeks.indexOf(weekStart(g.date)); if (i<0) continue;
+    if (win===null){ if (C.sp.points) for (const k of [g.hk, g.ak]){ const st = C.who(k, g.date); if (st && by[st.owner]) by[st.owner][i] += st.wt; } continue; }
     const st = C.who(win, g.date); if (!st || !by[st.owner]) continue;
-    const i = weeks.indexOf(weekStart(g.date)); if (i<0) continue;
-    by[st.owner][i] += st.wt;
+    by[st.owner][i] += st.wt * (C.sp.points ? 3 : 1);
   }
   for (const o in by){ let t = 0; by[o] = by[o].map(v=> t += v); }
   return {weeks, by};
@@ -948,7 +958,7 @@ function dashChart(W, me){
   const ticks = [0, Math.round(max/2), Math.round(max)].filter((v,i,a)=>a.indexOf(v)===i);
   const lab = W.weeks.map((_,i)=> (i===0 || i===n-1 || n<=10 || i%2===0) ? `<text x="${X(i).toFixed(1)}" y="${h-4}" text-anchor="middle">${i+1}</text>` : "").join("");
   const mine = W.by[me];
-  return `<svg class="dash-chart" viewBox="0 0 ${w} ${h}" role="img" aria-label="Wins by week: you ${fmt(mine[n-1])}, league average ${avg[n-1].toFixed(1)}${leader!==me?`, leader ${fmt(W.by[leader][n-1])}`:""}">
+  return `<svg class="dash-chart" viewBox="0 0 ${w} ${h}" role="img" aria-label="Totals by week: you ${fmt(mine[n-1])}, league average ${avg[n-1].toFixed(1)}${leader!==me?`, leader ${fmt(W.by[leader][n-1])}`:""}">
     ${ticks.map(v=>`<line class="gl" x1="${px}" x2="${w-10}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}"/><text class="yl" x="${px-6}" y="${(Y(v)+4).toFixed(1)}" text-anchor="end">${v}</text>`).join("")}
     ${lab}
     <path class="ln avg" d="${path(avg)}"/>
@@ -961,6 +971,7 @@ function dashChart(W, me){
 function dashHTML(my){
   if (!my.length) return "";
   const L = my.find(l=>l.id===S.homeLg) || my[0], C = compute(L), me = mine(L), r = C.rows.find(x=>x.owner===me);
+  REC_SOC = !!SP(L).points; const u = U(L);
   if (!r) return "";
   const pick = my.length>1 ? `<div class="seg wide dash-pick" role="group" aria-label="Portfolio">${my.map(l=>`<button type="button" data-homelg="${esc(l.id)}" aria-pressed="${l.id===L.id}">${esc(l.name)}</button>`).join("")}</div>` : "";
   const sp = SP(L), lgs = [sp.pro, sp.col].filter(Boolean), today = sbToday();
@@ -968,7 +979,7 @@ function dashHTML(my){
   // ---- summary
   const W = weeklyWins(L, C), n = W.weeks.length;
   let dw = 0, dl = 0, dpts = 0;
-  for (const g of C.games) if (g.date===today) for (const k of [g.hk, g.ak]){ const st = C.who(k, g.date); if (!st || st.owner!==me) continue; const win = winnerKey(g); if (win===k){ dw++; dpts += st.wt; } else if (win!==null) dl++; }
+  for (const g of C.games) if (g.date===today) for (const k of [g.hk, g.ak]){ const st = C.who(k, g.date); if (!st || st.owner!==me) continue; const win = winnerKey(g); if (win===k){ dw++; dpts += st.wt*(C.sp.points?3:1); } else if (win!==null) dl++; else if (C.sp.points) dpts += st.wt; }
   const base = r.total - r.wk, pct = base>0 ? r.wk/base*100 : null;
   const rankAt = i => { if (i<0) return null; const tot = L.owners.map(o=>W.by[o][i]).sort((a,b)=>b-a); return tot.indexOf(W.by[me][i])+1; };
   const prevRank = n>1 ? rankAt(n-2) : null, rk = r.rank, rkMove = prevRank ? prevRank - rk : 0;
@@ -977,7 +988,7 @@ function dashHTML(my){
   const chg = (v, txt) => `<span class="${v>0?"up":v<0?"dn":"flat"}">${v>0?"▲ ":v<0?"▼ ":""}${txt}</span>`;
   const summary = `<div class="dash-sum">
       <div class="dash-top"><span class="dash-lbl">${esc(L.name)} · ${esc(me)}</span>${liveNow?`<span class="live-pill">${liveNow} live</span>`:""}</div>
-      <div class="dash-val-row"><span class="dash-val">${fmt(r.total)}</span><span class="dash-unit">wins</span>
+      <div class="dash-val-row"><span class="dash-val">${fmt(r.total)}</span><span class="dash-unit">${u.w}</span>
         <span class="dash-chg">${chg(r.wk, `+${fmt(r.wk)} this week${pct!==null && r.wk ? ` (${pct.toFixed(1)}%)` : ""}`)}</span></div>
       <div class="dash-stats">
         <div><span class="k">Today</span><span class="v">${dw||dl ? chg(dpts, `${dw}-${dl}`) : `<span class="flat">—</span>`}</span></div>
@@ -986,7 +997,7 @@ function dashHTML(my){
         ${P ? `<div><span class="k">Projected</span><span class="v">${P.proj.toFixed(1)} <span class="of">${ordinal(P.projRank)}</span></span></div>` : ""}
       </div>
       ${dashChart(W, me)}
-      <div class="dash-h pos-h"><span>Your holdings</span><span class="sub">Record · wins for you</span></div>
+      <div class="dash-h pos-h"><span>Your holdings</span><span class="sub">Record · ${u.w} for you</span></div>
       <ul class="mv-list pos">${[...r.holdings].sort((a,b)=> b.pts-a.pts || b.rec.w-a.rec.w).map(h=>{ const st = streakOf(C, h.k), lg = lgOfPool(L, h.pool);
         return `<li>${tlogo(h.team, lg)}<span class="mv-t"><b>${esc(h.team)}</b><span class="mv-o">${esc(h.pool)}${h.state==="leaving"?" · leaving":""}${st.n>1?` · <span class="${st.type==="W"?"up":st.type==="L"?"dn":""}">${st.type}${st.n}</span>`:""}</span></span><span class="mv-r"><span class="flat">${recTxt(h.rec)}</span> ${fmt(h.pts)}</span></li>`; }).join("")}</ul>
       <button type="button" class="dash-open" data-go="${esc(L.id)}">Open ${esc(L.name)} ›</button>
@@ -1067,7 +1078,7 @@ function homeHTML(){
     return `<button type="button" class="pf" data-go="${esc(l.id)}">
       <div class="top"><span class="sport-tag">${SP(l).label} · ${seasonLabel(l.year)}</span>${drafting?`<span class="status live">${turn?"Your pick":draftPending(l)?"Draft "+esc(fmtWhen(l.draftAt)):"Drafting"}</span>`:live?`<span class="live-pill">${live} live</span>`:""}</div>
       <div class="nm">${esc(l.name)}</div>
-      <div class="big"><span class="bn">${tied?"T-":""}${ordinal(r.rank)}</span><span class="kv">of ${l.owners.length} · <b>${fmt(r.total)}</b> wins</span></div>
+      <div class="big"><span class="bn">${tied?"T-":""}${ordinal(r.rank)}</span><span class="kv">of ${l.owners.length} · <b>${fmt(r.total)}</b> ${U(l).w}</span></div>
       <div class="kv">${C.picks.length ? `This week: <b>${w}-${ls}</b>` : "No teams drafted yet"}${waiting?` · <span class="hot-txt">${waiting} trade offer${waiting===1?"":"s"}</span>`:""}</div>
       <div class="kv">Managing as <b>${esc(o)}</b>${canAdmin(l)?" · commissioner":""}</div>
     </button>`;
@@ -1081,7 +1092,7 @@ function homeHTML(){
       <div class="top" style="display:flex;justify-content:space-between;gap:8px;align-items:center"><span class="sport-tag">${SP(l).label} · ${seasonLabel(l.year)}</span>${st}</div>
       <div class="nm">${esc(l.name)}</div>
       <div class="kv">${l.owners.length} managers · ${esc(slotText(l))}</div>
-      <div class="kv">${lead&&lead.total ? `Leader: <b>${esc(lead.owner)}</b>${tied>1?` (tied with ${tied-1})`:""}, ${fmt(lead.total)} wins` : "No wins on the board yet"}</div>
+      <div class="kv">${lead&&lead.total ? `Leader: <b>${esc(lead.owner)}</b>${tied>1?` (tied with ${tied-1})`:""}, ${fmt(lead.total)} ${U(l).w}` : `No ${U(l).w} on the board yet`}</div>
       ${A ? (canAdmin(l)?`<div class="kv"><b>You run this league.</b> Invite managers from League info.</div>`:"") : `<div class="claim"><label for="cl-${esc(l.id)}">I manage</label><select id="cl-${esc(l.id)}" data-claim="${esc(l.id)}"><option value="">Choose your name</option>${l.owners.map(o=>`<option>${esc(o)}</option>`).join("")}</select></div>`}
       <div class="btns"><button class="btn primary" data-go="${esc(l.id)}">Open league</button>
       ${canAdmin(l)?`<button class="btn danger" data-dellg="${esc(l.id)}">${S.confirmLg===l.id?"Delete for everyone?":"Delete"}</button>`:""}</div>
@@ -1099,7 +1110,9 @@ function homeHTML(){
     <div class="slots"><span><b>Basketball</b> portfolio, twelve teams:</span>${["NBA","NBA","NBA","SEC","Big Ten","Big 12","ACC","Big East","Other","Other","Other","Other"].map(chip).join("")}</div>
     <p class="sub">"Other" means any Division I team outside those five conferences. ${SPORTS.basketball.counts}</p>
     <div class="slots"><span><b>College Basketball</b> portfolio: the commissioner picks how many teams come from each of the 32 Division I conferences.</span></div>
-    <p class="sub">${SPORTS.cbb.counts}</p>`;
+    <p class="sub">${SPORTS.cbb.counts}</p>
+    <div class="slots"><span><b>Soccer</b> portfolio, seven clubs:</span>${["Premier League","Premier League","LaLiga","Bundesliga","Serie A","Ligue 1","Any"].map(chip).join("")}</div>
+    <p class="sub">${SPORTS.soccer.counts} "Any" is one more club from any of the five leagues. MLS joins when its season moves to the same calendar in 2027–28.</p>`;
   const hero = `<div class="hero">
       <h2>Draft teams,<br><em>not players.</em></h2>
       <p>The Portfolio is a season-long league where every manager drafts a portfolio of pro and college teams. Each win by one of your teams counts toward your total. Whoever holds the most wins when the season ends takes the table.</p>
@@ -1130,9 +1143,9 @@ function createFormHTML(){
       <button type="button" class="ib" data-rm="${i}" aria-label="Remove ${esc(m)}">✕</button></li>`).join("");
   const pw = sp.weights[sp.pro] ?? 1;
   return `<form class="card form" id="lgForm" autocomplete="off">
-      <div class="head-row"><h3>Create a league</h3><span class="sub">${S.newSport==="football"?"Drafts from all 32 NFL teams and all 138 FBS teams.":S.newSport==="cbb"?"Drafts from all 365 Division I teams. Choose how many each manager takes from any conference.":"Drafts from all 30 NBA teams and all 365 Division I teams."}</span></div>
+      <div class="head-row"><h3>Create a league</h3><span class="sub">${S.newSport==="football"?"Drafts from all 32 NFL teams and all 138 FBS teams.":S.newSport==="soccer"?"Drafts from all 96 clubs in the Premier League, LaLiga, Bundesliga, Serie A and Ligue 1. 3 points for a win, 1 for a draw, in every competition.":S.newSport==="cbb"?"Drafts from all 365 Division I teams. Choose how many each manager takes from any conference.":"Drafts from all 30 NBA teams and all 365 Division I teams."}</span></div>
       <div class="form-grid">
-        <label class="f" for="lgSport">Sport<select id="lgSport">${SPORT_KEYS.filter(k=> k!=="cbb" || !A || hasV4()).map(k=>`<option value="${k}" ${k===S.newSport?"selected":""}>${SPORTS[k].label}</option>`).join("")}</select></label>
+        <label class="f" for="lgSport">Sport<select id="lgSport">${SPORT_KEYS.filter(k=> !A || (k==="cbb" ? hasV4() : k==="soccer" ? (S.auth.live && S.auth.dbv>=8) : true)).map(k=>`<option value="${k}" ${k===S.newSport?"selected":""}>${SPORTS[k].label}</option>`).join("")}</select></label>
         <label class="f" for="lgName">League name<input type="text" id="lgName" required placeholder="Sunday Syndicate"></label>
         <label class="f" for="lgYear">Season<select id="lgYear">${[y,y+1].map(v=>`<option value="${v}">${seasonLabel(v)}</option>`).join("")}</select></label>
         <label class="f" for="lgType">Draft order<select id="lgType"><option value="snake">Snake (order reverses each round)</option><option value="straight">Straight (same order each round)</option></select></label>
@@ -1140,7 +1153,7 @@ function createFormHTML(){
       </div>
       <div><h3 style="margin-bottom:8px">Teams each manager drafts</h3>
         <div class="slot-grid">${sp.pools.map(p=>`<label class="f" for="sl-${poolCls(p)}">${p==="Other"?"Other conferences":p}<input type="number" id="sl-${poolCls(p)}" min="0" max="10" value="${sp.slots[p]}" inputmode="numeric"></label>`).join("")}
-          ${S.newSport==="cbb"?`<label class="f" for="lgFlex">Any conference<input type="number" id="lgFlex" min="0" max="12" value="${sp.flex}" inputmode="numeric"></label>`:""}
+          ${S.newSport==="cbb"||S.newSport==="soccer"?`<label class="f" for="lgFlex">${S.newSport==="soccer"?"Any league":"Any conference"}<input type="number" id="lgFlex" min="0" max="12" value="${sp.flex}" inputmode="numeric"></label>`:""}
           ${S.newSport==="basketball"?`<label class="f" for="lgProW">${sp.pro} win counts<select id="lgProW"><option value="0.5" ${pw===0.5?"selected":""}>0.5</option><option value="1" ${pw===1?"selected":""}>1</option></select></label>`:""}</div></div>
       <div><h3 style="margin-bottom:8px">Managers, in draft order</h3>
         <ol class="mgr-list">${mgrs||`<li><span class="sub">Add each manager below. First on the list picks first.</span></li>`}</ol>
@@ -1192,7 +1205,6 @@ function teamHTML(L, C){
     <div class="card empty"><strong>Which manager are you?</strong>Pick your name to see your team here. The choice is saved on this device only.<div style="display:flex;justify-content:center;margin-top:12px">${picker}</div></div></section>`;
   const r = C.rows.find(x=>x.owner===o), tied = C.rows.filter(x=>x.rank===r.rank).length>1;
   const wtNote = weightText(L), P = C.games.length && C.picks.length ? projection(L, C).find(x=>x.owner===o) : null;
-  const recTxt = x => `${x.w}-${x.l}${x.t?"-"+x.t:""}`;
   const how = h => h.via==="trade" ? "Trade" : h.via==="add" ? "Added" : (h.n ? "#"+h.n : "–");
   const row = (h, note) => {
     const wk = h.wkG.map(g=>{ const w=winnerKey(g), m=g.hk===h.k?g.hs:g.as, t=g.hk===h.k?g.as:g.hs; return `${w===h.k?"W":w===null?"T":"L"} ${m}–${t}`; }).join(", ");
@@ -1207,7 +1219,7 @@ function teamHTML(L, C){
     <div class="card me-head">
       <div><div class="sport-tag">${esc(L.name)} · ${SP(L).label} ${seasonLabel(L.year)}</div><div class="who">${esc(o)}</div>
         <div class="sub" style="margin-top:6px"><b>${tied?"T-":""}${ordinal(r.rank)}</b> of ${L.owners.length}${r.gb?` · ${fmt(r.gb)} back`:" · leading"}${C.sp.pro?` · ${r.pro} ${C.sp.pro} + ${r.col} college wins`:""}${r.wk?` · +${fmt(r.wk)} this week`:""}${P?` · projected ${P.proj.toFixed(1)} (${ordinal(P.projRank)})`:""}</div></div>
-      <div><div class="n">${fmt(r.total)}</div><div class="lbl">Wins${wtNote?" "+info("wt", esc(wtNote)+"."):""}</div></div>
+      <div><div class="n">${fmt(r.total)}</div><div class="lbl">${U(L).W}${wtNote?" "+info("wt", esc(wtNote)+"."):""}</div></div>
     </div>
     ${pendingHTML(L, C, o, r)}
     ${r.holdings.length || r.incoming.length ? `<div class="card scroll"><table class="team">
@@ -1240,7 +1252,7 @@ function standingsHTML(L, C){
   const wtNote = weightText(L);
   return `<div class="head-row">${ttl("Standings", "table", `Tap a manager to see their teams. Ties share a rank${C.sp.pro?`; order within a tie follows ${C.sp.pro} wins`:""}.${wtNote?` ${esc(wtNote)}; the ${C.sp.pro} column shows actual wins.`:""}`)}<p class="sub">${C.lastDate?`Through ${fmtDay(C.lastDate)} · ${wkLabel} runs ${fmtShort(C.curWeek)}–${fmtShort(weekEnd(C.curWeek))}`:"No games logged yet"}</p></div>
     <div class="card scroll"><table class="st">
-      <thead><tr><th>#</th><th>Manager</th><th class="r">Wins</th>${C.sp.pro?`<th class="r">${C.sp.pro}</th><th class="r">${C.sp.col}</th>`:""}<th class="r">${wkLabel}</th><th class="r hide-sm">Back</th></tr></thead>
+      <thead><tr><th>#</th><th>Manager</th><th class="r">${U(L).s}</th>${C.sp.pro?`<th class="r">${C.sp.pro}</th><th class="r">${C.sp.col}</th>`:""}<th class="r">${wkLabel}</th><th class="r hide-sm">Back</th></tr></thead>
       <tbody>${body}</tbody></table></div>`;
 }
 
@@ -1550,22 +1562,26 @@ function previewHTML(L, C){
   else if (lead.length===1) head = `${lead[0]} puts the lead on the line with ${count[lead[0]]} team${count[lead[0]]===1?"":"s"} in action`;
   else head = `${listNames(lead)} share first with everything to play for`;
   const why = g => (g.ho && g.ao && !g.h2h) ? `${esc(g.ho.owner)} has both teams, so one win is certain.` : g.h2h ? `Head to head: ${esc(g.ao.owner)} against ${esc(g.ho.owner)}. One of them picks up a win.`
-    : (()=>{ const p = g.ho || g.ao, r = row(p.owner); return `${esc(p.owner)} (${r.rank===1?"1st":ordinal(r.rank)}, ${fmt(r.total)} wins) has ${esc(p.team)}.`; })();
+    : (()=>{ const p = g.ho || g.ao, r = row(p.owner); return `${esc(p.owner)} (${r.rank===1?"1st":ordinal(r.rank)}, ${fmt(r.total)} ${U(L).w}) has ${esc(p.team)}.`; })();
   const fmtT = t => { const m = /^(\d{1,2}):(\d\d)/.exec(t||""); if (!m) return ""; const h = +m[1]; return ` · ${((h+11)%12)+1}:${m[2]} ${h<12?"AM":"PM"}`; };
   return `<article class="card wk">
     <div class="wk-top">${tag}</div>
     <h3 class="wk-title">Week ${weekNo} Preview: ${esc(head)}</h3>
-    <ul class="wk-games">${watch.map(g=>`<li><div class="mt"><b>${esc(g.away)}</b> at <b>${esc(g.home)}</b> <span class="lg">${g.lg}</span></div><div class="sub">${fmtDay(g.date)}${fmtT(g.time)}</div><div class="why">${why(g)}</div></li>`).join("")}</ul>
+    <ul class="wk-games">${watch.map(g=>`<li><div class="mt"><b>${esc(g.away)}</b> at <b>${esc(g.home)}</b> <span class="lg">${g.comp||LG_NAME[g.lg]||g.lg}</span></div><div class="sub">${fmtDay(g.date)}${fmtT(g.time)}</div><div class="why">${why(g)}</div></li>`).join("")}</ul>
     <p class="sub">Teams in action this week: ${C.rows.map(r=>`${esc(r.owner)} ${count[r.owner]}`).join(" · ")}</p>
   </article>`;
 }
 
 /* Projection: each team keeps winning at its current pace for the rest of its regular season. */
-const SEASON_GAMES = {NFL:17, CFB:12, NBA:82, CBB:31};
+const SEASON_GAMES = {NFL:17, CFB:12, NBA:82, CBB:31, SOC:42};
+// Soccer: league matches plus a typical run in the cups and Europe (Bundesliga and Ligue 1 play four fewer league games).
+const SOC_GAMES = {"Premier League":44, "LaLiga":42, "Serie A":42, "Bundesliga":38, "Ligue 1":38};
 function projection(L, C){
   const rows = C.rows.map(r=>{
     let proj = r.total;
-    for (const h of [...r.holdings.filter(x=>x.state!=="leaving"), ...r.incoming]){ const x = h.rec, gp = x.w+x.l+x.t, left = Math.max(0, SEASON_GAMES[lgOfPool(L,h.pool)] - gp); proj += left*(x.w+2)/(gp+4) * h.wt; }
+    for (const h of [...r.holdings.filter(x=>x.state!=="leaving"), ...r.incoming]){ const x = h.rec, gp = x.w+x.l+x.t;
+      if (C.sp.points){ const left = Math.max(0, (SOC_GAMES[h.pool]||40) - gp); proj += left*(3*x.w + x.t + 4*1.35)/(gp+4) * h.wt; }   // points per game, leaning toward an average 1.35
+      else { const left = Math.max(0, SEASON_GAMES[lgOfPool(L,h.pool)] - gp); proj += left*(x.w+2)/(gp+4) * h.wt; } }
     return {owner:r.owner, total:r.total, rank:r.rank, proj};
   }).sort((a,b)=> b.proj-a.proj);
   rows.forEach((r,i)=>{ r.projRank = (i>0 && Math.abs(r.proj-rows[i-1].proj)<0.05) ? rows[i-1].projRank : i+1; });
@@ -1574,7 +1590,7 @@ function projection(L, C){
 function projectionHTML(L, C){
   if (!C.picks.length || !C.games.length) return "";
   const P = projection(L, C), me = mine(L), max = Math.max(1, ...P.map(r=>r.proj)), sp = C.sp;
-  return `<div class="head-row">${ttl("Projected finish", "proj", `Where the table ends up if every team keeps its current pace over the rest of its regular season (${sp.pro?`${SEASON_GAMES[sp.pro]} ${sp.pro} games, `:""}${SEASON_GAMES[sp.col]} college), leaning slightly toward .500 early on. Postseason games aren't projected.`)}</div>
+  return `<div class="head-row">${ttl("Projected finish", "proj", sp.points ? "Where the table ends up if every club keeps earning points at its current rate, over its league season plus a typical cup and European run (about 44 matches for Premier League clubs, 42 for LaLiga and Serie A, 38 for the Bundesliga and Ligue 1), leaning toward an average club early on." : `Where the table ends up if every team keeps its current pace over the rest of its regular season (${sp.pro?`${SEASON_GAMES[sp.pro]} ${sp.pro} games, `:""}${SEASON_GAMES[sp.col]} college), leaning slightly toward .500 early on. Postseason games aren't projected.`)}</div>
     <div class="card scroll"><table class="st mini"><thead><tr><th>#</th><th>Manager</th><th class="r">Now</th><th class="r">Projected</th><th class="r hide-sm">Now ranked</th></tr></thead>
     <tbody>${P.map(r=>`<tr><td class="rk num">${r.projRank}</td><td><span class="mgr">${esc(r.owner)}</span>${r.owner===me?` <span class="tag">you</span>`:""}<div class="bar"><i style="width:${(r.proj/max*100).toFixed(1)}%"></i></div></td><td class="r num">${fmt(r.total)}</td><td class="r num tot">${r.proj.toFixed(1)}</td><td class="r num hide-sm">${ordinal(r.rank)}${r.projRank<r.rank?` <span class="delta up">▲${r.rank-r.projRank}</span>`:r.projRank>r.rank?` <span class="mv-dn">▼${r.projRank-r.rank}</span>`:""}</td></tr>`).join("")}</tbody></table></div>
 `;
@@ -1584,7 +1600,7 @@ function seasonRecords(L, C){
   const out = [], weeks = [...new Set(C.games.map(g=>weekStart(g.date)))].sort();
   let bw = null;
   for (const ws of weeks){ const R = recapData(L, C, ws); if (R && (!bw || R.best>bw.best)) bw = R; }
-  if (bw && bw.best>0) out.push(["Best week", `${listNames(bw.winners)}, ${fmt(bw.best)} wins in Week ${bw.weekNo}`]);
+  if (bw && bw.best>0) out.push(["Best week", `${listNames(bw.winners)}, ${fmt(bw.best)} ${U(L).w} in Week ${bw.weekNo}`]);
   const teams = C.cur.map(h=>({...h, w:h.rec.w, l:h.rec.l, t:h.rec.t})).filter(h=>h.w+h.l+h.t>0).sort((a,b)=> b.w-a.w || a.l-b.l);
   if (teams.length) out.push(["Top team", `${teams[0].team} (${teams[0].owner}), ${teams[0].w}-${teams[0].l}${teams[0].t?"-"+teams[0].t:""}`]);
   const un = teams.filter(h=>h.l===0 && h.t===0 && h.w>=3);
@@ -1624,7 +1640,7 @@ function leagueHTML(L, C){
   }
   const you = r && C.picks.length ? (()=>{ const P = C.games.length ? projection(L,C).find(x=>x.owner===me) : null, tied = C.rows.filter(x=>x.rank===r.rank).length>1;
     return `<button type="button" class="card you" data-tabgo="team"><span><span class="sport-tag">Your portfolio</span><span class="who">${esc(me)}</span></span>
-      <span class="kv"><b>${fmt(r.total)}</b> wins · <b>${tied?"T-":""}${ordinal(r.rank)}</b> of ${L.owners.length}${r.wk?` · <span class="delta up">+${fmt(r.wk)} this week</span>`:""}${P?` · projected <b>${P.proj.toFixed(1)}</b>`:""} <b>›</b></span></button>`; })() : "";
+      <span class="kv"><b>${fmt(r.total)}</b> ${U(L).w} · <b>${tied?"T-":""}${ordinal(r.rank)}</b> of ${L.owners.length}${r.wk?` · <span class="delta up">+${fmt(r.wk)} this week</span>`:""}${P?` · projected <b>${P.proj.toFixed(1)}</b>`:""} <b>›</b></span></button>`; })() : "";
   const body = C.picks.length && C.games.length
     ? `${recapHTML(L, C)}${previewHTML(L, C)}${projectionHTML(L, C)}`
     : (C.picks.length ? `<div class="card empty"><strong>Rosters are set.</strong>The first recap arrives the Tuesday morning after this league's teams play.</div>`
@@ -1711,11 +1727,14 @@ const movesNav = () => `<div class="seg" role="group" aria-label="Moves"><button
 /* Each visitor's browser reads ESPN's public scoreboard directly: football by week, NBA and college basketball by day.
    Finals from here count in the standings right away; the stored record (football each morning, basketball every
    few minutes from the database) remains the permanent one. */
-const LIVE = { on: !!window.PORTFOLIO_PUBLIC, by:{NFL:[], CFB:[], NBA:[], CBB:[]}, prev:{NFL:[], CFB:[], NBA:[], CBB:[]}, days:{}, wk:{}, cur:{}, ws:null, at:0, err:"", tried:false, busy:false, timer:null, coarse:"", fine:"", lgs:[] };
-const ESPN_PATH = { NFL:"football/nfl", CFB:"football/college-football", NBA:"basketball/nba", CBB:"basketball/mens-college-basketball" };
-const ESPN_Q = { NFL:"limit=100", CFB:"groups=80&limit=300", NBA:"limit=100", CBB:"groups=50&limit=500" };
-const BB = lg => lg==="NBA" || lg==="CBB";
-const LG_NAME = { NFL:"NFL", CFB:"College", NBA:"NBA", CBB:"College" };
+const LIVE = { on: !!window.PORTFOLIO_PUBLIC, by:{NFL:[], CFB:[], NBA:[], CBB:[], SOC:[]}, prev:{NFL:[], CFB:[], NBA:[], CBB:[], SOC:[]}, days:{}, wk:{}, cur:{}, ws:null, at:0, err:"", tried:false, busy:false, timer:null, coarse:"", fine:"", lgs:[] };
+const ESPN_PATH = { NFL:"football/nfl", CFB:"football/college-football", NBA:"basketball/nba", CBB:"basketball/mens-college-basketball", SOC:"soccer/all" };
+const ESPN_Q = { NFL:"limit=100", CFB:"groups=80&limit=300", NBA:"limit=100", CBB:"groups=50&limit=500", SOC:"limit=500" };
+// Leagues followed one day at a time (basketball, soccer) rather than by week (football).
+const BB = lg => lg==="NBA" || lg==="CBB" || lg==="SOC";
+const LG_NAME = { NFL:"NFL", CFB:"College", NBA:"NBA", CBB:"College", SOC:"Soccer" };
+// ESPN's ids for the soccer competitions shown on the scoreboard (used when the feed doesn't name them).
+const SOC_COMP = {"700":"Premier League","740":"LaLiga","720":"Bundesliga","730":"Serie A","710":"Ligue 1","775":"Champions League","776":"Europa League","20296":"Conference League","40":"FA Cup","41":"League Cup","80":"Copa del Rey","2061":"DFB-Pokal","2192":"Coppa Italia","182":"Coupe de France"};
 const espnURL = (lg, wk, day) => `https://site.api.espn.com/apis/site/v2/sports/${ESPN_PATH[lg]}/scoreboard?${ESPN_Q[lg]}${wk ? `&seasontype=${wk.type}&week=${wk.n}` : ""}${day ? `&dates=${day.replace(/-/g,"")}` : ""}`;
 function etDate(d){
   try{ const p = Object.fromEntries(new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(d).map(x=>[x.type,x.value])); return `${p.year}-${p.month}-${p.day}`; }
@@ -1740,17 +1759,21 @@ function liveLgs(){
   return out;
 }
 
-function parseEvent(e, lg, day){
+function parseEvent(e, lg, day, comps){
   const c = (e.competitions||[])[0]; if (!c || !Array.isArray(c.competitors)) return null;
   const H = c.competitors.find(x=>x.homeAway==="home"), W = c.competitors.find(x=>x.homeAway==="away");
   if (!H || !W || !H.team || !W.team) return null;
-  const nm = t => (lg==="NFL" || lg==="NBA") ? (t.team.name || t.team.shortDisplayName || t.team.displayName || "") : (t.team.location || t.team.shortDisplayName || t.team.displayName || "");
+  const nm = t => (lg==="NFL" || lg==="NBA") ? (t.team.name || t.team.shortDisplayName || t.team.displayName || "")
+    : lg==="SOC" ? (t.team.displayName || t.team.name || "") : (t.team.location || t.team.shortDisplayName || t.team.displayName || "");
   const notes = (c.notes||[]).map(n=>n.headline||"").join(" "), stype = +((e.season||{}).type) || 2;
   // NBA: regular season only (not preseason, the NBA Cup final, play-in or playoffs). College basketball: no exhibitions.
   const counts = lg==="NBA" ? (stype===2 && !/cup.*(final|championship)/i.test(notes)) : lg==="CBB" ? (stype!==1 && !/exhibition/i.test(notes)) : true;
   const st = c.status || e.status || {}, ty = st.type || {}, sit = c.situation || null, start = new Date(e.date || c.date);
   if (isNaN(start)) return null;
   const home = canonName(nm(H), lg), away = canonName(nm(W), lg);
+  // Soccer's all-competitions feed also carries leagues we don't play (MLS, Liga MX...): keep matches with a club on the list.
+  if (lg==="SOC" && !NAMES.SOC.has(home.toLowerCase()) && !NAMES.SOC.has(away.toLowerCase())) return null;
+  const compId = ((e.uid||"").match(/~l:(\d+)/)||[])[1] || "", comp = lg==="SOC" ? ((comps||{})[compId] || SOC_COMP[compId] || "") : "";
   addLogo(home, lg, {logo:H.team.logo, color:H.team.color}); addLogo(away, lg, {logo:W.team.logo, color:W.team.color});
   const rank = t => { const r = t.curatedRank && +t.curatedRank.current; return r>0 && r<=25 ? r : 0; };
   const rec = t => { const r = (t.records||[]).find(x=>x.name==="overall" || x.type==="total") || (t.records||[])[0]; return r ? r.summary||"" : ""; };
@@ -1761,20 +1784,33 @@ function parseEvent(e, lg, day){
     start: start.getTime(), date: day || etDate(start), counts, note: counts ? "" : (stype===1 ? "Preseason" : /exhibition/i.test(notes) ? "Exhibition" : stype===3 || stype===5 ? "Postseason" : "Doesn't count"), tv: ((c.broadcasts||[]).flatMap(b=>b.names||[]).slice(0,2).join(", ")) || "",
     poss: sit && sit.possession ? (String(sit.possession)===String(H.team.id) ? "home" : String(sit.possession)===String(W.team.id) ? "away" : "") : "",
     dd: sit ? (sit.downDistanceText || [sit.shortDownDistanceText, sit.possessionText].filter(Boolean).join(" at ") || "") : "",
-    rz: !!(sit && sit.isRedZone), last: sit && sit.lastPlay && sit.lastPlay.text ? String(sit.lastPlay.text) : "" };
+    rz: !!(sit && sit.isRedZone), last: sit && sit.lastPlay && sit.lastPlay.text ? String(sit.lastPlay.text) : "",
+    comp, hso: H.shootoutScore!=null ? +H.shootoutScore : null, aso: W.shootoutScore!=null ? +W.shootoutScore : null };
 }
+// ESPN's soccer feeds go competition by competition (its "all" feed only carries a few leagues), so soccer asks each one.
+const SOC_FEEDS = {"eng.1":"Premier League","esp.1":"LaLiga","ger.1":"Bundesliga","ita.1":"Serie A","fra.1":"Ligue 1","uefa.champions":"Champions League","uefa.europa":"Europa League","uefa.europa.conf":"Conference League","eng.fa":"FA Cup","eng.league_cup":"League Cup","esp.copa_del_rey":"Copa del Rey","ger.dfb_pokal":"DFB-Pokal","ita.coppa_italia":"Coppa Italia","fra.coupe_de_france":"Coupe de France","esp.super_cup":"Supercopa","ita.super_cup":"Supercoppa"};
 async function espnGet(lg, wk, day){
+  if (lg==="SOC"){
+    const res = await Promise.all(Object.entries(SOC_FEEDS).map(async ([slug, name])=>{
+      try{ const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${slug}/scoreboard${day?`?dates=${day.replace(/-/g,"")}`:""}`, {cache:"no-store"});
+        if (!r.ok) return null; const j = await r.json(); const comps = {}; for (const x of (j.leagues||[])) if (x && x.id) comps[String(x.id)] = name;
+        return (j.events||[]).map(e=>{ const g = parseEvent(e, lg, day, comps); if (g) g.comp = name; return g; }).filter(Boolean); }
+      catch(_){ return null; } }));
+    if (res.every(x=>x===null)) throw new Error("unreachable");
+    const seen = new Set(); return { week:null, games: res.flat().filter(g=> g && !seen.has(g.id) && seen.add(g.id)) };
+  }
   const r = await fetch(espnURL(lg, wk, day), {cache:"no-store"});
   if (!r.ok) throw new Error("HTTP "+r.status);
   const j = await r.json();
-  return { week: j.week && j.season && j.week.number ? {n:+j.week.number, type:+j.season.type||2} : null, games:(j.events||[]).map(e=>parseEvent(e,lg,day)).filter(Boolean) };
+  const comps = {}; for (const x of (j.leagues||[])) if (x && x.id) comps[String(x.id)] = SOC_COMP[String(x.id)] || x.name || x.abbreviation || "";
+  return { week: j.week && j.season && j.week.number ? {n:+j.week.number, type:+j.season.type||2} : null, games:(j.events||[]).map(e=>parseEvent(e,lg,day,comps)).filter(Boolean) };
 }
 async function loadLive(){
   if (!LIVE.on) return;
   if (LIVE.busy){ LIVE.again = true; return; }
   LIVE.busy = true;
   const today = sbToday(), ws = weekStart(today), we = weekEnd(ws), early = (toD(today)-toD(ws))/864e5 <= 1;
-  if (LIVE.ws!==ws){ LIVE.ws = ws; LIVE.cur = {}; LIVE.prev = {NFL:[], CFB:[], NBA:[], CBB:[]}; }      // a new week: work out which ESPN week to ask for again
+  if (LIVE.ws!==ws){ LIVE.ws = ws; LIVE.cur = {}; LIVE.prev = {NFL:[], CFB:[], NBA:[], CBB:[], SOC:[]}; }      // a new week: work out which ESPN week to ask for again
   LIVE.lgs = liveLgs();
   let failed = 0;
   await Promise.all(LIVE.lgs.map(async lg=>{
@@ -1869,6 +1905,7 @@ function schedAll(){
 
 // Q1–Q4 for the NFL and NBA, 1st/2nd half for college basketball, then OT, 2OT…
 function periodText(g){
+  if (g.lg==="SOC") return g.sname==="STATUS_HALFTIME" ? "HT" : (g.clock || g.detail || "");
   const p = g.period; if (!p) return "";
   const reg = g.lg==="CBB" ? 2 : 4;
   if (p>reg) return (p-reg>1 ? (p-reg) : "") + "OT";
@@ -1876,8 +1913,10 @@ function periodText(g){
 }
 function gameStatus(g){
   if (g.state==="pre") return new Date(g.start).toLocaleString("en-US",{weekday:"short",hour:"numeric",minute:"2-digit"}) + (g.tv ? ` · ${esc(g.tv)}` : "");
+  if (g.lg==="SOC" && g.state==="post") return esc((g.detail || "FT") + (g.hso!=null && g.aso!=null ? ` · pens ${g.hso}–${g.aso}` : ""));
   if (g.state==="post") return esc(g.done ? (/final/i.test(g.detail) ? g.detail : "Final") : (g.detail || "Ended"));
-  if (g.sname==="STATUS_HALFTIME" || /^half/i.test(g.detail)) return "Halftime";
+  if (g.sname==="STATUS_HALFTIME" || /^half/i.test(g.detail)) return g.lg==="SOC" ? "HT" : "Halftime";
+  if (g.lg==="SOC") return esc(g.detail || g.clock || "Live");
   if (g.sname==="STATUS_END_PERIOD" || /^end/i.test(g.detail)) return esc(g.detail);
   return periodText(g) + (g.clock ? " "+esc(g.clock) : "");
 }
@@ -1890,8 +1929,8 @@ function scoreCard(g, C){
       <span class="sc num">${g.state==="pre"?"":sc}</span></div>`; };
   const sit = live && g.dd ? `<div class="sg-sit ${g.rz?"rz":""}">${g.poss?`${esc(g.poss==="home"?g.home:g.away)} ball · `:""}${esc(g.dd)}</div>` : "";
   return `<div class="card sg ${g.state}">
-    <div class="sg-top"><span class="sg-st">${live?`<span class="live-pill">Live</span> `:""}${gameStatus(g)}</span><span class="lg">${g.note?`<span class="tag" title="This game doesn't count toward anyone's wins">${esc(g.note)}</span> `:""}${LG_NAME[g.lg]||g.lg}</span></div>
-    ${row("away")}${row("home")}${sit}
+    <div class="sg-top"><span class="sg-st">${live?`<span class="live-pill">Live</span> `:""}${gameStatus(g)}</span><span class="lg">${g.note?`<span class="tag" title="This game doesn't count toward anyone's wins">${esc(g.note)}</span> `:""}${esc(g.comp || LG_NAME[g.lg] || g.lg)}</span></div>
+    ${g.lg==="SOC" ? row("home")+row("away") : row("away")+row("home")}${sit}
     ${live && g.last ? `<div class="sg-last">${esc(g.last.length>130 ? g.last.slice(0,127)+"…" : g.last)}</div>` : ""}
   </div>`;
 }
@@ -1928,7 +1967,7 @@ function scoresHTML(L, C){
   const shown = all.filter(g=> (!mineOnly || C.who(g.hk, g.date) || C.who(g.ak, g.date)) && (lgPick==="all" || g.lg===lgPick)).sort((a,b)=> a.start-b.start || a.home.localeCompare(b.home));
   const filters = `<div class="filters">${hasPicks?`<div class="seg" role="group" aria-label="Which games"><button type="button" data-sb="mine" aria-pressed="${mineOnly}">My league</button><button type="button" data-sb="all" aria-pressed="${!mineOnly}">All games</button></div>`:""}
       ${lgs.length>1?`<div class="seg" role="group" aria-label="Which level"><button type="button" data-sblg="all" aria-pressed="${lgPick==="all"}">All</button>${lgs.map(lg=>`<button type="button" data-sblg="${lg}" aria-pressed="${lgPick===lg}">${LG_NAME[lg]}</button>`).join("")}</div>`:""}</div>`;
-  const about = `Live scores come from ESPN's public scoreboard and refresh about every 20 seconds while games are on. A final counts in the standings straight away.${bb?" Preseason and exhibition games are shown but don't count.":" The scoreboard shows the week just played through Tuesday and moves to the new week on Wednesday."}`;
+  const about = `Live scores come from ESPN's public scoreboard and refresh about every 20 seconds while games are on. A final counts in the standings straight away.${sportOf(L)==="soccer"?" Every competition counts: 3 points for a win, 1 for a draw.":bb?" Preseason and exhibition games are shown but don't count.":" The scoreboard shows the week just played through Tuesday and moves to the new week on Wednesday."}`;
   const head = `<div class="head-row">${ttl("Scores", "sb", about)}<span class="sub">${upd}</span></div>${nav}${filters}`;
   const wrap = inner => `<section class="panel">${head}${inner}</section>`;
   if (!LIVE.tried || loading) return wrap(`<div class="card empty"><strong>Loading scores…</strong></div>`);
@@ -1947,7 +1986,7 @@ function scoresHTML(L, C){
 /* ---------- pickups and trades (website only) ---------- */
 const hasV4 = () => !!(A && S.auth.live && S.auth.dbv>=4);
 const isPast = d => !!d && etDate(new Date()) > d;
-const recTxt = x => `${x.w}-${x.l}${x.t?"-"+x.t:""}`;
+const recTxt = x => REC_SOC ? `${x.w}-${x.t}-${x.l}` : `${x.w}-${x.l}${x.t?"-"+x.t:""}`;
 function windowNote(L, field, what){
   const d = L[field];
   return !d ? `${what} are open all season.` : isPast(d) ? `${what} closed after ${fmtDay(d)}.` : `${what} are open through ${fmtDay(d)}.`;
@@ -1974,7 +2013,7 @@ function faHTML(L, C){
   const pools = sp.pools.filter(p=> slotsOf(L)[p] || (p!==sp.pro && flexOf(L)));
   const owned = new Set(C.stints.filter(s=>!s.to).map(s=>s.k));
   const q = S.faQ.trim().toLowerCase();
-  let list = pools.flatMap(p=> sp.teams[p].map(t=>{ const k = tk(t, lgOfPool(L,p)), r = C.rec[k] || {w:0,l:0,t:0,games:[]}, gp = r.w+r.l+r.t; return {t, p, k, r, gp, pct: gp ? (r.w+r.t/2)/gp : 0}; }))
+  let list = pools.flatMap(p=> sp.teams[p].map(t=>{ const k = tk(t, lgOfPool(L,p)), r = C.rec[k] || {w:0,l:0,t:0,games:[]}, gp = r.w+r.l+r.t; return {t, p, k, r, gp, pct: gp ? (sp.points ? (3*r.w+r.t)/gp/3 : (r.w+r.t/2)/gp) : 0}; }))
     .filter(x=> !owned.has(x.k) && (S.faPool==="all" || x.p===S.faPool) && (!q || x.t.toLowerCase().includes(q)));
   list.sort(S.faSort==="name" ? (a,b)=>a.t.localeCompare(b.t) : S.faSort==="pct" ? (a,b)=> b.pct-a.pct || b.r.w-a.r.w || a.t.localeCompare(b.t) : (a,b)=> b.r.w-a.r.w || b.pct-a.pct || a.t.localeCompare(b.t));
   const seat = actingSeat(L), open = hasV4() && !!seat && !isPast(L.waiverUntil);
@@ -1992,15 +2031,15 @@ function faHTML(L, C){
       : `<p>${esc(seat)} has no ${esc(x.p)} spot to swap. A pickup replaces a team from the same conference.</p><div class="btns"><button type="button" class="btn" id="faCancel">Close</button></div>`}
     </div>`;
   }
-  const rows = shown.map(x=>`<tr><td><span class="tn">${tlogo(x.t, lgOfPool(L,x.p))}${esc(x.t)}</span> ${chip(x.p)}</td><td class="r num">${x.gp?recTxt(x.r):"0-0"}</td><td class="r num hide-sm">${x.gp?x.pct.toFixed(3).replace(/^0/,""):"–"}</td><td class="hide-sm sub">${lastTxt(x)}</td>
+  const rows = shown.map(x=>`<tr><td><span class="tn">${tlogo(x.t, lgOfPool(L,x.p))}${esc(x.t)}</span> ${chip(x.p)}</td><td class="r num">${x.gp?recTxt(x.r):"0-0"}</td><td class="r num hide-sm">${x.gp?(sp.points?(x.pct*3).toFixed(2):x.pct.toFixed(3).replace(/^0/,"")):"–"}</td><td class="hide-sm sub">${lastTxt(x)}</td>
       <td class="r">${open?`<button type="button" class="qb add" data-fa="${esc(x.t)}" data-fapool="${esc(x.p)}" aria-label="Add ${esc(x.t)}">+</button>`:""}</td></tr>`).join("");
   return wrap(`${flashHTML("fa")}${actForHTML(L)}${why?`<p class="ro">${why}</p>`:""}${panel}
     <div class="card form" style="padding-bottom:12px"><div class="form-grid">
       <label class="f" for="faPool">Conference<select id="faPool"><option value="all">All conferences</option>${pools.map(p=>`<option value="${esc(p)}" ${S.faPool===p?"selected":""}>${esc(p)}</option>`).join("")}</select></label>
       <label class="f" for="faQ">Search<input type="text" id="faQ" value="${esc(S.faQ)}" placeholder="Team name"></label>
-      <label class="f" for="faSort">Sort by<select id="faSort"><option value="wins" ${S.faSort==="wins"?"selected":""}>Most wins</option><option value="pct" ${S.faSort==="pct"?"selected":""}>Win %</option><option value="name" ${S.faSort==="name"?"selected":""}>Name</option></select></label>
+      <label class="f" for="faSort">Sort by<select id="faSort"><option value="wins" ${S.faSort==="wins"?"selected":""}>Most wins</option><option value="pct" ${S.faSort==="pct"?"selected":""}>${sp.points?"Points per game":"Win %"}</option><option value="name" ${S.faSort==="name"?"selected":""}>Name</option></select></label>
     </div></div>
-    <div class="card scroll" data-keep="fa"><table class="st fa"><thead><tr><th>Team</th><th class="r">Record</th><th class="r hide-sm">Pct</th><th class="hide-sm">Last game</th><th class="r">${open?"Add":""}</th></tr></thead>
+    <div class="card scroll" data-keep="fa"><table class="st fa"><thead><tr><th>Team</th><th class="r">Record</th><th class="r hide-sm">${sp.points?"PPG":"Pct"}</th><th class="hide-sm">Last game</th><th class="r">${open?"Add":""}</th></tr></thead>
       <tbody>${rows || `<tr><td colspan="5" class="sub">No available teams match.</td></tr>`}</tbody></table></div>
     ${list.length>shown.length?`<p class="sub">Showing ${shown.length} of ${list.length}. Pick a conference or search to narrow the list.</p>`:`<p class="sub">${list.length} available team${list.length===1?"":"s"}.</p>`}`);
 }
@@ -2219,7 +2258,7 @@ function settingsHTML(){
     <div class="card set"><h3>Alert preferences</h3>
       <p>Alert choices are part of your account on the website version.</p></div>`}
     <div class="card set"><h3>Help</h3>
-      <details><summary>How does scoring work?</summary><p>Every win by a team in your portfolio adds to your total. Football: ${SPORTS.football.counts} Basketball: ${SPORTS.basketball.counts}</p></details>
+      <details><summary>How does scoring work?</summary><p>Every win by a team in your portfolio adds to your total. Football: ${SPORTS.football.counts} Basketball: ${SPORTS.basketball.counts} Soccer works like a real league table instead: ${SPORTS.soccer.counts}</p></details>
       <details><summary>When do scores update?</summary><p>${LIVE.on?"On the website, scores are live: the Scoreboard tab follows every NFL, college football, NBA and college basketball game, and a final counts in the standings as soon as the game ends. Football results are also saved to the permanent record each morning; basketball results are saved within about ten minutes of the final buzzer. NBA preseason, the NBA Cup final, the play-in and playoffs, and college exhibitions don't count.":"Scores are pulled once each morning. A game that ends tonight shows up tomorrow morning. The website version also has live scores."}</p></details>
       <details><summary>How do I see my team?</summary><p>${A?"Join a league with the invite link from its commissioner. It then appears under My leagues on Home, and you can switch between portfolios from the menu at the top.":"Open a league and pick your name on the My Team tab. That league then appears under My leagues on Home, and you can switch between portfolios from the menu at the top."}</p></details>
       <details><summary>A score looks wrong. What now?</summary><p>Tell your commissioner. They can enter a correction, and a corrected result always replaces the automatic one.</p></details>
