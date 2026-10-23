@@ -672,7 +672,7 @@ function slotRows(L){
   const f = flexOf(L); for (let i=1;i<=f;i++) out.push({slot: f>1?`Any #${i}`:"Any", pool:"Any", ix:i, many:f>1});
   return out;
 }
-const slotText = L => SP(L).pools.filter(p=>slotsOf(L)[p]).map(p=>`${slotsOf(L)[p]} ${p==="Other"?"other-conference":p}`).concat(flexOf(L)?[`${flexOf(L)} any ${sportOf(L)==="cbb"?"conference":sportOf(L)==="soccer"?"league":"college"}`]:[]).join(" · ");
+const slotText = L => SP(L).pools.filter(p=>slotsOf(L)[p]).map(p=>`${slotsOf(L)[p]} ${p==="Other"?"other-conference":p}`).concat(flexOf(L)?[`${flexOf(L)} ${sportOf(L)==="cbb"?"from any other conference":sportOf(L)==="soccer"?"any league":"any college"}`]:[]).join(" · ");
 const weightText = L => SP(L).pools.filter(p=>weightOf(L,p)!==1).map(p=>`${p} wins count ${weightOf(L,p)}`).join(" · ");
 const mine = L => {
   if (A){ const id = meId(), m = L.members || {}; return id ? (L.owners.find(o=>m[o]===id) || null) : null; }
@@ -1109,7 +1109,7 @@ function homeHTML(){
     <p class="sub">${SPORTS.football.counts}</p>
     <div class="slots"><span><b>Basketball</b> portfolio, twelve teams:</span>${["NBA","NBA","NBA","SEC","Big Ten","Big 12","ACC","Big East","Other","Other","Other","Other"].map(chip).join("")}</div>
     <p class="sub">"Other" means any Division I team outside those five conferences. ${SPORTS.basketball.counts}</p>
-    <div class="slots"><span><b>College Basketball</b> portfolio: the commissioner picks how many teams come from each of the 32 Division I conferences.</span></div>
+    <div class="slots"><span><b>College Basketball</b> portfolio: the commissioner picks how many teams come from each of the 32 Division I conferences. "Any other conference" spots take a team from outside the SEC, Big Ten, Big 12, ACC and Big East.</span></div>
     <p class="sub">${SPORTS.cbb.counts}</p>
     <div class="slots"><span><b>Soccer</b> portfolio, seven clubs:</span>${["Premier League","Premier League","LaLiga","Bundesliga","Serie A","Ligue 1","Any"].map(chip).join("")}</div>
     <p class="sub">${SPORTS.soccer.counts} "Any" is one more club from any of the five leagues. MLS joins when its season moves to the same calendar in 2027–28.</p>`;
@@ -1143,7 +1143,7 @@ function createFormHTML(){
       <button type="button" class="ib" data-rm="${i}" aria-label="Remove ${esc(m)}">✕</button></li>`).join("");
   const pw = sp.weights[sp.pro] ?? 1;
   return `<form class="card form" id="lgForm" autocomplete="off">
-      <div class="head-row"><h3>Create a league</h3><span class="sub">${S.newSport==="football"?"Drafts from all 32 NFL teams and all 138 FBS teams.":S.newSport==="soccer"?"Drafts from all 96 clubs in the Premier League, LaLiga, Bundesliga, Serie A and Ligue 1. 3 points for a win, 1 for a draw, in every competition.":S.newSport==="cbb"?"Drafts from all 365 Division I teams. Choose how many each manager takes from any conference.":"Drafts from all 30 NBA teams and all 365 Division I teams."}</span></div>
+      <div class="head-row"><h3>Create a league</h3><span class="sub">${S.newSport==="football"?"Drafts from all 32 NFL teams and all 138 FBS teams.":S.newSport==="soccer"?"Drafts from all 96 clubs in the Premier League, LaLiga, Bundesliga, Serie A and Ligue 1. 3 points for a win, 1 for a draw, in every competition.":S.newSport==="cbb"?"Drafts from all 365 Division I teams. Choose how many each manager takes from each conference; “any other conference” spots are for teams outside the SEC, Big Ten, Big 12, ACC and Big East.":"Drafts from all 30 NBA teams and all 365 Division I teams."}</span></div>
       <div class="form-grid">
         <label class="f" for="lgSport">Sport<select id="lgSport">${SPORT_KEYS.filter(k=> !A || (k==="cbb" ? hasV4() : k==="soccer" ? (S.auth.live && S.auth.dbv>=8) : true)).map(k=>`<option value="${k}" ${k===S.newSport?"selected":""}>${SPORTS[k].label}</option>`).join("")}</select></label>
         <label class="f" for="lgName">League name<input type="text" id="lgName" required placeholder="Sunday Syndicate"></label>
@@ -1153,7 +1153,7 @@ function createFormHTML(){
       </div>
       <div><h3 style="margin-bottom:8px">Teams each manager drafts</h3>
         <div class="slot-grid">${sp.pools.map(p=>`<label class="f" for="sl-${poolCls(p)}">${p==="Other"?"Other conferences":p}<input type="number" id="sl-${poolCls(p)}" min="0" max="10" value="${sp.slots[p]}" inputmode="numeric"></label>`).join("")}
-          ${S.newSport==="cbb"||S.newSport==="soccer"?`<label class="f" for="lgFlex">${S.newSport==="soccer"?"Any league":"Any conference"}<input type="number" id="lgFlex" min="0" max="12" value="${sp.flex}" inputmode="numeric"></label>`:""}
+          ${S.newSport==="cbb"||S.newSport==="soccer"?`<label class="f" for="lgFlex">${S.newSport==="soccer"?"Any league":"Any other conference"}<input type="number" id="lgFlex" min="0" max="12" value="${sp.flex}" inputmode="numeric"></label>`:""}
           ${S.newSport==="basketball"?`<label class="f" for="lgProW">${sp.pro} win counts<select id="lgProW"><option value="0.5" ${pw===0.5?"selected":""}>0.5</option><option value="1" ${pw===1?"selected":""}>1</option></select></label>`:""}</div></div>
       <div><h3 style="margin-bottom:8px">Managers, in draft order</h3>
         <ol class="mgr-list">${mgrs||`<li><span class="sub">Add each manager below. First on the list picks first.</span></li>`}</ol>
@@ -1360,7 +1360,11 @@ function needsFor(L, o){
   for (const p of (L.picks||[])) if (p.owner===o){ if (String(p.slot).startsWith("Any")) flex--; else req[p.pool]--; }
   return {req, flex};
 }
-const canTake = (L, need, pool) => need.req[pool]>0 || (pool!==SP(L).pro && need.flex>0);
+// Which teams can fill an "Any" spot: any college team (not NFL/NBA); in college basketball leagues, only teams
+// outside the five main conferences (SEC, Big Ten, Big 12, ACC, Big East), which have their own spots.
+const POWER5 = ["SEC","Big Ten","Big 12","ACC","Big East"];
+const flexOk = (L, pool) => sportOf(L)==="cbb" ? !POWER5.includes(pool) : pool!==SP(L).pro;
+const canTake = (L, need, pool) => need.req[pool]>0 || (flexOk(L, pool) && need.flex>0);
 
 function draftResultsHTML(L){
   const D = draftState(L), type = L.draftType==="straight"?"Straight":"Snake";
@@ -2023,7 +2027,7 @@ function faHTML(L, C){
   const nw = nextWeekStart();
   let panel = "";
   if (open && S.faAdd){
-    const x = S.faAdd, cands = activeTeams(C, seat).filter(s=> s.slot.startsWith("Any") ? x.p!==sp.pro : s.pool===x.p);
+    const x = S.faAdd, cands = activeTeams(C, seat).filter(s=> s.slot.startsWith("Any") ? flexOk(L, x.p) : s.pool===x.p);
     panel = `<div class="card form fa-drop" id="faPanel"><div class="head-row"><h3>Add ${esc(x.t)} ${chip(x.p)}</h3><span class="sub">for ${esc(seat)}</span></div>
       ${cands.length ? `<p class="sub">Choose the ${esc(x.p)} team to drop. Its wins so far stay on ${seat===mine(L)?"your":esc(seat)+"'s"} total; it counts through ${fmtDay(addDays(nw,-1))}, and ${esc(x.t)} starts counting ${fmtDay(nw)}.</p>
         <div class="seats" role="radiogroup" aria-label="Team to drop">${cands.map((s,i)=>`<label class="check drop-opt"><input type="radio" name="faDrop" value="${esc(s.team)}" ${i===0?"checked":""}> ${chip(s.slot.startsWith("Any")?"Any":s.pool)} <b>${esc(s.team)}</b> <span class="sub">${recTxt(s.rec)} · ${fmt(s.pts)} win${s.pts===1?"":"s"} for ${esc(seat)}</span></label>`).join("")}</div>

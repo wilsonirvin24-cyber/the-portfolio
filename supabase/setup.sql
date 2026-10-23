@@ -358,6 +358,16 @@ begin
   update public.leagues set members = l.members - p_seat, updated_at = now() where id = p_id;
 end $$;
 
+-- Which pools can fill an "Any" spot: any college team (not NFL/NBA); every club in soccer; and in college
+-- basketball leagues only conferences outside the SEC, Big Ten, Big 12, ACC and Big East.
+create or replace function public.pf_flex_ok(p_sport text, p_pool text) returns boolean
+language sql immutable as $$
+  select case coalesce(p_sport, 'football')
+    when 'cbb' then p_pool not in ('SEC','Big Ten','Big 12','ACC','Big East')
+    when 'basketball' then p_pool <> 'NBA'
+    when 'soccer' then true
+    else p_pool <> 'NFL' end $$;
+
 -- One draft pick. Allowed for the manager on the clock, or the commissioner on their behalf.
 -- The database decides which spot the team fills, so a pick can't put a team in the wrong pool or an extra spot.
 create or replace function public.make_pick(p_id text, p_team text, p_pool text, p_slot text) returns integer
@@ -398,7 +408,7 @@ begin
   else
     flex := coalesce((l.doc->>'flex')::int, 0);
     select count(*) into used from jsonb_array_elements(picks) e where e->>'owner' = seat and e->>'slot' like 'Any%';
-    if v_pool <> v_pro and flex > used then
+    if public.pf_flex_ok(v_sport, v_pool) and flex > used then
       v_slot := case when flex > 1 then 'Any #' || (used + 1) else 'Any' end;
     else
       raise exception '% has no open % spot.', seat, v_pool;
@@ -474,7 +484,7 @@ begin
     if flex > used then
       select t.team, t.pool into v_team, v_pool
         from public.pf_teams t
-       where t.sport = v_sport and t.pool <> v_pro
+       where t.sport = v_sport and public.pf_flex_ok(v_sport, t.pool)
          and not exists (select 1 from jsonb_array_elements(picks) e where lower(e->>'team') = lower(t.team))
        order by t.rank limit 1;
       v_slot := case when flex > 1 then 'Any #' || (used + 1) else 'Any' end;
@@ -604,7 +614,7 @@ begin
     execute 'select $1 || jsonb_build_object(''job'', exists (select 1 from cron.job where jobname = ''portfolio-scores''))' into sc using sc;
   exception when others then null;
   end;
-  return jsonb_build_object('version', 8, 'scheduler', s, 'scores', sc);
+  return jsonb_build_object('version', 9, 'scheduler', s, 'scores', sc);
 end $$;
 
 -- Run by the scheduler every minute, so picks still happen when nobody has the draft room open.
@@ -783,7 +793,9 @@ begin
   select t.team, t.pool into v_team, v_pool from public.pf_teams t where t.sport = v_sport and lower(t.team) = lower(trim(p_add));
   if v_team is null then raise exception '% isn''t a team in this league''s pool.', trim(p_add); end if;
   if dropped->>'slot' like 'Any%' then
-    if v_pool = v_pro then raise exception 'That spot is for a college team.'; end if;
+    if not public.pf_flex_ok(v_sport, v_pool) then
+      raise exception '%', case v_sport when 'cbb' then 'That spot is for a team outside the SEC, Big Ten, Big 12, ACC and Big East.' else 'That spot is for a college team.' end;
+    end if;
   elsif v_pool <> dropped->>'pool' then
     raise exception 'Replace % with another % team.', dropped->>'team', dropped->>'pool';
   end if;
