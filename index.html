@@ -556,7 +556,7 @@ const SPORTS = {
                 slots:{"NBA":3,"SEC":1,"Big Ten":1,"Big 12":1,"ACC":1,"Big East":1,"Other":4}, flex:0, weights:{"NBA":0.5},
                 counts:"NBA regular season at half a win each, plus every college game including March Madness." },
   cbb:        { label:"College Basketball", pro:null, col:"CBB", pools:Object.keys(CBB_CONF), teams:CBB_CONF,
-                slots:Object.fromEntries(Object.keys(CBB_CONF).map(c=>[c, ["SEC","Big Ten","Big 12","ACC","Big East"].includes(c) ? 1 : 0])), flex:3, weights:{},
+                slots:Object.fromEntries(Object.keys(CBB_CONF).map(c=>[c, ["SEC","Big Ten","Big 12","ACC","Big East"].includes(c) ? 1 : 0])), flex:1, flexNP:2, weights:{},
                 counts:"Every Division I game counts, including conference tournaments and March Madness." },
   soccer:     { label:"Soccer", pro:null, col:"SOC", pools:Object.keys(SOC_POOL), teams:SOC_POOL, points:true,
                 slots:{"Premier League":2, "LaLiga":1, "Bundesliga":1, "Serie A":1, "Ligue 1":1}, flex:1, weights:{},
@@ -665,14 +665,20 @@ const flexOf = L => typeof L.flex==="number" ? L.flex : (L.slots ? 0 : SP(L).fle
 const weightOf = (L, pool) => { const w = (L.weights || SP(L).weights || {})[pool]; return typeof w==="number" ? w : 1; };
 const lgOfPool = (L, pool) => pool===SP(L).pro ? SP(L).pro : SP(L).col;
 const pk = (L, p) => tk(p.team, lgOfPool(L, p.pool));
-const roundsOf = L => SP(L).pools.reduce((n,p)=> n + (slotsOf(L)[p]||0), 0) + flexOf(L);
+// College basketball leagues can also have "Non-P4" spots: any team outside the SEC, Big Ten, Big 12 and ACC.
+const npOf = L => sportOf(L)!=="cbb" ? 0 : typeof L.flexNP==="number" ? L.flexNP : (L.slots ? 0 : SP(L).flexNP||0);
+const isNP = (L, slot) => sportOf(L)==="cbb" && String(slot).startsWith("Non-P4");
+const roundsOf = L => SP(L).pools.reduce((n,p)=> n + (slotsOf(L)[p]||0), 0) + flexOf(L) + npOf(L);
 function slotRows(L){
   const out=[];
   for (const p of SP(L).pools){ const n=slotsOf(L)[p]||0; for (let i=1;i<=n;i++) out.push({slot: n>1?`${p} #${i}`:p, pool:p, ix:i, many:n>1}); }
+  const np = npOf(L); for (let i=1;i<=np;i++) out.push({slot: np>1?`Non-P4 #${i}`:"Non-P4", pool:"Non-P4", ix:i, many:np>1});
   const f = flexOf(L); for (let i=1;i<=f;i++) out.push({slot: f>1?`Any #${i}`:"Any", pool:"Any", ix:i, many:f>1});
   return out;
 }
-const slotText = L => SP(L).pools.filter(p=>slotsOf(L)[p]).map(p=>`${slotsOf(L)[p]} ${p==="Other"?"other-conference":p}`).concat(flexOf(L)?[`${flexOf(L)} ${sportOf(L)==="cbb"?"from any other conference":sportOf(L)==="soccer"?"any league":"any college"}`]:[]).join(" · ");
+const slotText = L => SP(L).pools.filter(p=>slotsOf(L)[p]).map(p=>`${slotsOf(L)[p]} ${p==="Other"?"other-conference":p}`)
+  .concat(npOf(L)?[`${npOf(L)} Non-P4`]:[])
+  .concat(flexOf(L)?[`${flexOf(L)} ${sportOf(L)==="cbb"?"any conference":sportOf(L)==="soccer"?"any league":"any college"}`]:[]).join(" · ");
 const weightText = L => SP(L).pools.filter(p=>weightOf(L,p)!==1).map(p=>`${p} wins count ${weightOf(L,p)}`).join(" · ");
 const mine = L => {
   if (A){ const id = meId(), m = L.members || {}; return id ? (L.owners.find(o=>m[o]===id) || null) : null; }
@@ -1109,7 +1115,7 @@ function homeHTML(){
     <p class="sub">${SPORTS.football.counts}</p>
     <div class="slots"><span><b>Basketball</b> portfolio, twelve teams:</span>${["NBA","NBA","NBA","SEC","Big Ten","Big 12","ACC","Big East","Other","Other","Other","Other"].map(chip).join("")}</div>
     <p class="sub">"Other" means any Division I team outside those five conferences. ${SPORTS.basketball.counts}</p>
-    <div class="slots"><span><b>College Basketball</b> portfolio: the commissioner picks how many teams come from each of the 32 Division I conferences. "Any other conference" spots take a team from outside the SEC, Big Ten, Big 12, ACC and Big East.</span></div>
+    <div class="slots"><span><b>College Basketball</b> portfolio: the commissioner picks how many teams come from each of the 32 Division I conferences. "Non-P4" spots take any team outside the SEC, Big Ten, Big 12 and ACC; "Any conference" spots take any team at all.</span></div>
     <p class="sub">${SPORTS.cbb.counts}</p>
     <div class="slots"><span><b>Soccer</b> portfolio, seven clubs:</span>${["Premier League","Premier League","LaLiga","Bundesliga","Serie A","Ligue 1","Any"].map(chip).join("")}</div>
     <p class="sub">${SPORTS.soccer.counts} "Any" is one more club from any of the five leagues. MLS joins when its season moves to the same calendar in 2027–28.</p>`;
@@ -1143,7 +1149,7 @@ function createFormHTML(){
       <button type="button" class="ib" data-rm="${i}" aria-label="Remove ${esc(m)}">✕</button></li>`).join("");
   const pw = sp.weights[sp.pro] ?? 1;
   return `<form class="card form" id="lgForm" autocomplete="off">
-      <div class="head-row"><h3>Create a league</h3><span class="sub">${S.newSport==="football"?"Drafts from all 32 NFL teams and all 138 FBS teams.":S.newSport==="soccer"?"Drafts from all 96 clubs in the Premier League, LaLiga, Bundesliga, Serie A and Ligue 1. 3 points for a win, 1 for a draw, in every competition.":S.newSport==="cbb"?"Drafts from all 365 Division I teams. Choose how many each manager takes from each conference; “any other conference” spots are for teams outside the SEC, Big Ten, Big 12, ACC and Big East.":"Drafts from all 30 NBA teams and all 365 Division I teams."}</span></div>
+      <div class="head-row"><h3>Create a league</h3><span class="sub">${S.newSport==="football"?"Drafts from all 32 NFL teams and all 138 FBS teams.":S.newSport==="soccer"?"Drafts from all 96 clubs in the Premier League, LaLiga, Bundesliga, Serie A and Ligue 1. 3 points for a win, 1 for a draw, in every competition.":S.newSport==="cbb"?"Drafts from all 365 Division I teams. Choose how many each manager takes from each conference, plus “Non-P4” spots (any team outside the SEC, Big Ten, Big 12 and ACC) and “Any conference” spots (any team).":"Drafts from all 30 NBA teams and all 365 Division I teams."}</span></div>
       <div class="form-grid">
         <label class="f" for="lgSport">Sport<select id="lgSport">${SPORT_KEYS.filter(k=> !A || (k==="cbb" ? hasV4() : k==="soccer" ? (S.auth.live && S.auth.dbv>=8) : true)).map(k=>`<option value="${k}" ${k===S.newSport?"selected":""}>${SPORTS[k].label}</option>`).join("")}</select></label>
         <label class="f" for="lgName">League name<input type="text" id="lgName" required placeholder="Sunday Syndicate"></label>
@@ -1153,7 +1159,8 @@ function createFormHTML(){
       </div>
       <div><h3 style="margin-bottom:8px">Teams each manager drafts</h3>
         <div class="slot-grid">${sp.pools.map(p=>`<label class="f" for="sl-${poolCls(p)}">${p==="Other"?"Other conferences":p}<input type="number" id="sl-${poolCls(p)}" min="0" max="10" value="${sp.slots[p]}" inputmode="numeric"></label>`).join("")}
-          ${S.newSport==="cbb"||S.newSport==="soccer"?`<label class="f" for="lgFlex">${S.newSport==="soccer"?"Any league":"Any other conference"}<input type="number" id="lgFlex" min="0" max="12" value="${sp.flex}" inputmode="numeric"></label>`:""}
+          ${S.newSport==="cbb"?`<label class="f" for="lgNP">Non-P4 (not SEC, Big Ten, Big 12 or ACC)<input type="number" id="lgNP" min="0" max="12" value="${sp.flexNP}" inputmode="numeric"></label>`:""}
+          ${S.newSport==="cbb"||S.newSport==="soccer"?`<label class="f" for="lgFlex">${S.newSport==="soccer"?"Any league":"Any conference"}<input type="number" id="lgFlex" min="0" max="12" value="${sp.flex}" inputmode="numeric"></label>`:""}
           ${S.newSport==="basketball"?`<label class="f" for="lgProW">${sp.pro} win counts<select id="lgProW"><option value="0.5" ${pw===0.5?"selected":""}>0.5</option><option value="1" ${pw===1?"selected":""}>1</option></select></label>`:""}</div></div>
       <div><h3 style="margin-bottom:8px">Managers, in draft order</h3>
         <ol class="mgr-list">${mgrs||`<li><span class="sub">Add each manager below. First on the list picks first.</span></li>`}</ol>
@@ -1209,7 +1216,7 @@ function teamHTML(L, C){
   const row = (h, note) => {
     const wk = h.wkG.map(g=>{ const w=winnerKey(g), m=g.hk===h.k?g.hs:g.as, t=g.hk===h.k?g.as:g.hs; return `${w===h.k?"W":w===null?"T":"L"} ${m}–${t}`; }).join(", ");
     const lg = lgOfPool(L, h.pool);
-    return `<tr class="${h.state}" ${tcolor(h.team, lg)}><td>${chip(h.slot.startsWith("Any")?"Any":h.pool)}</td><td><span class="tn">${tlogo(h.team, lg)}<b>${esc(h.team)}</b>${h.slot.startsWith("Any")?` <span class="lg">${esc(h.pool)}</span>`:""}</span>${note?`<div class="sub">${note}</div>`:""}</td>
+    return `<tr class="${h.state}" ${tcolor(h.team, lg)}><td>${chip(h.slot.startsWith("Any")?"Any":isNP(L,h.slot)?"Non-P4":h.pool)}</td><td><span class="tn">${tlogo(h.team, lg)}<b>${esc(h.team)}</b>${h.slot.startsWith("Any")?` <span class="lg">${esc(h.pool)}</span>`:""}</span>${note?`<div class="sub">${note}</div>`:""}</td>
       <td class="r num">${recTxt(h.rec)}</td><td class="r num">${fmt(h.pts)}</td><td class="r num hide-sm">${wk||"–"}</td><td class="r num hide-sm">${how(h)}</td></tr>`;
   };
   const rows = r.holdings.map(h=> row(h, h.state==="leaving" ? `Counts for you through ${fmtDay(addDays(h.to,-1))}` : "")).join("")
@@ -1356,15 +1363,16 @@ function draftState(L){
 /* What a manager can still take: required conference/pro slots first, then "any college" slots. */
 function needsFor(L, o){
   const req = {}; for (const p of SP(L).pools) req[p] = slotsOf(L)[p]||0;
-  let flex = flexOf(L);
-  for (const p of (L.picks||[])) if (p.owner===o){ if (String(p.slot).startsWith("Any")) flex--; else req[p.pool]--; }
-  return {req, flex};
+  let flex = flexOf(L), np = npOf(L);
+  for (const p of (L.picks||[])) if (p.owner===o){ if (String(p.slot).startsWith("Any")) flex--; else if (isNP(L, p.slot)) np--; else req[p.pool]--; }
+  return {req, flex, np};
 }
-// Which teams can fill an "Any" spot: any college team (not NFL/NBA); in college basketball leagues, only teams
-// outside the five main conferences (SEC, Big Ten, Big 12, ACC, Big East), which have their own spots.
-const POWER5 = ["SEC","Big Ten","Big 12","ACC","Big East"];
-const flexOk = (L, pool) => sportOf(L)==="cbb" ? !POWER5.includes(pool) : pool!==SP(L).pro;
-const canTake = (L, need, pool) => need.req[pool]>0 || (flexOk(L, pool) && need.flex>0);
+// "Any" spots take any college team (not NFL/NBA), any conference in college basketball, any club in soccer.
+// "Non-P4" spots (college basketball) take a team from outside the SEC, Big Ten, Big 12 and ACC.
+const P4 = ["SEC","Big Ten","Big 12","ACC"];
+const flexOk = (L, pool) => pool!==SP(L).pro;
+const npOk = pool => !P4.includes(pool);
+const canTake = (L, need, pool) => need.req[pool]>0 || (need.np>0 && npOk(pool)) || (flexOk(L, pool) && need.flex>0);
 
 function draftResultsHTML(L){
   const D = draftState(L), type = L.draftType==="straight"?"Straight":"Snake";
@@ -1391,15 +1399,16 @@ function draftHTML(L){
   const canP = admin || (myPick && !pending);
   const qOn = canQueue(L), qset = qOn && S.queue ? new Set(S.queue.teams.map(t=>String(t).toLowerCase())) : new Set();
   const taken = new Set((L.picks||[]).map(p=>pk(L,p)));
-  const need = D.onClock ? needsFor(L, D.onClock) : {req:{},flex:0};
+  const need = D.onClock ? needsFor(L, D.onClock) : {req:{},flex:0,np:0};
   const q = S.draftQ.trim().toLowerCase();
-  const pools = sp.pools.filter(p=> slotsOf(L)[p] || (p!==sp.pro && flexOf(L)));
+  const pools = sp.pools.filter(p=> slotsOf(L)[p] || (p!==sp.pro && flexOf(L)) || (npOf(L) && npOk(p)));
   const all = pools.filter(p=>S.draftPool==="all"||S.draftPool===p).flatMap(p=>sp.teams[p].map(t=>({t,p})))
     .filter(x=>!taken.has(tk(x.t, lgOfPool(L,x.p))) && (!q || x.t.toLowerCase().includes(q)));
   const list = all.slice(0,150);
   const avail = list.map(x=>{ const inQ = qset.has(x.t.toLowerCase());
     return `<div class="avrow"><button class="av" data-pick="${esc(x.t)}" data-pool="${esc(x.p)}" ${(!canP||!canTake(L,need,x.p))?"disabled":""}><span>${esc(x.t)}</span>${chip(x.p)}</button>${qOn?`<button type="button" class="qb ${inQ?"on":""}" data-q="${esc(x.t)}" aria-label="${inQ?"Remove":"Add"} ${esc(x.t)} ${inQ?"from":"to"} my queue" title="${inQ?"In your queue":"Add to my queue"}">${inQ?"✓":"+"}</button>`:""}</div>`; }).join("");
   const needChips = pools.filter(p=>slotsOf(L)[p]).map(p=>`<span class="need ${need.req[p]>0?"":"done"}">${chip(p)}${need.req[p]>1?` <span class="num" style="font-size:12px">×${need.req[p]}</span>`:""}</span>`).join("")
+    + (npOf(L) ? `<span class="need ${need.np>0?"":"done"}">${chip("Non-P4")}${need.np>1?` <span class="num" style="font-size:12px">×${need.np}</span>`:""}</span>` : "")
     + (flexOf(L) ? `<span class="need ${need.flex>0?"":"done"}">${chip("Any")}${need.flex>1?` <span class="num" style="font-size:12px">×${need.flex}</span>`:""}</span>` : "");
   const feed = [...D.ordered].reverse().map(p=>`<div><span class="pk">${Math.ceil(p.n/D.N)}.${String(((p.n-1)%D.N)+1).padStart(2,"0")}</span>${chip(p.pool)}<span style="flex:1"><b>${esc(p.team)}</b>${p.auto?`<span class="tag-auto" title="Picked automatically when time ran out">auto</span>`:""}</span><span class="sub">${esc(p.owner)}</span></div>`).join("");
   const secs = hasTimer() ? (L.pickSeconds||0) : 0, running = !!(secs && L.clockAt && D.onClock);
@@ -2014,7 +2023,7 @@ function faHTML(L, C){
     <div class="note-row"><p class="sub">${esc(windowNote(L, "waiverUntil", "Pickups"))}</p>${info("fa", "First come, first served. A pickup replaces a team from the same conference. The team you add starts counting the next Tuesday; the team you drop keeps counting for you until then, and every win it earned for you stays on your total.")}</div>${inner}</section>`;
   if (!A) return wrap(`<div class="card empty"><strong>Pickups happen on the website.</strong>Open playtheportfolio.com to add and drop teams.</div>`);
   if (L.status!=="complete") return wrap(`<div class="card empty"><strong>Pickups open once the draft is finished.</strong></div>`);
-  const pools = sp.pools.filter(p=> slotsOf(L)[p] || (p!==sp.pro && flexOf(L)));
+  const pools = sp.pools.filter(p=> slotsOf(L)[p] || (p!==sp.pro && flexOf(L)) || (npOf(L) && npOk(p)));
   const owned = new Set(C.stints.filter(s=>!s.to).map(s=>s.k));
   const q = S.faQ.trim().toLowerCase();
   let list = pools.flatMap(p=> sp.teams[p].map(t=>{ const k = tk(t, lgOfPool(L,p)), r = C.rec[k] || {w:0,l:0,t:0,games:[]}, gp = r.w+r.l+r.t; return {t, p, k, r, gp, pct: gp ? (sp.points ? (3*r.w+r.t)/gp/3 : (r.w+r.t/2)/gp) : 0}; }))
@@ -2027,7 +2036,7 @@ function faHTML(L, C){
   const nw = nextWeekStart();
   let panel = "";
   if (open && S.faAdd){
-    const x = S.faAdd, cands = activeTeams(C, seat).filter(s=> s.slot.startsWith("Any") ? flexOk(L, x.p) : s.pool===x.p);
+    const x = S.faAdd, cands = activeTeams(C, seat).filter(s=> s.slot.startsWith("Any") ? flexOk(L, x.p) : isNP(L, s.slot) ? npOk(x.p) : s.pool===x.p);
     panel = `<div class="card form fa-drop" id="faPanel"><div class="head-row"><h3>Add ${esc(x.t)} ${chip(x.p)}</h3><span class="sub">for ${esc(seat)}</span></div>
       ${cands.length ? `<p class="sub">Choose the ${esc(x.p)} team to drop. Its wins so far stay on ${seat===mine(L)?"your":esc(seat)+"'s"} total; it counts through ${fmtDay(addDays(nw,-1))}, and ${esc(x.t)} starts counting ${fmtDay(nw)}.</p>
         <div class="seats" role="radiogroup" aria-label="Team to drop">${cands.map((s,i)=>`<label class="check drop-opt"><input type="radio" name="faDrop" value="${esc(s.team)}" ${i===0?"checked":""}> ${chip(s.slot.startsWith("Any")?"Any":s.pool)} <b>${esc(s.team)}</b> <span class="sub">${recTxt(s.rec)} · ${fmt(s.pts)} win${s.pts===1?"":"s"} for ${esc(seat)}</span></label>`).join("")}</div>
@@ -2191,10 +2200,11 @@ function queueHTML(L){
 /* ---------- practice draft: you against auto-pick, nothing saved ---------- */
 function slotFor(L, need, pool){
   if (need.req[pool]>0){ const n = slotsOf(L)[pool]; return n>1 ? `${pool} #${n-need.req[pool]+1}` : pool; }
+  const np = npOf(L); if (need.np>0 && npOk(pool)) return np>1 ? `Non-P4 #${np-need.np+1}` : "Non-P4";     // keep "Any" spots open for longer
   const f = flexOf(L); return f>1 ? `Any #${f-need.flex+1}` : "Any";
 }
 function openMock(base){
-  S.mock = {L:null, busy:false, err:"", sport: base ? sportOf(base) : "football", n: base ? base.owners.length : 10, pos:"r", slots: base && base.slots ? {...base.slots} : null, flex: base ? flexOf(base) : 0, from: base ? base.name : ""};
+  S.mock = {L:null, busy:false, err:"", sport: base ? sportOf(base) : "football", n: base ? base.owners.length : 10, pos:"r", slots: base && base.slots ? {...base.slots} : null, flex: base ? flexOf(base) : 0, flexNP: base ? npOf(base) : 0, from: base ? base.name : ""};
   S.view = "mock"; S.draftQ = ""; S.draftPool = "all"; render(); try{ window.scrollTo(0,0); }catch(_){}
 }
 async function startMock(){
@@ -2205,7 +2215,7 @@ async function startMock(){
     const n = Math.max(2, Math.min(16, M.n|0)), pos = M.pos==="r" ? 1+Math.floor(Math.random()*n) : Math.min(n, +M.pos);
     const owners = Array.from({length:n}, (_,i)=> i+1===pos ? "You" : "Auto "+(i+1));
     M.ranks = ranks;
-    M.L = {id:"practice", mock:true, me:"You", name:"Practice draft", sport:M.sport, year:thisSeason(), owners, slots: M.slots || {...sp.slots}, flex: M.slots ? M.flex : sp.flex, weights:{...sp.weights}, draftType:"snake", status:"drafting", picks:[]};
+    M.L = {id:"practice", mock:true, me:"You", name:"Practice draft", sport:M.sport, year:thisSeason(), owners, slots: M.slots || {...sp.slots}, flex: M.slots ? M.flex : sp.flex, flexNP: M.slots ? (M.flexNP||0) : (sp.flexNP||0), weights:{...sp.weights}, draftType:"snake", status:"drafting", picks:[]};
   }catch(err){ M.err = failText(err); }
   M.busy = false; render(); botLoop();
 }
@@ -2237,7 +2247,7 @@ function mockHTML(){
         <label class="f" for="mkSport">Sport<select id="mkSport">${SPORT_KEYS.map(k=>`<option value="${k}" ${k===M.sport?"selected":""}>${SPORTS[k].label}</option>`).join("")}</select></label>
         <label class="f" for="mkN">Managers<select id="mkN">${[2,4,6,8,10,12,14,16].concat([2,4,6,8,10,12,14,16].includes(M.n)?[]:[M.n]).sort((a,b)=>a-b).map(v=>`<option ${v===M.n?"selected":""}>${v}</option>`).join("")}</select></label>
         <label class="f" for="mkPos">Your draft position<select id="mkPos"><option value="r">Random</option>${Array.from({length:M.n},(_,i)=>`<option value="${i+1}" ${String(M.pos)===String(i+1)?"selected":""}>${i+1}</option>`).join("")}</select></label>
-        <p class="sub">Each manager drafts ${esc(slotText({sport:M.sport, slots:M.slots||sp.slots, flex:M.slots?M.flex:sp.flex}))}${M.slots&&M.from?`, the same as ${esc(M.from)}`:""}.</p>
+        <p class="sub">Each manager drafts ${esc(slotText({sport:M.sport, slots:M.slots||sp.slots, flex:M.slots?M.flex:sp.flex, flexNP:M.slots?(M.flexNP||0):(sp.flexNP||0)}))}${M.slots&&M.from?`, the same as ${esc(M.from)}`:""}.</p>
         <div class="btns"><button class="btn primary" type="submit" ${M.busy?"disabled":""}>${M.busy?"Setting up…":"Start practice draft"}</button><button type="button" class="btn" id="mockExit">Cancel</button><span class="msg err" role="status">${esc(M.err)}</span></div>
       </form></section>`;
   }
@@ -2573,7 +2583,7 @@ function bind(){
   const mn=$("#mgrName"); if(mn) mn.onkeydown=e=>{ if(e.key==="Enter"){ e.preventDefault(); addM(); } };
   const ms=$("#mgrShuffle"); if(ms) ms.onclick=()=>{ const a=S.newMgrs; for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } render(); };
   const mc=$("#mgrCopy"); if(mc) mc.onclick=()=>{ S.newMgrs=[...(league()?.owners||[])]; render(); };
-  const ls=$("#lgSport"); if(ls) ls.onchange=()=>{ S.newSport=ls.value; document.querySelectorAll("#lgForm input[type=number], #lgProW").forEach(e=>S.reset.add(e.id)); S.reset.add("lgFlex"); S.reset.add("lgProW"); render(); };
+  const ls=$("#lgSport"); if(ls) ls.onchange=()=>{ S.newSport=ls.value; document.querySelectorAll("#lgForm input[type=number], #lgProW").forEach(e=>S.reset.add(e.id)); S.reset.add("lgFlex"); S.reset.add("lgNP"); S.reset.add("lgProW"); render(); };
   const lf=$("#lgForm"); if(lf) lf.onsubmit=createLeague;
 }
 
@@ -2680,15 +2690,16 @@ async function createLeague(e){
   const name=$("#lgName").value.trim(), year=+$("#lgYear").value, draftType=$("#lgType").value, owners=[...S.newMgrs];
   const slots={}; for(const p of sp.pools){ const el=$("#sl-"+poolCls(p)); slots[p]= el ? Math.max(0,Math.min(10,parseInt(el.value,10)||0)) : 0; }
   const flex = $("#lgFlex") ? Math.max(0,Math.min(12,parseInt($("#lgFlex").value,10)||0)) : 0;
+  const flexNP = $("#lgNP") ? Math.max(0,Math.min(12,parseInt($("#lgNP").value,10)||0)) : 0;
   const weights = {}; if ($("#lgProW") && +$("#lgProW").value!==1) weights[sp.pro] = +$("#lgProW").value;
   if(!name) return setMsg("#lgMsg","Name the league.");
   if(owners.length<2) return setMsg("#lgMsg","Add at least two managers.");
-  if(!sp.pools.some(p=>slots[p]) && !flex) return setMsg("#lgMsg","Each manager needs at least one team.");
+  if(!sp.pools.some(p=>slots[p]) && !flex && !flexNP) return setMsg("#lgMsg","Each manager needs at least one team.");
   for(const p of sp.pools) if(owners.length*slots[p]>sp.teams[p].length) return setMsg("#lgMsg",`${owners.length} managers × ${slots[p]} ${p} teams is more than the ${sp.teams[p].length} ${p} teams available.`);
   let id=(name+"-"+sport+"-"+year).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")||"league";
   if(S.leagues.some(l=>l.id===id)) id+="-"+Math.random().toString(36).slice(2,6);
   try{
-    const doc = {name, sport, year, owners, slots, flex, weights, draftType, status:"drafting", picks:[], created:new Date().toISOString()};
+    const doc = {name, sport, year, owners, slots, flex, ...(sport==="cbb" ? {flexNP} : {}), weights, draftType, status:"drafting", picks:[], created:new Date().toISOString()};
     if ($("#lgTimer") && +$("#lgTimer").value) doc.pickSeconds = +$("#lgTimer").value;
     await S.db.doc(`leagues/${id}`).set(doc);
     S.newMgrs=[]; S.reset.add("lgName"); S.leagueId=id; S.view="league"; S.tab="draft"; render();

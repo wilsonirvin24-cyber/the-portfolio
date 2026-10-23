@@ -155,7 +155,7 @@ begin
   n := jsonb_array_length(coalesce(d->'picks', '[]'::jsonb));
   cnt := jsonb_array_length(d->'owners');
   rounds := coalesce((select sum(value::int) from jsonb_each_text(coalesce(d->'slots', '{}'::jsonb))), 0)
-            + coalesce((d->>'flex')::int, 0);
+            + coalesce((d->>'flex')::int, 0) + coalesce((d->>'flexNP')::int, 0);
   if cnt = 0 or n >= cnt * rounds then return null; end if;
   r := n / cnt; pos := n % cnt;
   return d->'owners'->>(case when d->>'draftType' = 'straight' or r % 2 = 0 then pos else cnt - 1 - pos end);
@@ -201,7 +201,7 @@ begin
   n := jsonb_array_length(picks);
   cnt := jsonb_array_length(l.doc->'owners');
   rounds := coalesce((select sum(value::int) from jsonb_each_text(coalesce(l.doc->'slots', '{}'::jsonb))), 0)
-            + coalesce((l.doc->>'flex')::int, 0);
+            + coalesce((l.doc->>'flex')::int, 0) + coalesce((l.doc->>'flexNP')::int, 0);
   if coalesce(trim(p_team), '') = '' or length(p_team) > 60 or length(p_pool) > 30 or length(p_slot) > 30 then
     raise exception 'That pick is not valid.';
   end if;
@@ -358,15 +358,20 @@ begin
   update public.leagues set members = l.members - p_seat, updated_at = now() where id = p_id;
 end $$;
 
--- Which pools can fill an "Any" spot: any college team (not NFL/NBA); every club in soccer; and in college
--- basketball leagues only conferences outside the SEC, Big Ten, Big 12, ACC and Big East.
+-- Which pools can fill an "Any" spot: any college team (not NFL/NBA), any club in soccer, any conference in college basketball.
 create or replace function public.pf_flex_ok(p_sport text, p_pool text) returns boolean
 language sql immutable as $$
   select case coalesce(p_sport, 'football')
-    when 'cbb' then p_pool not in ('SEC','Big Ten','Big 12','ACC','Big East')
+    when 'cbb' then true
     when 'basketball' then p_pool <> 'NBA'
     when 'soccer' then true
     else p_pool <> 'NFL' end $$;
+-- College basketball "Non-P4" spots: any team outside the SEC, Big Ten, Big 12 and ACC.
+create or replace function public.pf_np_ok(p_pool text) returns boolean
+language sql immutable as $$ select p_pool not in ('SEC','Big Ten','Big 12','ACC') $$;
+-- Whether a pick's spot is a flexible one (not tied to its own pool).
+create or replace function public.pf_is_flex(p_sport text, p_slot text) returns boolean
+language sql immutable as $$ select p_slot like 'Any%' or (p_sport = 'cbb' and p_slot like 'Non-P4%') $$;
 
 -- One draft pick. Allowed for the manager on the clock, or the commissioner on their behalf.
 -- The database decides which spot the team fills, so a pick can't put a team in the wrong pool or an extra spot.
@@ -402,16 +407,22 @@ begin
     if not boss then raise exception 'Only the commissioner can add a team that isn''t on the list.'; end if;
     v_team := trim(p_team); v_pool := p_pool;
   end if;
-  select count(*) into have from jsonb_array_elements(picks) e where e->>'owner' = seat and e->>'pool' = v_pool and e->>'slot' not like 'Any%';
+  select count(*) into have from jsonb_array_elements(picks) e where e->>'owner' = seat and e->>'pool' = v_pool and not public.pf_is_flex(v_sport, e->>'slot');
   if coalesce((slots->>v_pool)::int, 0) > have then
     v_slot := case when (slots->>v_pool)::int > 1 then v_pool || ' #' || (have + 1) else v_pool end;
   else
-    flex := coalesce((l.doc->>'flex')::int, 0);
-    select count(*) into used from jsonb_array_elements(picks) e where e->>'owner' = seat and e->>'slot' like 'Any%';
-    if public.pf_flex_ok(v_sport, v_pool) and flex > used then
-      v_slot := case when flex > 1 then 'Any #' || (used + 1) else 'Any' end;
+    flex := coalesce((l.doc->>'flexNP')::int, 0);
+    select count(*) into used from jsonb_array_elements(picks) e where e->>'owner' = seat and e->>'slot' like 'Non-P4%';
+    if v_sport = 'cbb' and public.pf_np_ok(v_pool) and flex > used then
+      v_slot := case when flex > 1 then 'Non-P4 #' || (used + 1) else 'Non-P4' end;
     else
-      raise exception '% has no open % spot.', seat, v_pool;
+      flex := coalesce((l.doc->>'flex')::int, 0);
+      select count(*) into used from jsonb_array_elements(picks) e where e->>'owner' = seat and e->>'slot' like 'Any%';
+      if public.pf_flex_ok(v_sport, v_pool) and flex > used then
+        v_slot := case when flex > 1 then 'Any #' || (used + 1) else 'Any' end;
+      else
+        raise exception '% has no open % spot.', seat, v_pool;
+      end if;
     end if;
   end if;
   return public.pf_apply_pick(p_id, v_team, v_pool, v_slot, false, auth.uid());
@@ -460,7 +471,7 @@ begin
       join public.pf_teams t on t.sport = v_sport and lower(t.team) = lower(q.name)
      where dq.league_id = p_id and dq.user_id = (l.members->>seat)::uuid
        and coalesce((slots->>t.pool)::int, 0) >
-           (select count(*) from jsonb_array_elements(picks) e where e->>'owner' = seat and e->>'pool' = t.pool and e->>'slot' not like 'Any%')
+           (select count(*) from jsonb_array_elements(picks) e where e->>'owner' = seat and e->>'pool' = t.pool and not public.pf_is_flex(v_sport, e->>'slot'))
        and not exists (select 1 from jsonb_array_elements(picks) e where lower(e->>'team') = lower(t.team))
      order by q.ord limit 1;
   end if;
@@ -470,18 +481,28 @@ begin
       from public.pf_teams t
      where t.sport = v_sport
        and coalesce((slots->>t.pool)::int, 0) >
-           (select count(*) from jsonb_array_elements(picks) e where e->>'owner' = seat and e->>'pool' = t.pool and e->>'slot' not like 'Any%')
+           (select count(*) from jsonb_array_elements(picks) e where e->>'owner' = seat and e->>'pool' = t.pool and not public.pf_is_flex(v_sport, e->>'slot'))
        and not exists (select 1 from jsonb_array_elements(picks) e where lower(e->>'team') = lower(t.team))
      order by t.rank limit 1;
   end if;
   if v_team is not null then
-    select count(*) into have from jsonb_array_elements(picks) e where e->>'owner' = seat and e->>'pool' = v_pool and e->>'slot' not like 'Any%';
+    select count(*) into have from jsonb_array_elements(picks) e where e->>'owner' = seat and e->>'pool' = v_pool and not public.pf_is_flex(v_sport, e->>'slot');
     v_slot := case when (slots->>v_pool)::int > 1 then v_pool || ' #' || (have + 1) else v_pool end;
   else
-    -- No required spot left to fill: use an "any college team" spot if the league has them.
+    -- No required spot left to fill: a college basketball "Non-P4" spot first, then an "any" spot.
+    flex := case when v_sport = 'cbb' then coalesce((l.doc->>'flexNP')::int, 0) else 0 end;
+    select count(*) into used from jsonb_array_elements(picks) e where e->>'owner' = seat and e->>'slot' like 'Non-P4%';
+    if flex > used then
+      select t.team, t.pool into v_team, v_pool
+        from public.pf_teams t
+       where t.sport = v_sport and public.pf_np_ok(t.pool)
+         and not exists (select 1 from jsonb_array_elements(picks) e where lower(e->>'team') = lower(t.team))
+       order by t.rank limit 1;
+      v_slot := case when flex > 1 then 'Non-P4 #' || (used + 1) else 'Non-P4' end;
+    end if;
     flex := coalesce((l.doc->>'flex')::int, 0);
     select count(*) into used from jsonb_array_elements(picks) e where e->>'owner' = seat and e->>'slot' like 'Any%';
-    if flex > used then
+    if v_team is null and flex > used then
       select t.team, t.pool into v_team, v_pool
         from public.pf_teams t
        where t.sport = v_sport and public.pf_flex_ok(v_sport, t.pool)
@@ -614,7 +635,7 @@ begin
     execute 'select $1 || jsonb_build_object(''job'', exists (select 1 from cron.job where jobname = ''portfolio-scores''))' into sc using sc;
   exception when others then null;
   end;
-  return jsonb_build_object('version', 9, 'scheduler', s, 'scores', sc);
+  return jsonb_build_object('version', 10, 'scheduler', s, 'scores', sc);
 end $$;
 
 -- Run by the scheduler every minute, so picks still happen when nobody has the draft room open.
@@ -793,9 +814,9 @@ begin
   select t.team, t.pool into v_team, v_pool from public.pf_teams t where t.sport = v_sport and lower(t.team) = lower(trim(p_add));
   if v_team is null then raise exception '% isn''t a team in this league''s pool.', trim(p_add); end if;
   if dropped->>'slot' like 'Any%' then
-    if not public.pf_flex_ok(v_sport, v_pool) then
-      raise exception '%', case v_sport when 'cbb' then 'That spot is for a team outside the SEC, Big Ten, Big 12, ACC and Big East.' else 'That spot is for a college team.' end;
-    end if;
+    if not public.pf_flex_ok(v_sport, v_pool) then raise exception 'That spot is for a college team.'; end if;
+  elsif v_sport = 'cbb' and dropped->>'slot' like 'Non-P4%' then
+    if not public.pf_np_ok(v_pool) then raise exception 'That spot is for a team outside the SEC, Big Ten, Big 12 and ACC.'; end if;
   elsif v_pool <> dropped->>'pool' then
     raise exception 'Replace % with another % team.', dropped->>'team', dropped->>'pool';
   end if;
